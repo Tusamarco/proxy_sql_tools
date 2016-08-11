@@ -337,7 +337,7 @@ exit(0);
                     #$new_nodes->{$key} = get_node_info($self,$key);
                 }
             }
-            #DEBUG SENZA THREADS
+            #DEBUG SENZA THREADS coomenta da qui
             foreach my $thr (sort keys %Threads) {
                 if ($Threads{$thr}->is_running()) {
                     my $tid = $Threads{$thr}->tid;
@@ -358,6 +358,7 @@ exit(0);
                 }
                 print ".";
             }
+	    # a qui
             $run_milliseconds = (gettimeofday() -$start ) *1000;
             #sleep for a time equal to the half of the timeout to save cpu cicle
             #usleep(($self->{_check_timeout} * 1000)/2);
