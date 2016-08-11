@@ -343,10 +343,12 @@ exit(0);
                     my $tid = $Threads{$thr}->tid;
                     #print "  - Thread $tid running\n";
                    
-                    if($run_milliseconds gt  $self->{_check_timeout} ){
+                    if($run_milliseconds >  $self->{_check_timeout} ){
                        $irun = 0 ; 
                     }
-                    $irun = 1;
+		    else{
+			$irun = 1;
+		    }
                 } 
                 elsif ($Threads{$thr}->is_joinable()) {
                     my $tid = $Threads{$thr}->tid;
@@ -362,6 +364,15 @@ exit(0);
         }
         $self->{_nodes} = $new_nodes;
         $run_milliseconds = (gettimeofday() -$start ) *1000;
+	
+	foreach my $key (sort keys $new_nodes){
+	    if($new_nodes->{$key}->{_process_status} == 1){
+		print $new_nodes->{$key}->{_ip}." Processed \n";
+	    }
+	    else{
+		print $new_nodes->{$key}->{_ip}." NOT Processed\n";
+	    }
+	}
         print "done $run_milliseconds\n";
         
         
@@ -668,6 +679,7 @@ exit(0);
         $self->{_cluster_size} = $status->{wsrep_cluster_size};
         
         $dbh->disconnect if (!defined $dbh);
+	#sleep 5;
         $self->{_process_status} = 1;
         return $self;
         
