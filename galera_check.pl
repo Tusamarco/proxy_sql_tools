@@ -29,6 +29,8 @@ my %processCommand;
 my @HGIds;
 
 
+
+
 ######################################################################
 #Local functions
 ######################################################################
@@ -88,7 +90,7 @@ $Param->{port}       = 3306;
 $Param->{debug}      = 0; 
 $Param->{processlist} = 0;
 $Param->{OS} = $^O;
-
+$Param->{main_segment} = 0;
 
 if (
     !GetOptions(
@@ -98,6 +100,7 @@ if (
         'port|P:i'       => \$Param->{port},
         'debug|d:i'      => \$Param->{debug},
         'hostgroups|H:s'=> \$Param->{hostgroups},
+	'main_segment|S:s'=> \$Param->{main_segment},
         'help:s'       => \$Param->{help}
 
     )
@@ -154,11 +157,19 @@ $proxy_sql_node->connect();
 my $galera_cluster = $proxy_sql_node->get_galera_cluster();
 
 if( defined $galera_cluster){
+    $galera_cluster->main_segment($Param->{main_segment});
     $galera_cluster->get_nodes();
 }
 
+# Retrive the nodes state
 if(defined $galera_cluster->nodes){
     $galera_cluster->process_nodes();
+    
+}
+
+#Analyze nodes state from ProxySQL prospective;
+if(defined  $galera_cluster->nodes){
+    my %action_node = $proxy_sql_node->evaluate_nodes($galera_cluster);
     
 }
 
@@ -203,9 +214,10 @@ exit(0);
             _name      => undef,
             _hosts  => {},
             _status    => undef,
-            _size  => 0,
+            _size  => {},
             _singlenode  => 0,
             _haswriter => 0,
+	    _main_segment => 0,
             _SQL_get_mysql_servers => $SQL_get_mysql_servers,
             _hostgroups => undef,
             _dbh_proxy => undef,
@@ -219,6 +231,12 @@ exit(0);
         bless $self, $class;
         return $self;
         
+    }
+
+    sub main_segment{
+        my ( $self, $main_segment ) = @_;
+        $self->{_main_segment} = $main_segment if defined($main_segment);
+        return $self->{_main_segment};
     }
 
     sub check_timeout{
@@ -315,7 +333,7 @@ exit(0);
     #Processing the nodes in the cluster and identify which node is active and which is to remove
     
     sub process_nodes{
-        my ( $self) = @_;
+        my ( $self ) = @_;
 
         my $nodes = $self->{_nodes} ;
         my $start = gettimeofday();
@@ -324,17 +342,25 @@ exit(0);
         my $irun = 1;
         my %Threads;
         my $new_nodes ={} ;
+	my $processed_nodes ={} ;
         
         #using multiple threads to connect if a node is present in more than one HG it will have 2 threads
         while($irun){
             $irun = 0;
             foreach my $key (sort keys %{$self->{_nodes}}){
-                if(!exists $Threads{$key} ){
+                if(!exists $Threads{$key}){
                     $new_nodes->{$key} =  $self->{_nodes}->{$key};
                     $new_nodes->{$key}->{_process_status} = -1;
                     #  debug senza threads
                     $Threads{$key}=threads->create(sub  {return get_node_info($self,$key)});
-                    #$new_nodes->{$key} = get_node_info($self,$key);
+#                    $new_nodes->{$key} = get_node_info($self,$key);
+#		    if(!exists $processed_nodes->{$new_nodes->{$key}->{_ip}} ){
+#			$self->{_size}->{$new_nodes->{$key}->{_wsrep_segment}} = (($self->{_size}->{$new_nodes->{$key}->{_wsrep_segment}}|| 0) +1);
+#			$processed_nodes->{$new_nodes->{$key}->{_ip}}=$self->{_size}->{$new_nodes->{$key}->{_wsrep_segment}};
+#			#print  $self->{_size}->{$new_nodes->{$key}->{_wsrep_segment}}." segment " .$new_nodes->{$key}->{_wsrep_segment} ."\n"
+#		    }
+
+		    
                 }
             }
             #DEBUG SENZA THREADS coomenta da qui
@@ -353,6 +379,17 @@ exit(0);
                 elsif ($Threads{$thr}->is_joinable()) {
                     my $tid = $Threads{$thr}->tid;
                     ( $new_nodes->{$thr} ) = $Threads{$thr}->join;
+		    #count the number of nodes by segment
+		    if(!exists $processed_nodes->{$new_nodes->{$thr}->{_ip}} ){
+			$self->{_size}->{$new_nodes->{$thr}->{_wsrep_segment}} = (($self->{_size}->{$new_nodes->{$thr}->{_wsrep_segment}}|| 0) +1);
+			$processed_nodes->{$new_nodes->{$thr}->{_ip}}=$self->{_size}->{$new_nodes->{$thr}->{_wsrep_segment}};
+			#print  $self->{_size}->{$new_nodes->{$key}->{_wsrep_segment}}." segment " .$new_nodes->{$key}->{_wsrep_segment} ."\n"
+		    }
+		    #checks for ONLINE writer(s)
+		    if($new_nodes->{$thr}->{_read_only} eq 0
+		       && $new_nodes->{$thr}->{_proxy_status} eq "ONLINE"){
+			$self->{_haswriter} = 1 ;
+		    }
                     #print "  - Results for thread $tid:\n";
                     #print "  - Thread $tid has been joined\n";
                 }
@@ -366,17 +403,18 @@ exit(0);
         $self->{_nodes} = $new_nodes;
         $run_milliseconds = (gettimeofday() -$start ) *1000;
 	
-	foreach my $key (sort keys $new_nodes){
-	    if($new_nodes->{$key}->{_process_status} == 1){
-		print $new_nodes->{$key}->{_ip}." Processed \n";
+	if($debug){
+	    foreach my $key (sort keys $new_nodes){
+		if($new_nodes->{$key}->{_process_status} == 1){
+		    print $new_nodes->{$key}->{_ip}.":".$new_nodes->{$key}->{_hostgroups}." Processed \n";
+		}
+		else{
+		    print $new_nodes->{$key}->{_ip}.":".$new_nodes->{$key}->{_hostgroups}." NOT Processed\n";
+		}
 	    }
-	    else{
-		print $new_nodes->{$key}->{_ip}." NOT Processed\n";
-	    }
-	}
+            
+	}        
         print "done $run_milliseconds\n";
-        
-        
     }
     
     sub get_node_info($$){
@@ -388,95 +426,21 @@ exit(0);
         return $node;
         
     }
-
-    #sub setValue{
-    #    my ( $self, $TempValue) = @_;
-    #    if(!defined $self->{_previous} && !defined  $self->{_current}){
-    #        $self->{_previous} = $TempValue;
-    #        $self->{_current} = $TempValue;
-    #        
-    #    }
-    #    else{
-    #        $self->{_previous} = $self->{_current};
-    #        $self->{_current} = $TempValue;       
-    #    }
-    #    
-    #    if( defined  $self->{_max}){
-    #        if ($self->{_max} =~ /^\d+?$/  && $self->{_current} =~ /^\d+?$/) {
-    #           $self->{_max} = ($self->{_current} > $self->{_max})?$self->{_current}:$self->{_max};
-    #        }
-    #    }
-    #    else
-    #    {
-    #         $self->{_max} = $self->{_current};
-    #    }
-    #    
-    #    if( defined  $self->{_min}){
-    #        if ($self->{_min} =~ /^\d+?$/  && $self->{_current} =~ /^\d+?$/)  {
-    #            $self->{_min} = ($self->{_current} < $self->{_min})?$self->{_current}:$self->{_min};
-    #        }
-    #    }
-    #    else
-    #    {
-    #         $self->{_min} = $self->{_current};
-    #    }
-    #    
-    #    if(defined $self->{_calculated} && $self->{_calculated} > 0 ){
-    #        #DEBUG
-    #        #if($self->{name} eq "innodb_IBmergedinsert"){
-    #        #print $self->{name}."\n";
-    #        #print $self->{_current}."\n";
-    #        #print $self->{_previous}."\n";
-    #        #my $aa =  ($self->{_current} - $self->{_previous});
-    #        #print $aa."\n";
-    #        #}
-    #        if($self->{_current}  > 0){
-    #            $self->{_relative} = ( $self->{_current} - $self->{_previous});
-    #        }
-    #        else{
-    #            $self->{_relative} = $self->{_current};
-    #        }
-    #    }
-    #    else
-    #    {
-    #        $self->{_relative} = ( $self->{_current});
-    #        
-    #    }
-    #    
-    #    return;
-    #}
-
     
 }
 
-
-
-#status
-#wsrep_connected   ON
-#wsrep_desync_count  = 0
-#wsrep_local_recv_queue
-#wsrep_local_state = 4
-#wsrep_ready = ON
-#WSREP_CLUSTER_STATUS =Primary
-#WSREP_CLUSTER_SIZE = 5
-#
-#variables:
-#wsrep_cluster_name
-#wsrep_desync
-#wsrep_node_name
-#wsrep_reject_queries=none
-#wsrep_sst_donor_rejects_queries=off
-
-
 {
     package GaleraNode;
-        
+    #Node Proxy States
+
+
+    
     sub new {
         my $class = shift;
         my $SQL_get_variables="SHOW GLOBAL VARIABLES LIKE 'wsrep%";
         my $SQL_get_status="SHOW GLOBAL VARIABLES LIKE 'wsrep%";
         my $SQL_get_read_only="SHOW GLOBAL VARIABLES LIKE 'read_only'";  
-        
+
         # Variable section for  looping values
         #Generalize object for now I have conceptualize as:
         # Node (generic container)
@@ -518,6 +482,12 @@ exit(0);
             _weight => 1,
             _cluster_status    => undef,
             _cluster_size  => 0,
+	    _MOVE_UP_WRITER => 1000,
+	    _MOVE_UP_READ_ONLY => 1010,
+	    _MOVE_DOWN_OFFLINE => 3001,
+	    _MOVE_DOWN_READ_ONLY => 3010 ,
+	    _MOVE_SWAP_READER_TO_WRITER => 5001,
+	    _MOVE_SWAP_WRITER_TO_READER => 5010,
 
             
         };
@@ -646,13 +616,13 @@ exit(0);
 
     sub wsrep_provider {
         my ( $self, $wsrep_provider ) = @_;
-        my @array = @{$wsrep_provider};
+        my ( @array)= @{$wsrep_provider} ;
         my %provider_map ;
         foreach my $item (@array){
           my @items = split('\=', $item);
           $provider_map{Utils::trim($items[0])}=$items[1];
         }
-        $self->{_wsrep_provider} = %provider_map;
+        ($self->{_wsrep_provider}) = {%provider_map} ;
         $self->wsrep_segment($provider_map{"gmcast.segment"});
         $self->wsrep_pc_weight($provider_map{"pc.weight"});
         return $self->{_wsrep_provider};
@@ -670,8 +640,8 @@ exit(0);
         $self->{_read_only} = $variables->{read_only};
         $self->{_wsrep_rejectqueries} = $variables->{wsrep_reject_queries};
         $self->{_wsrep_donorrejectqueries} = $variables->{wsrep_sst_donor_rejects_queries};
-        #my ( @provider ) =  split('\;', $variables->{wsrep_provider_options});
-        $self->wsrep_provider([split('\;', $variables->{wsrep_provider_options})]);
+        my ( @provider ) =  split('\;', $variables->{wsrep_provider_options});
+        $self->wsrep_provider( [ @provider]) ;
         $self->{_wsrep_status} = $status->{wsrep_local_state};
         $self->{_wsrep_connected} = $status->{wsrep_connected};
         $self->{_wsrep_desinccount} = $status->{wsrep_desync_count};
@@ -681,6 +651,7 @@ exit(0);
         
         $dbh->disconnect if (!defined $dbh);
 	#sleep 5;
+	
         $self->{_process_status} = 1;
         return $self;
         
@@ -691,7 +662,7 @@ exit(0);
 {
     package ProxySqlNode;
     
-    
+
     sub new {
         my $class = shift;
 
@@ -723,10 +694,17 @@ exit(0);
             _SQL_get_replication_hg=> $SQL_get_rep_hg,
             _dbh_proxy => undef,
             _check_timeout => 100, #timeout in ms
+	    _action_nodes => {},
         };
         bless $self, $class;
         return $self;
         
+    }
+
+    sub action_nodes {
+        my ( $self, $action_nodes ) = @_;
+        $self->{_action_nodes} = $action_nodes if defined($action_nodes);
+        return $self->{_action_nodes};
     }
     
     sub dns {
@@ -819,7 +797,100 @@ exit(0);
         $galera_cluster->debug($debug);
         return $galera_cluster;
     }
+    
+    sub evaluate_nodes{
+	my ($proxynode,$GGalera_cluster)  = @_ ;
+	my ( $nodes ) = $GGalera_cluster->{_nodes};
+	my $action_nodes = undef;
 
+	#Rules:
+	# Set to offline_soft :
+	    #1) any non 4 or 2 state
+	    #2) wsrep_ON=OFF
+	    #3) Node/cluster in non primary
+	    #4) wsrep_reject_queries different from NONE
+	    #5) Donor, node reject queries =1 size of cluster 
+	#Set read-only:
+	    #1) donor node reject queries - 0 size of cluster > 2 of nodes in the same segments more then one writer
+	#swap single writer
+	    #1) Node become donor when no other writer exists in same segment, segment with > 1 node
+		#- remove other node read only
+		#- set new writer weight 1 billion
+		#- set old writer weight 1
+		#- apply standard rules as above for donor
+	    #2) No writer exists
+		# - node with higest galera weight will be elect new writer (read_only remove)
+		# - proxyweigh put 1 billion
+		
+	#Node comes back from offline_soft when (all of them):
+	    # 1) Node state is 4
+#No need of # 2) WSREP_ON=ON
+	    # 3) wsrep_reject_queries = none
+	    # 4) Primary state
+	# Node comes back from read only when (all of them):
+	    # 1) node state is 4
+	    # 2) cluster was not single writer
+	    # 3) cluster do not have a writer
+	    # Actually I am thinking is better to have the check go by steps, as such
+	    # if the node comes back and the cluster do not have a writer
+	    # the next check loop will manage it.
+	    # Check should do a modification only a time.
+	    
+	#do the checks 
+	
+	foreach my $key (sort keys %{$nodes}){
+            if(defined $nodes->{$key} ){
+		#Check major exclusions
+		# 1) wsrep state
+		if($nodes->{$key}->wsrep_status ne 4 && $nodes->{$key}->wsrep_status ne 2){
+		    $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->hostgroups}= $nodes->{$key}->{_MOVE_DOWN_OFFLINE};
+		    next;
+		}
+		#3) Node/cluster in non primary
+		if($nodes->{$key}->cluster_status ne "Primary"){
+		    $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->hostgroups}= $nodes->{$key}->{_MOVE_DOWN_OFFLINE};
+		    next;
+		}		
+		# 4) wsrep_reject_queries=NONE
+		if($nodes->{$key}->wsrep_rejectqueries ne "NONE"){
+		    $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->hostgroups}= $nodes->{$key}->{_MOVE_DOWN_OFFLINE};
+		    next;
+		}
+		#5) Donor, node reject queries =1 size of cluster > 2 of nodes in the same segments
+		if($nodes->{$key}->wsrep_status eq 2 && $nodes->{$key}->wsrep_donorrejectqueries eq "ON"){
+		    $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->hostgroups}= $nodes->{$key}->{_MOVE_DOWN_OFFLINE};
+		    next;
+		}
+		#Set read-only:
+		#1) donor node reject queries - 0 size of cluster > 2 of nodes in the same segments more then one writer
+		#TODO : size must be by segment not global	
+		if(
+		   $nodes->{$key}->wsrep_status eq 2
+		   && $nodes->{$key}->wsrep_donorrejectqueries eq "OFF"
+		   && $GGalera_cluster->{_size}->{$nodes->{$key}->{_wsrep_segment}} > 2
+		   ){
+		    $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->hostgroups}= $nodes->{$key}->{_MOVE_DOWN_READ_ONLY};
+		    next;
+		}
+		#swap single writer
+		    #1) Node become donor when no other writer exists in same segment, segment with > 1 node
+			#- remove other node read only
+			#- set new writer weight 1 billion
+			#- set old writer weight 1
+			#- apply standard rules as above for donor
+		
+		    #2) No writer exists
+			# - node with higest galera weight will be elect new writer (read_only remove)
+			# - proxyweigh put 1 billion
+	    }
+	}
+	$proxynode->action_nodes($action_nodes);
+	print keys $proxynode->action_nodes;
+    }
+    
+    sub push_changes{
+	
+    }
 }
 
 #{
@@ -920,40 +991,6 @@ exit(0);
     }
 
 
-
-    ######################################################################
-    ## get_accounts -- return a hash ref to SHOW GLOBAL VARIABLES output
-    ## $dbh -- a non-null database handle, as returned from get_connection()
-    ##
-    sub get_accounts($) {
-      my $dbh = shift;
-    
-      my %v;
-      my $cmd = "select user,host from mysql.user where user !='' order by 1,2;";
-    
-      my $sth = $dbh->prepare($cmd);
-      $sth->execute();
-      while (my $ref = $sth->fetchrow_hashref()) {
-        my $index = index($ref->{'host'},":");
-        my $n;
-        my $host="";
-        
-        $n = $ref->{'user'};
-        if ($index > 0){ 
-            $n = $ref->{'user'};#."_".substr($ref->{'host'},0,$index);
-            $n=~ s/[% .]/_/g; 
-        }
-        else
-        {
-            $n = $ref->{'user'};#."_".$ref->{'host'};
-            $n=~ s/[% .]/_/g; 
-         
-        }
-        $v{$n} = 0;
-      }
-      return \%v;
-    }
-    
     ######################################################################
     ## collection functions -- fetch status data from db
     ## get_status -- return a hash ref to SHOW GLOBAL STATUS output
@@ -1043,165 +1080,6 @@ exit(0);
       return \%v;
     }
     
-    ##
-    ## get_slave_status -- return a hash ref to SHOW SLAVE STATUS output
-    ##
-    ## $dbh -- a non-null database handle, as returned from get_connection()
-    ##
-    sub get_slave_status($) {
-      my $dbh = shift;
-      
-      my $cmd = "show slave status";
-      my $sth = $dbh->prepare($cmd);
-      $sth->execute();
-      my $ref = $sth->fetchrow_hashref();
-      if (!defined($ref)) {
-        # not a slave
-        return undef;
-      }
-      my %v = %$ref;
-    
-      return \%v;
-    }
-    
-    ##
-    ## get_processlist -- return a an array of hash refs
-    ##                    containing SHOW FULL PROCESSLIST output
-    ##
-    ## $dbh -- a non-null database handle, as returned from get_connection()
-    ##
-    sub get_processlist($) {
-      my $dbh = shift;
-      
-      my @v;
-      my $count = 0;
-      my $cmd = "show full processlist";
-    
-      my $sth = $dbh->prepare($cmd);
-      $sth->execute();
-      while (my $ref = $sth->fetchrow_hashref()) {
-        my %line = map { defined($_)?$_:"(null)" } %$ref;
-        $v[$count++] = \%line;
-      }
-    
-      return \@v;
-    }
-
-    
-    # ============================================================================
-    # Subtract two big integers as accurately as possible with reasonable effort.
-    # 
-    # ============================================================================
-    sub big_sub ($$) {
-        
-        my $left = shift;
-        my $right = shift;
-       # my $force = shift;
-       
-        if($left=~ m/.[ABCDF]/){
-            $left = hex($left);
-            return $left;
-       }
-    
-        if($right=~ m/.[ABCDF]/){
-            $right = hex($right);
-            return $right;
-       }
-       
-       if ( !defined $left  ) { $left = 0; }
-       if ( !defined $right ) { $right = 0; }
-       
-       #return ()
-        my $x = Math::BigInt->new($left);
-        my $xint = $x->bsub($right);
-        return $xint->{value}[0];
-    }
-    
-    # ============================================================================
-    # Returns a bigint from two ulint or a single hex number.  
-    # ============================================================================
-    sub make_bigint ($$) {
-       my $hi = shift;
-       my $lo = shift;
-       if($hi=~ m/.[ABCDF]/){
-            $hi = hex($hi);
-            return $hi;
-       }
-       
-       
-       if (defined $lo ) {
-          # Assume it is a hex string representation.
-          my $x = Math::BigInt->new($hi);
-          my $xint = $x->as_number;
-          return $xint->{value}[0];
-       }
-       else {
-          $hi = $hi ? $hi : '0'; # Handle empty-string or whatnot
-          $lo = $lo ? $lo : '0';
-          return big_add(big_multiply($hi, 4294967296), $lo);
-       }
-    }
-    
-    # ============================================================================
-    # Multiply two big integers together as accurately as possible with reasonable
-    # effort. 
-    # ============================================================================
-    sub big_multiply ($$$) {
-       my $left = shift;
-       my $right = shift;
-       my $force = shift;
-       
-        if($left=~ m/.[ABCDF]/){
-            $left = hex($left);
-            return $left;
-       }
-    
-        if($right=~ m/.[ABCDF]/){
-            $right = hex($right);
-            return $right;
-       }
-       
-       
-       my $x = Math::BigInt->new($left);
-       my $bx = $x->bmul($right);
-       return $bx->{value}[0];
-      
-     
-    }
-    # ============================================================================
-    # Add two big integers together as accurately as possible with reasonable
-    # effort.  
-    # ============================================================================
-    sub big_add ($$$) {
-        my $left = shift;
-        my $right = shift;
-        my $force = shift;
-        
-         if($left=~ m/.[ABCDF]/){
-            $left = hex($left);
-            return $left;
-       }
-    
-        if($right=~ m/.[ABCDF]/){
-            $right = hex($right);
-            return $right;
-       }
-        
-       if ( !defined $left )
-          {
-             $left = 0;
-        }
-       if ( !defined $right) { $right = 0; }
-      
-        my $x = Math::BigInt->new($left);
-        my $bx = $x->badd($right);
-         return $bx->{value}[0];
-     
-       
-     
-    }
-    
-    
     # ============================================================================
     # Safely increments a value that might be null.
     # ============================================================================
@@ -1240,7 +1118,8 @@ exit(0);
         }
         return $acc;
     }
-    
+
+    #prit all environmnt variables    
     sub debugEnv{
         my $key = keys %ENV;
         foreach $key (sort(keys %ENV)) {
@@ -1251,9 +1130,11 @@ exit(0);
     
     }
     
+    #trim a string
     sub  trim {
         my $s = shift;
         $s =~ s/^\s+|\s+$//g;
         return $s
     };
+
 }
