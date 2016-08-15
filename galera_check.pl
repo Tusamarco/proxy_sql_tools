@@ -66,15 +66,19 @@ sub get_proxy($$$){
 ## get_cluster return a cluster object poulate with the whole info including the 
 ## $dbh -- a non-null database handle, as returned from get_connection()
 ##
-sub get_cluster($$) {
-  my $dbh = shift;
-  my $debug = shift;
-  
-  my $cluster=Galeracluster->new();
-  @HGIds=split('\,', $Param->{hostgroups});
-  $cluster->get_nodes($dbh,$debug);
-  return \$cluster;
-}
+#sub get_cluster($$) {
+#  my $dbh = shift;
+#  my $debug = shift;
+#  
+#  my $cluster=Galeracluster->new();
+#  @HGIds=split('\,', $Param->{hostgroups});
+#  foreach my $hg (@HGIds){
+#    push(@HGIds,($hg + 9000));
+#  }
+#  
+#  $cluster->get_nodes($dbh,$debug);
+#  return \$cluster;
+#}
 
 
 
@@ -147,7 +151,10 @@ if(defined $Param->{password}){
 #============================================================================
 # Execution
 #============================================================================
-
+while(1){
+    
+        my $start = gettimeofday();    
+    
 my $proxy_sql_node = get_proxy($dsn, $user, $pass);
 $proxy_sql_node->hostgroups($Param->{hostgroups}) ;
 
@@ -173,6 +180,16 @@ if(defined  $galera_cluster->nodes){
     
 }
 
+if(defined $proxy_sql_node->action_nodes){
+    $proxy_sql_node->push_changes;
+}
+
+        my $end = gettimeofday();
+    print "\n Total Time:".($end - $start) * 1000; 
+
+    sleep 2;
+    
+}
 
 #my $dbh = get_connection($dsn, $user, $pass,' ');
 
@@ -314,7 +331,7 @@ exit(0);
         my ( $self) = @_;
         
         my $dbh = $self->{_dbh_proxy};
-        my $cmd =$self->{_SQL_get_mysql_servers}." AND hostgroup_id IN (".$self->hostgroups.") order by hostgroup_id, hostname";
+        my $cmd =$self->{_SQL_get_mysql_servers}." AND hostgroup_id IN (".join(",",sort keys($self->hostgroups)).") order by hostgroup_id, hostname";
         my $sth = $dbh->prepare($cmd);
         $sth->execute();
         my $i = 1;
@@ -323,6 +340,7 @@ exit(0);
             $node->dns("DBI:mysql:host=".$ref->{hostname}.";port=".$ref->{port});
             $node->hostgroups($ref->{hostgroup_id});
             $node->ip($ref->{hostname});
+	    $node->port($ref->{port});
             $node->weight($ref->{weight});
             $node->user($self->{_monitor_user});
             $node->password($self->{_monitor_password});
@@ -383,10 +401,13 @@ exit(0);
 		    if(!exists $processed_nodes->{$new_nodes->{$thr}->{_ip}} ){
 			$self->{_size}->{$new_nodes->{$thr}->{_wsrep_segment}} = (($self->{_size}->{$new_nodes->{$thr}->{_wsrep_segment}}|| 0) +1);
 			$processed_nodes->{$new_nodes->{$thr}->{_ip}}=$self->{_size}->{$new_nodes->{$thr}->{_wsrep_segment}};
-			#print  $self->{_size}->{$new_nodes->{$key}->{_wsrep_segment}}." segment " .$new_nodes->{$key}->{_wsrep_segment} ."\n"
+		    }
+		    #assign size to HG
+		    if($new_nodes->{$thr}->{_proxy_status} ne "OFFLINE_SOFT"){
+			$self->{_hostgroups}->{$new_nodes->{$thr}->{_hostgroups}}->{_size} = ($self->{_hostgroups}->{$new_nodes->{$thr}->{_hostgroups}}->{_size}) + 1;
 		    }
 		    #checks for ONLINE writer(s)
-		    if($new_nodes->{$thr}->{_read_only} eq 0
+		    if($new_nodes->{$thr}->{_read_only} eq "OFF"
 		       && $new_nodes->{$thr}->{_proxy_status} eq "ONLINE"){
 			$self->{_haswriter} = 1 ;
 		    }
@@ -459,6 +480,7 @@ exit(0);
         my $self = {
             _name      => undef,
             _ip  => undef,
+	    _port => 3306,
             _hostgroups => undef,
             _clustername    => undef,
             _read_only    => undef,
@@ -482,12 +504,12 @@ exit(0);
             _weight => 1,
             _cluster_status    => undef,
             _cluster_size  => 0,
-	    _MOVE_UP_WRITER => 1000,
-	    _MOVE_UP_READ_ONLY => 1010,
-	    _MOVE_DOWN_OFFLINE => 3001,
-	    _MOVE_DOWN_READ_ONLY => 3010 ,
-	    _MOVE_SWAP_READER_TO_WRITER => 5001,
-	    _MOVE_SWAP_WRITER_TO_READER => 5010,
+	    _MOVE_UP_OFFLINE => 1000, #move a node from OFFLINE_SOFT 
+	    _MOVE_UP_HG_CHANGE => 1010, #move a node from HG 9000 (plus hg id) to reader HG 
+	    _MOVE_DOWN_HG_CHANGE => 3001, #move a node from original HG to maintenance HG (HG 9000 (plus hg id) ) kill all existing connections
+	    _MOVE_DOWN_OFFLINE => 3010 , # move node to OFFLINE_soft keep existign connections, no new connections.
+	    #_MOVE_SWAP_READER_TO_WRITER => 5001, 
+	    #_MOVE_SWAP_WRITER_TO_READER => 5010,
 
             
         };
@@ -495,6 +517,26 @@ exit(0);
         return $self;
         
     }
+    sub MOVE_UP_OFFLINE {
+        my ( $self) = @_;
+        return $self->{_MOVE_UP_OFFLINE};
+    }
+
+    sub MOVE_UP_HG_CHANGE {
+        my ( $self) = @_;
+        return $self->{_MOVE_UP_HG_CHANGE};
+    }
+    
+    sub MOVE_DOWN_OFFLINE {
+        my ( $self) = @_;
+        return $self->{_MOVE_DOWN_OFFLINE};
+    }
+
+    sub MOVE_DOWN_HG_CHANGE {
+        my ( $self) = @_;
+        return $self->{_MOVE_DOWN_HG_CHANGE};
+    }
+
     sub cluster_status {
         my ( $self, $status ) = @_;
         $self->{_cluster_status} = $status if defined($status);
@@ -546,6 +588,12 @@ exit(0);
         $self->{_ip} = $ip if defined($ip);
         return $self->{_ip};
     }
+    sub port {
+        my ( $self, $port ) = @_;
+        $self->{_port} = $port if defined($port);
+        return $self->{_port};
+    }
+
 
     sub hostgroups {
         my ( $self, $hostgroups ) = @_;
@@ -727,7 +775,24 @@ exit(0);
 
     sub hostgroups {
         my ( $self, $hostgroups ) = @_;
-        $self->{_hostgroups} = $hostgroups if defined($hostgroups);
+	if (defined $hostgroups){
+	    my @HGIds=split('\,', $Param->{hostgroups});
+	    
+	    foreach my $hg (@HGIds){
+		my $proxy_hg = ProxySqlHG->new();
+		my $proxy_hgM = ProxySqlHG->new();
+		my  ($id,$type) = split /:/, $hg;
+		$proxy_hg->id($id);
+		$proxy_hg->type(lc($type));
+		$self->{_hostgroups}->{$id}=($proxy_hg);
+		$proxy_hgM->id(($id + 9000));
+		$proxy_hgM->type("m".lc($type));
+		$self->{_hostgroups}->{$proxy_hgM->id(($id + 9000))}=($proxy_hgM);
+
+	    }
+
+	    
+	}
         return $self->{_hostgroups};
     }
     
@@ -789,7 +854,8 @@ exit(0);
     sub get_galera_cluster(){
         my ( $self, $port ) = @_;
         my $galera_cluster = Galeracluster->new();
-        $galera_cluster->hostgroups($self->hostgroups);
+        
+	$galera_cluster->hostgroups($self->hostgroups);
         $galera_cluster->dbh_proxy($self->dbh_proxy);
         $galera_cluster->check_timeout($self->check_timeout);
         $galera_cluster->monitor_user($self->monitor_user);
@@ -804,144 +870,245 @@ exit(0);
 	my $action_nodes = undef;
 
 	#Rules:
+	#Gran casino con il prox.
+	#NOn si puo usare il read only e il OFFLINE_SOFT mantiene le connessioni aperte quindi non va bene con situazioni dove il node reject queries
+	#Ma non reject le connessioni.
+	#In quel caso bisogna fare un move di HG
+	#muovendo HG il nodo viene disconnesso.
+	
+	#Quindi ricapitolando
+	#1)read-only diventa offline_soft
+	#2) Offline_soft con reject diventa move HG
+	#Chiesto Rene' di avere uno standard tipo mysql_replication_hostgroups che usa Even per W/R e odd per R.
+	#Non so come si potrebbe implementare magari con frazioni. tipo HG 1.5 :)
+	
 	# Set to offline_soft :
-	    #1) any non 4 or 2 state
-	    #2) wsrep_ON=OFF
-	    #3) Node/cluster in non primary
-	    #4) wsrep_reject_queries different from NONE
-	    #5) Donor, node reject queries =1 size of cluster 
+	    #1) any non 4 or 2 state, read only =ON
+	    #1) donor node reject queries - 0 size of cluster > 2 of nodes in the same segments more then one writer, node is NOT read_only
+	# change HG t maintenance HG:
+	    #1) Node/cluster in non primary
+	    #2) wsrep_reject_queries different from NONE
+	    #3) Donor, node reject queries =1 size of cluster 
 	#Set read-only:
-	    #1) donor node reject queries - 0 size of cluster > 2 of nodes in the same segments more then one writer
-	#swap single writer
-	    #1) Node become donor when no other writer exists in same segment, segment with > 1 node
-		#- remove other node read only
-		#- set new writer weight 1 billion
-		#- set old writer weight 1
-		#- apply standard rules as above for donor
-	    #2) No writer exists
-		# - node with higest galera weight will be elect new writer (read_only remove)
-		# - proxyweigh put 1 billion
+	    
+		
+
 		
 	#Node comes back from offline_soft when (all of them):
 	    # 1) Node state is 4
-#No need of # 2) WSREP_ON=ON
 	    # 3) wsrep_reject_queries = none
 	    # 4) Primary state
-	# Node comes back from read only when (all of them):
+	# Node comes back from maintenance HG when (all of them):
 	    # 1) node state is 4
-	    # 2) cluster was not single writer
-	    # 3) cluster do not have a writer
-	    # Actually I am thinking is better to have the check go by steps, as such
-	    # if the node comes back and the cluster do not have a writer
-	    # the next check loop will manage it.
-	    # Check should do a modification only a time.
+	    # 3) wsrep_reject_queries = none
+	    # 4) Primary state
 	    
 	#do the checks 
-	
 	foreach my $key (sort keys %{$nodes}){
             if(defined $nodes->{$key} ){
-		#Check major exclusions
-		# 1) wsrep state
-		if($nodes->{$key}->wsrep_status ne 4 && $nodes->{$key}->wsrep_status ne 2){
-		    $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->hostgroups}= $nodes->{$key}->{_MOVE_DOWN_OFFLINE};
-		    next;
-		}
-		#3) Node/cluster in non primary
-		if($nodes->{$key}->cluster_status ne "Primary"){
-		    $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->hostgroups}= $nodes->{$key}->{_MOVE_DOWN_OFFLINE};
-		    next;
-		}		
-		# 4) wsrep_reject_queries=NONE
-		if($nodes->{$key}->wsrep_rejectqueries ne "NONE"){
-		    $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->hostgroups}= $nodes->{$key}->{_MOVE_DOWN_OFFLINE};
-		    next;
-		}
-		#5) Donor, node reject queries =1 size of cluster > 2 of nodes in the same segments
-		if($nodes->{$key}->wsrep_status eq 2 && $nodes->{$key}->wsrep_donorrejectqueries eq "ON"){
-		    $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->hostgroups}= $nodes->{$key}->{_MOVE_DOWN_OFFLINE};
-		    next;
-		}
-		#Set read-only:
-		#1) donor node reject queries - 0 size of cluster > 2 of nodes in the same segments more then one writer
-		#TODO : size must be by segment not global	
-		if(
-		   $nodes->{$key}->wsrep_status eq 2
-		   && $nodes->{$key}->wsrep_donorrejectqueries eq "OFF"
-		   && $GGalera_cluster->{_size}->{$nodes->{$key}->{_wsrep_segment}} > 2
-		   ){
-		    $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->hostgroups}= $nodes->{$key}->{_MOVE_DOWN_READ_ONLY};
-		    next;
-		}
-		#swap single writer
-		    #1) Node become donor when no other writer exists in same segment, segment with > 1 node
-			#- remove other node read only
-			#- set new writer weight 1 billion
-			#- set old writer weight 1
-			#- apply standard rules as above for donor
 		
-		    #2) No writer exists
-			# - node with higest galera weight will be elect new writer (read_only remove)
-			# - proxyweigh put 1 billion
+		#only if node has HG that is not maintennce it vcan evaluate to be put down in some way
+		if($nodes->{$key}->{_hostgroup} < 9000){
+		    #Check major exclusions
+		    # 1) wsrep state
+		    # 2) Node is read only
+		    # 3) at least another node in the HG 
+
+		    if( $nodes->{$key}->wsrep_status == 2
+			&& $nodes->{$key}->read_only eq "ON"
+			&& ($GGalera_cluster->{_hostgroups}->{$nodes->{$key}->{_hostgroups}}->{_size} > 1
+			    || $GGalera_cluster->{_main_segment} != {$nodes->{$key}->{_wsrep_segment}}
+			    )
+			&& $nodes->{$key}->proxy_status ne "OFFLINE_SOFT"
+			){
+			$action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_OFFLINE}}= $nodes->{$key};
+			next;
+		    }
+
+
+		    if( $nodes->{$key}->wsrep_status ne 4
+			&& $nodes->{$key}->wsrep_status ne 2){
+			$action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_HG_CHANGE}}= $nodes->{$key};
+			next;
+		    }
+
+		    #3) Node/cluster in non primary
+		    if($nodes->{$key}->cluster_status ne "Primary"){
+			$action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_HG_CHANGE}}= $nodes->{$key};
+			next;
+		    }		
+		    # 4) wsrep_reject_queries=NONE
+		    if($nodes->{$key}->wsrep_rejectqueries ne "NONE"){
+			$action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_HG_CHANGE}}= $nodes->{$key};
+			next;
+		    }
+		    #5) Donor, node reject queries =1 size of cluster > 2 of nodes in the same segments
+		    if($nodes->{$key}->wsrep_status eq 2
+		       && $nodes->{$key}->wsrep_donorrejectqueries eq "ON"){
+			$action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_HG_CHANGE}}= $nodes->{$key};
+			next;
+		    }
+		    #Set OFFLINE_SOFT a writer: 
+		    #1) donor node reject queries - 0
+		    #2)size of cluster > 2 of nodes in the same segments
+		    #3) more then one writer in the same HG 
+		    
+		    if(
+		       $nodes->{$key}->wsrep_status eq 2
+		       && $nodes->{$key}->read_only eq "OFF"
+		       && $nodes->{$key}->wsrep_donorrejectqueries eq "OFF"
+		       && $GGalera_cluster->{_size}->{$nodes->{$key}->{_wsrep_segment}} > 2
+		       && $GGalera_cluster->{_hostgroups}->{$nodes->{$key}->{_hostgroups}}->{_size} > 1
+		       && $nodes->{$key}->proxy_status ne "OFFLINE_SOFT"
+		       ){
+			$action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_OFFLINE}}= $nodes->{$key};
+			#$action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_READ_ONLY}}= $nodes->{$key};
+			next;
+		    }
+		}    
+		#Node comes back from offline_soft when (all of them):
+		# 1) Node state is 4
+		# 3) wsrep_reject_queries = none
+		# 4) Primary state
+
+		if($nodes->{$key}->wsrep_status eq 4
+		   && $nodes->{$key}->proxy_status eq "OFFLINE_SOFT"
+		   && $nodes->{$key}->wsrep_rejectqueries eq "NONE"
+		   &&$nodes->{$key}->cluster_status eq "Primary"
+		   && $nodes->{$key}->hostgroups < 9000
+		   ){
+		    $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_UP_OFFLINE}}= $nodes->{$key};
+		    next;
+		}
+		
+		# Node comes back from maintenance HG when (all of them):
+		# 1) node state is 4
+		# 3) wsrep_reject_queries = none
+		# 4) Primary state
+		if($nodes->{$key}->wsrep_status eq 4
+		   && $nodes->{$key}->wsrep_rejectqueries eq "NONE"
+		   && $nodes->{$key}->cluster_status eq "Primary"
+		   && $nodes->{$key}->hostgroups >= 9000
+		   ){
+			$action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_UP_HG_CHANGE}}= $nodes->{$key};
+			next;
+		}
+
 	    }
 	}
 	$proxynode->action_nodes($action_nodes);
-	print keys $proxynode->action_nodes;
     }
     
     sub push_changes{
+	my ($proxynode)  = @_ ;
+	my $node = GaleraNode->new();
+	my $SQL_command="";
+	
+	
+	foreach my $key (sort keys %{$proxynode->{_action_nodes}}){
+	    my ($host,  $port, $hg, $action) = split /s*;\s*/, $key;
+	    SWITCH: {
+                if ($action == $node->MOVE_DOWN_OFFLINE) { $proxynode->move_node_offline($key,$proxynode->{_action_nodes}->{$key}); last SWITCH; }
+                if ($action == $node->MOVE_DOWN_HG_CHANGE) { $proxynode->move_node_down_hg_changey($key,$proxynode->{_action_nodes}->{$key}); last SWITCH; }
+                if ($action == $node->MOVE_UP_OFFLINE) { $proxynode->move_node_up_from_offline($key,$proxynode->{_action_nodes}->{$key}); last SWITCH; }
+		if ($action == $node->MOVE_UP_HG_CHANGE) { $proxynode->move_node_up_from_hg_change($key,$proxynode->{_action_nodes}->{$key}); last SWITCH; }
+            }
+	    
+	}
+    }
+    
+
+    sub move_node_offline{
+	#this action involve only the proxy so we will 
+	my ($proxynode, $key,$node) = @_;
+	
+	my ($host,  $port, $hg,$action) = split /s*;\s*/, $key;
+	my $proxy_sql_command= " UPDATE mysql_servers SET status='OFFLINE_SOFT' WHERE hostgroup_id=$hg AND hostname='$host' AND port='$port'";
+	$proxynode->{_dbh_proxy}->do($proxy_sql_command) or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
+	$proxynode->{_dbh_proxy}->do("LOAD MYSQL SERVERS TO RUNTIME") or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
+	print $host . "  " . $proxy_sql_command;
 	
     }
+
+    #move a node to a maintenance HG ((9000 + HG id))
+    sub move_node_down_hg_changey{
+	my ($proxynode, $key,$node) = @_;
+	
+	my ($host,  $port, $hg,$action) = split /s*;\s*/, $key;
+	if($hg > 9000) {return 1;}
+	
+	my $node_sql_command = "SET GLOBAL READ_ONLY=1;";
+	my $proxy_sql_command =" UPDATE mysql_servers SET hostgroup_id=".(9000 + $hg)." WHERE hostgroup_id=$hg AND hostname='$host' AND port='$port'";
+	$proxynode->{_dbh_proxy}->do($proxy_sql_command) or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
+	$proxynode->{_dbh_proxy}->do("LOAD MYSQL SERVERS TO RUNTIME") or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
+
+	print $host . "  " . $proxy_sql_command;
+	
+    }
+
+    #Bring back a node that is just offline
+    sub move_node_up_from_offline{
+	
+	my ($proxynode, $key,$node) = @_;
+	
+	my ($host,  $port, $hg,$action) = split /s*;\s*/, $key;
+	my $proxy_sql_command= " UPDATE mysql_servers SET status='ONLINE' WHERE hostgroup_id=$hg AND hostname='$host' AND port='$port'";
+	$proxynode->{_dbh_proxy}->do($proxy_sql_command) or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
+	$proxynode->{_dbh_proxy}->do("LOAD MYSQL SERVERS TO RUNTIME") or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
+
+	print $host . "  " . $proxy_sql_command;
+
+	
+    }
+    #move a node back to his original HG ((HG id - 9000))
+    sub move_node_up_from_hg_change{
+	my ($proxynode, $key,$node) = @_;
+	
+	my ($host,  $port, $hg,$action) = split /s*;\s*/, $key;
+	my $node_sql_command = "SET GLOBAL READ_ONLY=1;";
+	my $proxy_sql_command =" UPDATE mysql_servers SET hostgroup_id=".($hg - 9000)." WHERE hostgroup_id=$hg AND hostname='$host' AND port='$port'";
+	$proxynode->{_dbh_proxy}->do($proxy_sql_command) or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
+	$proxynode->{_dbh_proxy}->do("LOAD MYSQL SERVERS TO RUNTIME") or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
+
+	print $host . "  " . $proxy_sql_command;
+	
+    }
+
 }
 
-#{
-#    package ProxySqlHG;
-#    
-#    sub new {
-#        my $class = shift;
-#        # Variable section for  looping values
-#        #Generalize object for now I have conceptualize as:
-#        # HG (generic container)
-#        # HG->{IDW}
-#        # HG->{IDR} 
-#        
-#        my $self = {
-#            _idw  => undef,
-#            _idr  => undef,
-#            _ipsr => undef,
-#            _ipsw => undef,
-#            
-#        };
-#        bless $self, $class;
-#        return $self;
-#        
-#    }
-#    
-#    sub idw {
-#        my ( $self, $idw ) = @_;
-#        $self->{_idw} = $idw if defined($idw);
-#        return $self->{_idw};
-#    }
-#
-#    sub idr {
-#        my ( $self, $idr ) = @_;
-#        $self->{_idr} = $idr if defined($idr);
-#        return $self->{_idr};
-#    }
-#
-#    sub ipsr {
-#        my ( $self, $ipsr ) = @_;
-#        $self->{_ipsr} = $ipsr if defined($ipsr);
-#        return $self->{_ipsr};
-#    }
-#    
-#    sub ipsw{
-#        my ( $self, $ipsw ) = @_;
-#        $self->{_ipsw} = $ipsw if defined($ipsw);
-#        return $self->{_ipsw};
-#    }
-# 
-#
-#}
+{
+    package ProxySqlHG;
+    
+    sub new {
+        my $class = shift;
+        
+        my $self = {
+            _id  => undef, # 
+            _type  => undef, # available types: w writer; r reader ; mw maintance writer; mr maintenance reader
+	    _size => 0,
+        };
+        bless $self, $class;
+        return $self;
+    }
+    
+    sub id {
+        my ( $self, $id ) = @_;
+        $self->{_id} = $id if defined($id);
+        return $self->{_id};
+    }
+
+    sub type {
+        my ( $self, $type ) = @_;
+        $self->{_type} = $type if defined($type);
+        return $self->{_type};
+    }
+    sub size {
+        my ( $self, $size ) = @_;
+        $self->{_size} = $size if defined($size);
+        return $self->{_size};
+    }
+
+}
 
 {
     package Utils;
@@ -966,31 +1133,7 @@ exit(0);
       return $dbh;
     }
     
-    ######################################################################
-    ## collection functions -- fetch datbases from the instance
-    ## get_databases -- return a hash ref to SHOW DATABASES output
-    ## $dbh -- a non-null database handle, as returned from get_connection()
     
-    sub get_databases($) {
-      my $dbh = shift;
-      
-      my @v;
-      my $cmd = "show databases";
-    
-      my $sth = $dbh->prepare($cmd);
-      $sth->execute();
-      my $i = 0;
-      while (my $ref = $sth->fetchrow_hashref()) {
-        
-        $v[$i] = $ref->{'Database'};
-        $i++;
-      }
-    
-        
-      return \@v;
-    }
-
-
     ######################################################################
     ## collection functions -- fetch status data from db
     ## get_status -- return a hash ref to SHOW GLOBAL STATUS output
@@ -1080,44 +1223,6 @@ exit(0);
       return \%v;
     }
     
-    # ============================================================================
-    # Safely increments a value that might be null.
-    # ============================================================================
-    sub increment(\%$$) {
-       my $hash = shift;
-       my $key = shift;
-       my $howmuch = shift;
-        
-       if ( defined $hash->{$key}) {
-          if ($hash->{$key} > 0)
-          {
-            my $value = int($hash->{$key});
-            $hash->{$key} = ($value + $howmuch);
-          }
-          else
-          {
-            $hash->{$key} = ($howmuch);
-          }
-       }
-       else
-       {
-            $hash->{$key} = $howmuch;
-    
-       }
-       return $hash;
-    }
-    
-    # ============================================================================
-    # Sum the content of the array assuming it is numeric 
-    # ============================================================================
-    sub array_sum(@){
-        my @array = shift;
-        my $acc = 0;
-        foreach (@array){
-          $acc += $_;
-        }
-        return $acc;
-    }
 
     #prit all environmnt variables    
     sub debugEnv{
