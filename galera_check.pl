@@ -49,14 +49,16 @@ sub URLEncode {
 }
 
 # return a proxy object
-sub get_proxy($$$){
+sub get_proxy($$$$){
     my $dns = shift;
     my $user = shift;
     my $pass = shift;
+    my $debug = shift;
     my $proxynode = ProxySqlNode->new();
     $proxynode->dns($dns);
     $proxynode->user($user);
     $proxynode->password($pass);
+    $proxynode->debug($debug);
     
     return $proxynode;
     
@@ -88,6 +90,7 @@ sub get_proxy($$$){
 # ============================================================================
 
 $Param->{user}       = '';
+$Param->{log}       = undef ;
 $Param->{password}   = '';
 $Param->{host}       = '';
 $Param->{port}       = 3306;
@@ -126,9 +129,10 @@ if ( defined $Param->{help}) {
 }
 
 die "Option --hostgroups not specified.\n" unless defined($Param->{hostgroups});
-die "Option --host not specified.\n" unless exists $Param->{host};
-die "Option --user not specified.\n" unless exists $Param->{user};
-die "Option --port not specified.\n" unless exists $Param->{port};
+die "Option --host not specified.\n" unless defined $Param->{host};
+die "Option --user not specified.\n" unless defined $Param->{user};
+die "Option --port not specified.\n" unless defined $Param->{port};
+#die "Option --log not specified. We need a place to log what is going on, don't we?\n" unless defined $Param->{log};
 
 
 
@@ -151,11 +155,20 @@ if(defined $Param->{password}){
 #============================================================================
 # Execution
 #============================================================================
-while(1){
-    
-        my $start = gettimeofday();    
-    
-my $proxy_sql_node = get_proxy($dsn, $user, $pass);
+if($Param->{debug} == 1){
+    print "Start process at " . Utils->get_current_time."\n";
+}
+
+if(defined $Param->{log}){
+    open(FH, '>>', 'path_to_your_file') or die "cannot open file";
+    select FH;
+}
+ 
+
+ while(1 == 1){
+my $start = gettimeofday();    
+
+my $proxy_sql_node = get_proxy($dsn, $user, $pass ,$Param->{debug}) ;
 $proxy_sql_node->hostgroups($Param->{hostgroups}) ;
 
 $proxy_sql_node->connect();
@@ -184,9 +197,11 @@ if(defined $proxy_sql_node->action_nodes){
     $proxy_sql_node->push_changes;
 }
 
-        my $end = gettimeofday();
-    print "\n Total Time:".($end - $start) * 1000; 
+    my $end = gettimeofday();
+    print "END EXECUTION Total Time:".($end - $start) * 1000 ."\n"; 
 
+    $proxy_sql_node->disconnect();
+    
     sleep 2;
     
 }
@@ -195,6 +210,11 @@ if(defined $proxy_sql_node->action_nodes){
 
 #my $variables = get_variables($dbh,$debug);
 #my $cluster = get_cluster($dbh,$debug);
+if(defined $Param->{log}){
+close FH;  # in the end
+}
+
+
 
 exit(0);
 
@@ -213,7 +233,7 @@ exit(0);
     
     sub new {
         my $class = shift;
-        my $SQL_get_mysql_servers="SELECT * FROM mysql_servers WHERE status not in ('OFFLINE_HARD','SHUNNED')";
+        my $SQL_get_mysql_servers=" SELECT a.* FROM mysql_servers a join stats_mysql_connection_pool b on a.hostname=b.srv_host and a.port=b.srv_port and a.hostgroup_id=b.hostgroup  WHERE b.status not in ('OFFLINE_HARD','SHUNNED')";;
         
         
         # Variable section for  looping values
@@ -238,7 +258,7 @@ exit(0);
             _SQL_get_mysql_servers => $SQL_get_mysql_servers,
             _hostgroups => undef,
             _dbh_proxy => undef,
-            _debug => undef,
+            _debug => 0,
             _monitor_user => undef,
             _monitor_password => undef,
             _nodes => {},
@@ -346,7 +366,10 @@ exit(0);
             $node->password($self->{_monitor_password});
             $node->proxy_status($ref->{status});
             $self->{_nodes}->{$i++}=$node;
-        }
+	    $node->debug($self->debug);
+	    if($self->debug){print Utils->get_current_time . " Galera cluster node   " . $node->ip.":". $node->port.":HG=".$node->hostgroups."\n"  }
+	}
+	if($self->debug){print Utils->get_current_time . " Galera cluster nodes loaded \n" ; }
     }
     #Processing the nodes in the cluster and identify which node is active and which is to remove
     
@@ -367,6 +390,9 @@ exit(0);
             $irun = 0;
             foreach my $key (sort keys %{$self->{_nodes}}){
                 if(!exists $Threads{$key}){
+		    if($self->debug){print Utils->get_current_time . " Creating new thread to manage server check:".
+				     $self->{_nodes}->{$key}->ip.":".
+				     $self->{_nodes}->{$key}->port.":HG".$self->{_nodes}->{$key}->hostgroups."\n"  }
                     $new_nodes->{$key} =  $self->{_nodes}->{$key};
                     $new_nodes->{$key}->{_process_status} = -1;
                     #  debug senza threads
@@ -388,6 +414,7 @@ exit(0);
                     #print "  - Thread $tid running\n";
                    
                     if($run_milliseconds >  $self->{_check_timeout} ){
+			if($self->debug){print Utils->get_current_time . " [WARNING] Check timeout :   " . $tid."\n"  }	
                        $irun = 0 ; 
                     }
 		    else{
@@ -398,7 +425,8 @@ exit(0);
                     my $tid = $Threads{$thr}->tid;
                     ( $new_nodes->{$thr} ) = $Threads{$thr}->join;
 		    #count the number of nodes by segment
-		    if(!exists $processed_nodes->{$new_nodes->{$thr}->{_ip}} ){
+		    if(($new_nodes->{$thr}->{_process_status} < 0 ||
+		       !exists $processed_nodes->{$new_nodes->{$thr}->{_ip}}) ){
 			$self->{_size}->{$new_nodes->{$thr}->{_wsrep_segment}} = (($self->{_size}->{$new_nodes->{$thr}->{_wsrep_segment}}|| 0) +1);
 			$processed_nodes->{$new_nodes->{$thr}->{_ip}}=$self->{_size}->{$new_nodes->{$thr}->{_wsrep_segment}};
 		    }
@@ -407,22 +435,24 @@ exit(0);
 			$self->{_hostgroups}->{$new_nodes->{$thr}->{_hostgroups}}->{_size} = ($self->{_hostgroups}->{$new_nodes->{$thr}->{_hostgroups}}->{_size}) + 1;
 		    }
 		    #checks for ONLINE writer(s)
-		    if($new_nodes->{$thr}->{_read_only} eq "OFF"
+		    if(defined $new_nodes->{$thr}->{_read_only}
+		       && $new_nodes->{$thr}->{_read_only} eq "OFF"
 		       && $new_nodes->{$thr}->{_proxy_status} eq "ONLINE"){
 			$self->{_haswriter} = 1 ;
 		    }
+		    if($self->debug){print Utils->get_current_time . " Thread joined :   " . $tid."\n"  }	
                     #print "  - Results for thread $tid:\n";
                     #print "  - Thread $tid has been joined\n";
                 }
-                print ".";
+                #print ".";
             }
 	    # a qui
-            $run_milliseconds = (gettimeofday() -$start ) *1000;
+            if($self->debug){$run_milliseconds = (gettimeofday() -$start ) *1000};
             #sleep for a time equal to the half of the timeout to save cpu cicle
             #usleep(($self->{_check_timeout} * 1000)/2);
         }
         $self->{_nodes} = $new_nodes;
-        $run_milliseconds = (gettimeofday() -$start ) *1000;
+	if($self->debug){$run_milliseconds = (gettimeofday() -$start ) *1000};
 	
 	if($debug){
 	    foreach my $key (sort keys $new_nodes){
@@ -434,8 +464,9 @@ exit(0);
 		}
 	    }
             
-	}        
-        print "done $run_milliseconds\n";
+	}
+	if($self->debug){print Utils->get_current_time . " Multi Thread execution done in :   " . $run_milliseconds. "(ms) \n"  }	
+    
     }
     
     sub get_node_info($$){
@@ -444,7 +475,8 @@ exit(0);
         my $nodes =shift;
         my ( $node ) = $self->{_nodes}->{$key};
         $node->get_node_info();
-        return $node;
+	
+	return $node;
         
     }
     
@@ -499,11 +531,13 @@ exit(0);
             _dns  => undef,
             _user => undef,
             _password => undef,
+	    _debug => 0,
             _port => undef,
             _proxy_status    => undef,
             _weight => 1,
             _cluster_status    => undef,
             _cluster_size  => 0,
+	    _process_status => -1, 
 	    _MOVE_UP_OFFLINE => 1000, #move a node from OFFLINE_SOFT 
 	    _MOVE_UP_HG_CHANGE => 1010, #move a node from HG 9000 (plus hg id) to reader HG 
 	    _MOVE_DOWN_HG_CHANGE => 3001, #move a node from original HG to maintenance HG (HG 9000 (plus hg id) ) kill all existing connections
@@ -517,6 +551,18 @@ exit(0);
         return $self;
         
     }
+    sub process_status {
+        my ( $self, $process_status ) = @_;
+        $self->{_process_status} = $process_status if defined($process_status);
+        return $self->{_process_status};
+    }
+
+    sub debug{
+        my ( $self, $debug ) = @_;
+        $self->{_debug} = $debug if defined($debug);
+        return $self->{_debug};
+    }
+
     sub MOVE_UP_OFFLINE {
         my ( $self) = @_;
         return $self->{_MOVE_UP_OFFLINE};
@@ -678,8 +724,17 @@ exit(0);
 
     sub get_node_info($$){
         my ( $self ) = @_;
-        #print $self->{_ip}."\n";
+        
+	if($self->debug){print Utils->get_current_time . " Node check START "
+	    .$self->{_ip}
+	    .":".$self->{_port}
+	    .":HG".$self->{_hostgroups}
+	    ."\n"  ;}	
+	
         my $dbh = Utils::get_connection($self->{_dns},$self->{_user},$self->{_password},' ');
+	if(!defined $dbh){
+	    return undef;
+	}
         my $variables = Utils::get_variables($dbh,0);
         my $status = Utils::get_status_by_name($dbh,0,"wsrep_%");
         
@@ -701,7 +756,13 @@ exit(0);
 	#sleep 5;
 	
         $self->{_process_status} = 1;
-        return $self;
+	if($self->debug){print Utils->get_current_time . " Node check END "
+	    .$self->{_ip}
+	    .":".$self->{_port}
+	    .":HG".$self->{_hostgroups}
+	    ."\n"  ;}	
+
+	return $self;
         
     }
     
@@ -748,6 +809,11 @@ exit(0);
         return $self;
         
     }
+    sub debug{
+        my ( $self, $debug ) = @_;
+        $self->{_debug} = $debug if defined($debug);
+        return $self->{_debug};
+    }
 
     sub action_nodes {
         my ( $self, $action_nodes ) = @_;
@@ -788,7 +854,7 @@ exit(0);
 		$proxy_hgM->id(($id + 9000));
 		$proxy_hgM->type("m".lc($type));
 		$self->{_hostgroups}->{$proxy_hgM->id(($id + 9000))}=($proxy_hgM);
-
+		if($self->debug){print Utils->get_current_time . " Inizializing hostgroup " . $proxy_hg->id ." ".$proxy_hg->type . "with maintenance HG ". $proxy_hgM->id ." ".$proxy_hgM->type."\n" ; }
 	    }
 
 	    
@@ -848,6 +914,13 @@ exit(0);
             if($ref->{'name'} eq 'mysql-monitor_read_only_timeout' ) {$self->{_check_timeout} = $ref->{'value'};}
             
         }
+	if($self->debug){print Utils->get_current_time . " Connecting to ProxySQL " . $self->{_dns}. "\n" ; }
+        
+    }
+    sub disconnect{
+        my ( $self, $port ) = @_;
+        $self->{_dbh_proxy}->disconnect;
+	
         
     }
 
@@ -860,7 +933,9 @@ exit(0);
         $galera_cluster->check_timeout($self->check_timeout);
         $galera_cluster->monitor_user($self->monitor_user);
         $galera_cluster->monitor_password($self->monitor_password);
-        $galera_cluster->debug($debug);
+        $galera_cluster->debug($self->debug);
+	
+	if($self->debug){print Utils->get_current_time . " Galera cluster object created  " . caller(3). "\n" ; }
         return $galera_cluster;
     }
     
@@ -903,12 +978,14 @@ exit(0);
 	    # 3) wsrep_reject_queries = none
 	    # 4) Primary state
 	    
-	#do the checks 
+	#do the checks
+	if($proxynode->debug){print Utils->get_current_time . " Evaluate nodes state ".caller(3)."\n"  }	
 	foreach my $key (sort keys %{$nodes}){
             if(defined $nodes->{$key} ){
 		
 		#only if node has HG that is not maintennce it vcan evaluate to be put down in some way
-		if($nodes->{$key}->{_hostgroup} < 9000){
+		if($nodes->{$key}->{_hostgroups} < 9000
+		   && $nodes->{$key}->{_process_status} > 0){
 		    #Check major exclusions
 		    # 1) wsrep state
 		    # 2) Node is read only
@@ -922,6 +999,9 @@ exit(0);
 			&& $nodes->{$key}->proxy_status ne "OFFLINE_SOFT"
 			){
 			$action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_OFFLINE}}= $nodes->{$key};
+			if($proxynode->debug){print Utils->get_current_time . " Evaluate nodes state "
+			    .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_OFFLINE}
+			    ."\n"  }	
 			next;
 		    }
 
@@ -929,23 +1009,38 @@ exit(0);
 		    if( $nodes->{$key}->wsrep_status ne 4
 			&& $nodes->{$key}->wsrep_status ne 2){
 			$action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_HG_CHANGE}}= $nodes->{$key};
+			if($proxynode->debug){print Utils->get_current_time . " Evaluate nodes state "
+			    .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_HG_CHANGE}
+			    ."\n"  }	
+
 			next;
 		    }
 
 		    #3) Node/cluster in non primary
 		    if($nodes->{$key}->cluster_status ne "Primary"){
 			$action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_HG_CHANGE}}= $nodes->{$key};
+			if($proxynode->debug){print Utils->get_current_time . " Evaluate nodes state "
+			    .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_HG_CHANGE}
+			    ."\n"  }	
 			next;
 		    }		
 		    # 4) wsrep_reject_queries=NONE
 		    if($nodes->{$key}->wsrep_rejectqueries ne "NONE"){
 			$action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_HG_CHANGE}}= $nodes->{$key};
+			if($proxynode->debug){print Utils->get_current_time . " Evaluate nodes state "
+			    .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_HG_CHANGE}
+			    ."\n"  }	
+
 			next;
 		    }
 		    #5) Donor, node reject queries =1 size of cluster > 2 of nodes in the same segments
 		    if($nodes->{$key}->wsrep_status eq 2
 		       && $nodes->{$key}->wsrep_donorrejectqueries eq "ON"){
 			$action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_HG_CHANGE}}= $nodes->{$key};
+			if($proxynode->debug){print Utils->get_current_time . " Evaluate nodes state "
+			    .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_HG_CHANGE}
+			    ."\n"  }	
+
 			next;
 		    }
 		    #Set OFFLINE_SOFT a writer: 
@@ -962,7 +1057,10 @@ exit(0);
 		       && $nodes->{$key}->proxy_status ne "OFFLINE_SOFT"
 		       ){
 			$action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_OFFLINE}}= $nodes->{$key};
-			#$action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_READ_ONLY}}= $nodes->{$key};
+			if($proxynode->debug){print Utils->get_current_time . " Evaluate nodes state "
+			    .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_OFFLINE}
+			    ."\n"  }	
+
 			next;
 		    }
 		}    
@@ -978,6 +1076,9 @@ exit(0);
 		   && $nodes->{$key}->hostgroups < 9000
 		   ){
 		    $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_UP_OFFLINE}}= $nodes->{$key};
+			if($proxynode->debug){print Utils->get_current_time . " Evaluate nodes state "
+			    .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_UP_OFFLINE}
+			    ."\n"  }			    
 		    next;
 		}
 		
@@ -991,8 +1092,24 @@ exit(0);
 		   && $nodes->{$key}->hostgroups >= 9000
 		   ){
 			$action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_UP_HG_CHANGE}}= $nodes->{$key};
+			if($proxynode->debug){print Utils->get_current_time . " Evaluate nodes state "
+			    .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_UP_HG_CHANGE}
+			    ."\n"  }			    
 			next;
 		}
+
+		#Special case when a node goes down it goes through several state and the check disable it moving form original group
+		#This is to remove it to his original HG when is not reachable
+		   if($nodes->{$key}->{_process_status} < 0 
+		    && $nodes->{$key}->hostgroups >= 9000
+		   ){
+			$action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_UP_HG_CHANGE}}= $nodes->{$key};
+			if($proxynode->debug){print Utils->get_current_time . " Evaluate nodes state "
+			    .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_UP_HG_CHANGE}
+			    ."\n"  }			    
+			next;
+		}
+
 
 	    }
 	}
@@ -1015,6 +1132,7 @@ exit(0);
             }
 	    
 	}
+	$proxynode->{_action_nodes} = undef;
     }
     
 
@@ -1026,7 +1144,10 @@ exit(0);
 	my $proxy_sql_command= " UPDATE mysql_servers SET status='OFFLINE_SOFT' WHERE hostgroup_id=$hg AND hostname='$host' AND port='$port'";
 	$proxynode->{_dbh_proxy}->do($proxy_sql_command) or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
 	$proxynode->{_dbh_proxy}->do("LOAD MYSQL SERVERS TO RUNTIME") or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
-	print $host . "  " . $proxy_sql_command;
+	
+	if($proxynode->debug){print Utils->get_current_time . " Move node:" .$key
+			    ." SQL:" .$proxy_sql_command
+			    ."\n"  }			    
 	
     }
 
@@ -1041,8 +1162,10 @@ exit(0);
 	my $proxy_sql_command =" UPDATE mysql_servers SET hostgroup_id=".(9000 + $hg)." WHERE hostgroup_id=$hg AND hostname='$host' AND port='$port'";
 	$proxynode->{_dbh_proxy}->do($proxy_sql_command) or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
 	$proxynode->{_dbh_proxy}->do("LOAD MYSQL SERVERS TO RUNTIME") or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
-
-	print $host . "  " . $proxy_sql_command;
+	if($proxynode->debug){print Utils->get_current_time . " Move node:" .$key
+	    ." SQL:" .$proxy_sql_command
+	    ."\n"  }			    
+	
 	
     }
 
@@ -1055,10 +1178,9 @@ exit(0);
 	my $proxy_sql_command= " UPDATE mysql_servers SET status='ONLINE' WHERE hostgroup_id=$hg AND hostname='$host' AND port='$port'";
 	$proxynode->{_dbh_proxy}->do($proxy_sql_command) or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
 	$proxynode->{_dbh_proxy}->do("LOAD MYSQL SERVERS TO RUNTIME") or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
-
-	print $host . "  " . $proxy_sql_command;
-
-	
+	if($proxynode->debug){print Utils->get_current_time . " Move node:" .$key
+	    ." SQL:" .$proxy_sql_command
+	    ."\n"  }			    
     }
     #move a node back to his original HG ((HG id - 9000))
     sub move_node_up_from_hg_change{
@@ -1069,16 +1191,15 @@ exit(0);
 	my $proxy_sql_command =" UPDATE mysql_servers SET hostgroup_id=".($hg - 9000)." WHERE hostgroup_id=$hg AND hostname='$host' AND port='$port'";
 	$proxynode->{_dbh_proxy}->do($proxy_sql_command) or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
 	$proxynode->{_dbh_proxy}->do("LOAD MYSQL SERVERS TO RUNTIME") or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
-
-	print $host . "  " . $proxy_sql_command;
-	
+	if($proxynode->debug){print Utils->get_current_time . " Move node:" .$key
+	    ." SQL:" .$proxy_sql_command
+	    ."\n"  }			    
     }
 
 }
 
 {
     package ProxySqlHG;
-    
     sub new {
         my $class = shift;
         
@@ -1112,6 +1233,7 @@ exit(0);
 
 {
     package Utils;
+    use Time::HiRes qw(gettimeofday);
     #============================================================================
     ## get_connection -- return a valid database connection handle (or die)
     ## $dsn  -- a perl DSN, e.g. "DBI:mysql:host=ltsdbwm1;port=3311"
@@ -1126,8 +1248,9 @@ exit(0);
       my $dbh = DBI->connect($dsn, $user, $pass);
     
       if (!defined($dbh)) {
-        print "$SPACER&red Cannot connect to $dsn as $user\n";
-        die();
+        print Utils->get_current_time ."[ERROR] Cannot connect to $dsn as $user\n";
+#        die();
+	return undef;
       }
       
       return $dbh;
@@ -1223,6 +1346,15 @@ exit(0);
       return \%v;
     }
     
+    #Prrint time from invocation with milliseconds
+    sub get_current_time{
+	use POSIX qw(strftime);
+	my $t = gettimeofday();
+	my $date = strftime "%Y/%m/%d %H:%M:%S", localtime $t;
+	$date .= sprintf ".%03d", ($t-int($t))*1000; # without rounding
+	
+	return $date;
+    }
 
     #prit all environmnt variables    
     sub debugEnv{
