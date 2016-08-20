@@ -1,0 +1,289 @@
+2016/08/16 20:43:52.695 Inizializing hostgroup 500 wwith maintenance HG 9500 mw
+2016/08/16 20:43:52.695 Inizializing hostgroup 501 rwith maintenance HG 9501 mr
+2016/08/16 20:43:52.725 Connecting to ProxySQL DBI:mysql:host=192.168.1.50;port=3310
+2016/08/16 20:43:52.725 Galera cluster object created  
+2016/08/16 20:43:52.728 Galera cluster node   192.168.1.5:3306:HG=500
+2016/08/16 20:43:52.729 Galera cluster node   192.168.1.6:3306:HG=501
+2016/08/16 20:43:52.729 Galera cluster node   192.168.1.7:3306:HG=501
+2016/08/16 20:43:52.729 Galera cluster node   192.168.1.8:3306:HG=501
+2016/08/16 20:43:52.729 Galera cluster node   192.168.1.9:3306:HG=501
+2016/08/16 20:43:52.729 Galera cluster nodes loaded 
+2016/08/16 20:43:52.729 Creating new thread to manage server check:192.168.1.5:3306:HG500
+2016/08/16 20:43:52.757 Creating new thread to manage server check:192.168.1.6:3306:HG501
+2016/08/16 20:43:52.781 Creating new thread to manage server check:192.168.1.7:3306:HG501
+2016/08/16 20:43:52.757 Node check START 192.168.1.5:3306:HG500
+2016/08/16 20:43:52.800 Node check END 192.168.1.5:3306:HG500
+2016/08/16 20:43:52.803 Creating new thread to manage server check:192.168.1.8:3306:HG501
+2016/08/16 20:43:52.781 Node check START 192.168.1.6:3306:HG501
+2016/08/16 20:43:52.821 Node check END 192.168.1.6:3306:HG501
+2016/08/16 20:43:52.826 Creating new thread to manage server check:192.168.1.9:3306:HG501
+2016/08/16 20:43:52.804 Node check START 192.168.1.7:3306:HG501
+2016/08/16 20:43:52.844 Node check END 192.168.1.7:3306:HG501
+2016/08/16 20:43:52.826 Node check START 192.168.1.8:3306:HG501
+2016/08/16 20:43:52.870 Node check END 192.168.1.8:3306:HG501
+2016/08/16 20:43:52.849 Node check START 192.168.1.9:3306:HG501
+2016/08/16 20:43:52.890 Node check END 192.168.1.9:3306:HG501
+2016/08/16 20:43:52.866 Thread joined :   1
+2016/08/16 20:43:52.881 Thread joined :   2
+2016/08/16 20:43:52.896 Thread joined :   3
+2016/08/16 20:43:52.915 Thread joined :   4
+2016/08/16 20:43:52.931 Thread joined :   5
+2016/08/16 20:43:52.931 Multi Thread execution done in :   202.030897140503(ms) 
+2016/08/16 20:43:52.931 Evaluate nodes state 
+END EXECUTION Total Time:237.498044967651
+2016/08/16 20:43:54.935 Inizializing hostgroup 500 wwith maintenance HG 9500 mw
+2016/08/16 20:43:54.935 Inizializing hostgroup 501 rwith maintenance HG 9501 mr
+2016/08/16 20:43:54.946 Connecting to ProxySQL DBI:mysql:host=192.168.1.50;port=3310
+2016/08/16 20:43:54.946 Galera cluster object created  
+2016/08/16 20:43:54.949 Galera cluster node   192.168.1.5:3306:HG=500
+2016/08/16 20:43:54.949 Galera cluster node   192.168.1.6:3306:HG=501
+2016/08/16 20:43:54.949 Galera cluster node   192.168.1.7:3306:HG=501
+2016/08/16 20:43:54.949 Galera cluster node   192.168.1.8:3306:HG=501
+2016/08/16 20:43:54.950 Galera cluster node   192.168.1.9:3306:HG=501
+2016/08/16 20:43:54.950 Galera cluster nodes loaded 
+2016/08/16 20:43:54.950 Creating new thread to manage server check:192.168.1.5:3306:HG500
+2016/08/16 20:43:54.978 Creating new thread to manage server check:192.168.1.6:3306:HG501
+2016/08/16 20:43:55.006 Creating new thread to manage server check:192.168.1.7:3306:HG501
+2016/08/16 20:43:54.978 Node check START 192.168.1.5:3306:HG500
+2016/08/16 20:43:55.013 Node check END 192.168.1.5:3306:HG500
+2016/08/16 20:43:55.029 Creating new thread to manage server check:192.168.1.8:3306:HG501
+2016/08/16 20:43:55.006 Node check START 192.168.1.6:3306:HG501
+2016/08/16 20:43:55.042 Node check END 192.168.1.6:3306:HG501
+2016/08/16 20:43:55.053 Creating new thread to manage server check:192.168.1.9:3306:HG501
+2016/08/16 20:43:55.029 Node check START 192.168.1.7:3306:HG501
+2016/08/16 20:43:55.066 Node check END 192.168.1.7:3306:HG501
+2016/08/16 20:43:55.053 Node check START 192.168.1.8:3306:HG501
+2016/08/16 20:43:55.094 Node check END 192.168.1.8:3306:HG501
+2016/08/16 20:43:55.077 Node check START 192.168.1.9:3306:HG501
+2016/08/16 20:43:55.114 Node check END 192.168.1.9:3306:HG501
+2016/08/16 20:43:55.095 Thread joined :   6
+2016/08/16 20:43:55.110 Thread joined :   7
+2016/08/16 20:43:55.124 Thread joined :   8
+2016/08/16 20:43:55.144 Thread joined :   9
+2016/08/16 20:43:55.163 Thread joined :   10
+2016/08/16 20:43:55.164 Multi Thread execution done in :   213.661909103394(ms) 
+2016/08/16 20:43:55.164 Evaluate nodes state 
+END EXECUTION Total Time:229.423046112061
+2016/08/16 20:43:57.169 Inizializing hostgroup 500 wwith maintenance HG 9500 mw
+2016/08/16 20:43:57.169 Inizializing hostgroup 501 rwith maintenance HG 9501 mr
+2016/08/16 20:43:57.177 Connecting to ProxySQL DBI:mysql:host=192.168.1.50;port=3310
+2016/08/16 20:43:57.178 Galera cluster object created  
+2016/08/16 20:43:57.180 Galera cluster node   192.168.1.5:3306:HG=500
+2016/08/16 20:43:57.180 Galera cluster node   192.168.1.6:3306:HG=501
+2016/08/16 20:43:57.181 Galera cluster node   192.168.1.7:3306:HG=501
+2016/08/16 20:43:57.181 Galera cluster node   192.168.1.8:3306:HG=501
+2016/08/16 20:43:57.181 Galera cluster node   192.168.1.9:3306:HG=501
+2016/08/16 20:43:57.181 Galera cluster nodes loaded 
+2016/08/16 20:43:57.181 Creating new thread to manage server check:192.168.1.5:3306:HG500
+2016/08/16 20:43:57.207 Creating new thread to manage server check:192.168.1.6:3306:HG501
+2016/08/16 20:43:57.231 Creating new thread to manage server check:192.168.1.7:3306:HG501
+2016/08/16 20:43:57.207 Node check START 192.168.1.5:3306:HG500
+2016/08/16 20:43:57.245 Node check END 192.168.1.5:3306:HG500
+2016/08/16 20:43:57.257 Creating new thread to manage server check:192.168.1.8:3306:HG501
+2016/08/16 20:43:57.231 Node check START 192.168.1.6:3306:HG501
+2016/08/16 20:43:57.267 Node check END 192.168.1.6:3306:HG501
+2016/08/16 20:43:57.281 Creating new thread to manage server check:192.168.1.9:3306:HG501
+2016/08/16 20:43:57.257 Node check START 192.168.1.7:3306:HG501
+2016/08/16 20:43:57.293 Node check END 192.168.1.7:3306:HG501
+2016/08/16 20:43:57.281 Node check START 192.168.1.8:3306:HG501
+2016/08/16 20:43:57.324 Node check END 192.168.1.8:3306:HG501
+2016/08/16 20:43:57.304 Node check START 192.168.1.9:3306:HG501
+2016/08/16 20:43:57.346 Node check END 192.168.1.9:3306:HG501
+2016/08/16 20:43:57.322 Thread joined :   11
+2016/08/16 20:43:57.339 Thread joined :   12
+2016/08/16 20:43:57.359 Thread joined :   13
+2016/08/16 20:43:57.380 Thread joined :   14
+2016/08/16 20:43:57.403 Thread joined :   15
+2016/08/16 20:43:57.403 Multi Thread execution done in :   221.658945083618(ms) 
+2016/08/16 20:43:57.403 Evaluate nodes state 
+END EXECUTION Total Time:234.990119934082
+2016/08/16 20:43:59.405 Inizializing hostgroup 500 wwith maintenance HG 9500 mw
+2016/08/16 20:43:59.405 Inizializing hostgroup 501 rwith maintenance HG 9501 mr
+2016/08/16 20:43:59.413 Connecting to ProxySQL DBI:mysql:host=192.168.1.50;port=3310
+2016/08/16 20:43:59.414 Galera cluster object created  
+2016/08/16 20:43:59.416 Galera cluster node   192.168.1.5:3306:HG=500
+2016/08/16 20:43:59.416 Galera cluster node   192.168.1.6:3306:HG=501
+2016/08/16 20:43:59.417 Galera cluster node   192.168.1.7:3306:HG=501
+2016/08/16 20:43:59.417 Galera cluster node   192.168.1.8:3306:HG=501
+2016/08/16 20:43:59.417 Galera cluster node   192.168.1.9:3306:HG=501
+2016/08/16 20:43:59.417 Galera cluster nodes loaded 
+2016/08/16 20:43:59.417 Creating new thread to manage server check:192.168.1.5:3306:HG500
+2016/08/16 20:43:59.443 Creating new thread to manage server check:192.168.1.6:3306:HG501
+2016/08/16 20:43:59.467 Creating new thread to manage server check:192.168.1.7:3306:HG501
+2016/08/16 20:43:59.443 Node check START 192.168.1.5:3306:HG500
+2016/08/16 20:43:59.482 Node check END 192.168.1.5:3306:HG500
+2016/08/16 20:43:59.491 Creating new thread to manage server check:192.168.1.8:3306:HG501
+2016/08/16 20:43:59.467 Node check START 192.168.1.6:3306:HG501
+2016/08/16 20:43:59.504 Node check END 192.168.1.6:3306:HG501
+2016/08/16 20:43:59.515 Creating new thread to manage server check:192.168.1.9:3306:HG501
+2016/08/16 20:43:59.491 Node check START 192.168.1.7:3306:HG501
+2016/08/16 20:43:59.532 Node check END 192.168.1.7:3306:HG501
+2016/08/16 20:43:59.515 Node check START 192.168.1.8:3306:HG501
+2016/08/16 20:43:59.557 Node check END 192.168.1.8:3306:HG501
+2016/08/16 20:43:59.539 Node check START 192.168.1.9:3306:HG501
+2016/08/16 20:43:59.581 Node check END 192.168.1.9:3306:HG501
+2016/08/16 20:43:59.558 Thread joined :   16
+2016/08/16 20:43:59.574 Thread joined :   17
+2016/08/16 20:43:59.592 Thread joined :   18
+2016/08/16 20:43:59.609 Thread joined :   19
+2016/08/16 20:43:59.625 Thread joined :   20
+2016/08/16 20:43:59.625 Multi Thread execution done in :   207.617044448853(ms) 
+2016/08/16 20:43:59.625 Evaluate nodes state 
+END EXECUTION Total Time:220.714092254639
+2016/08/16 20:44:01.630 Inizializing hostgroup 500 wwith maintenance HG 9500 mw
+2016/08/16 20:44:01.630 Inizializing hostgroup 501 rwith maintenance HG 9501 mr
+2016/08/16 20:44:01.643 Connecting to ProxySQL DBI:mysql:host=192.168.1.50;port=3310
+2016/08/16 20:44:01.643 Galera cluster object created  
+2016/08/16 20:44:01.646 Galera cluster node   192.168.1.5:3306:HG=500
+2016/08/16 20:44:01.646 Galera cluster node   192.168.1.6:3306:HG=501
+2016/08/16 20:44:01.646 Galera cluster node   192.168.1.7:3306:HG=501
+2016/08/16 20:44:01.647 Galera cluster node   192.168.1.8:3306:HG=501
+2016/08/16 20:44:01.647 Galera cluster node   192.168.1.9:3306:HG=501
+2016/08/16 20:44:01.647 Galera cluster nodes loaded 
+2016/08/16 20:44:01.647 Creating new thread to manage server check:192.168.1.5:3306:HG500
+2016/08/16 20:44:01.672 Creating new thread to manage server check:192.168.1.6:3306:HG501
+2016/08/16 20:44:01.696 Creating new thread to manage server check:192.168.1.7:3306:HG501
+2016/08/16 20:44:01.672 Node check START 192.168.1.5:3306:HG500
+2016/08/16 20:44:01.709 Node check END 192.168.1.5:3306:HG500
+2016/08/16 20:44:01.722 Creating new thread to manage server check:192.168.1.8:3306:HG501
+2016/08/16 20:44:01.696 Node check START 192.168.1.6:3306:HG501
+2016/08/16 20:44:01.737 Node check END 192.168.1.6:3306:HG501
+2016/08/16 20:44:01.746 Creating new thread to manage server check:192.168.1.9:3306:HG501
+2016/08/16 20:44:01.722 Node check START 192.168.1.7:3306:HG501
+2016/08/16 20:44:01.761 Node check END 192.168.1.7:3306:HG501
+2016/08/16 20:44:01.746 Node check START 192.168.1.8:3306:HG501
+2016/08/16 20:44:01.787 Node check END 192.168.1.8:3306:HG501
+2016/08/16 20:44:01.770 Node check START 192.168.1.9:3306:HG501
+2016/08/16 20:44:01.809 Node check END 192.168.1.9:3306:HG501
+2016/08/16 20:44:01.789 Thread joined :   21
+2016/08/16 20:44:01.807 Thread joined :   22
+2016/08/16 20:44:01.824 Thread joined :   23
+2016/08/16 20:44:01.842 Thread joined :   24
+2016/08/16 20:44:01.862 Thread joined :   25
+2016/08/16 20:44:01.862 Multi Thread execution done in :   214.992046356201(ms) 
+2016/08/16 20:44:01.862 Evaluate nodes state 
+END EXECUTION Total Time:233.632802963257
+2016/08/16 20:44:03.868 Inizializing hostgroup 500 wwith maintenance HG 9500 mw
+2016/08/16 20:44:03.868 Inizializing hostgroup 501 rwith maintenance HG 9501 mr
+2016/08/16 20:44:03.877 Connecting to ProxySQL DBI:mysql:host=192.168.1.50;port=3310
+2016/08/16 20:44:03.878 Galera cluster object created  
+2016/08/16 20:44:03.880 Galera cluster node   192.168.1.5:3306:HG=500
+2016/08/16 20:44:03.881 Galera cluster node   192.168.1.6:3306:HG=501
+2016/08/16 20:44:03.881 Galera cluster node   192.168.1.7:3306:HG=501
+2016/08/16 20:44:03.881 Galera cluster node   192.168.1.8:3306:HG=501
+2016/08/16 20:44:03.881 Galera cluster node   192.168.1.9:3306:HG=501
+2016/08/16 20:44:03.882 Galera cluster nodes loaded 
+2016/08/16 20:44:03.882 Creating new thread to manage server check:192.168.1.5:3306:HG500
+2016/08/16 20:44:03.909 Creating new thread to manage server check:192.168.1.6:3306:HG501
+2016/08/16 20:44:03.931 Creating new thread to manage server check:192.168.1.7:3306:HG501
+2016/08/16 20:44:03.909 Node check START 192.168.1.5:3306:HG500
+2016/08/16 20:44:03.945 Node check END 192.168.1.5:3306:HG500
+2016/08/16 20:44:03.955 Creating new thread to manage server check:192.168.1.8:3306:HG501
+2016/08/16 20:44:03.931 Node check START 192.168.1.6:3306:HG501
+2016/08/16 20:44:03.970 Node check END 192.168.1.6:3306:HG501
+2016/08/16 20:44:03.979 Creating new thread to manage server check:192.168.1.9:3306:HG501
+2016/08/16 20:44:03.955 Node check START 192.168.1.7:3306:HG501
+2016/08/16 20:44:03.994 Node check END 192.168.1.7:3306:HG501
+2016/08/16 20:44:03.979 Node check START 192.168.1.8:3306:HG501
+2016/08/16 20:44:04.022 Node check END 192.168.1.8:3306:HG501
+2016/08/16 20:44:04.003 Node check START 192.168.1.9:3306:HG501
+2016/08/16 20:44:04.045 Node check END 192.168.1.9:3306:HG501
+2016/08/16 20:44:04.022 Thread joined :   26
+2016/08/16 20:44:04.041 Thread joined :   27
+2016/08/16 20:44:04.060 Thread joined :   28
+2016/08/16 20:44:04.078 Thread joined :   29
+2016/08/16 20:44:04.098 Thread joined :   30
+2016/08/16 20:44:04.098 Multi Thread execution done in :   216.578960418701(ms) 
+2016/08/16 20:44:04.099 Evaluate nodes state 
+END EXECUTION Total Time:231.374979019165
+2016/08/16 20:44:06.103 Inizializing hostgroup 500 wwith maintenance HG 9500 mw
+2016/08/16 20:44:06.103 Inizializing hostgroup 501 rwith maintenance HG 9501 mr
+2016/08/16 20:44:06.114 Connecting to ProxySQL DBI:mysql:host=192.168.1.50;port=3310
+2016/08/16 20:44:06.114 Galera cluster object created  
+2016/08/16 20:44:06.116 Galera cluster node   192.168.1.5:3306:HG=500
+2016/08/16 20:44:06.117 Galera cluster node   192.168.1.6:3306:HG=501
+2016/08/16 20:44:06.117 Galera cluster node   192.168.1.7:3306:HG=501
+2016/08/16 20:44:06.117 Galera cluster node   192.168.1.8:3306:HG=501
+2016/08/16 20:44:06.117 Galera cluster node   192.168.1.9:3306:HG=501
+2016/08/16 20:44:06.117 Galera cluster nodes loaded 
+2016/08/16 20:44:06.117 Creating new thread to manage server check:192.168.1.5:3306:HG500
+2016/08/16 20:44:06.139 Creating new thread to manage server check:192.168.1.6:3306:HG501
+2016/08/16 20:44:06.164 Creating new thread to manage server check:192.168.1.7:3306:HG501
+2016/08/16 20:44:06.139 Node check START 192.168.1.5:3306:HG500
+2016/08/16 20:44:06.177 Node check END 192.168.1.5:3306:HG500
+2016/08/16 20:44:06.188 Creating new thread to manage server check:192.168.1.8:3306:HG501
+2016/08/16 20:44:06.164 Node check START 192.168.1.6:3306:HG501
+2016/08/16 20:44:06.202 Node check END 192.168.1.6:3306:HG501
+2016/08/16 20:44:06.212 Creating new thread to manage server check:192.168.1.9:3306:HG501
+2016/08/16 20:44:06.188 Node check START 192.168.1.7:3306:HG501
+2016/08/16 20:44:06.225 Node check END 192.168.1.7:3306:HG501
+2016/08/16 20:44:06.212 Node check START 192.168.1.8:3306:HG501
+2016/08/16 20:44:06.252 Node check END 192.168.1.8:3306:HG501
+2016/08/16 20:44:06.237 Node check START 192.168.1.9:3306:HG501
+2016/08/16 20:44:06.283 Node check END 192.168.1.9:3306:HG501
+2016/08/16 20:44:06.255 Thread joined :   31
+2016/08/16 20:44:06.272 Thread joined :   32
+2016/08/16 20:44:06.294 Thread joined :   33
+2016/08/16 20:44:06.319 Thread joined :   34
+2016/08/16 20:44:06.343 Thread joined :   35
+2016/08/16 20:44:06.343 Multi Thread execution done in :   225.722789764404(ms) 
+2016/08/16 20:44:06.343 Evaluate nodes state 
+END EXECUTION Total Time:241.1048412323
+2016/08/16 20:44:08.348 Inizializing hostgroup 500 wwith maintenance HG 9500 mw
+2016/08/16 20:44:08.348 Inizializing hostgroup 501 rwith maintenance HG 9501 mr
+2016/08/16 20:44:08.357 Connecting to ProxySQL DBI:mysql:host=192.168.1.50;port=3310
+2016/08/16 20:44:08.357 Galera cluster object created  
+2016/08/16 20:44:08.359 Galera cluster node   192.168.1.5:3306:HG=500
+2016/08/16 20:44:08.360 Galera cluster node   192.168.1.6:3306:HG=501
+2016/08/16 20:44:08.360 Galera cluster node   192.168.1.7:3306:HG=501
+2016/08/16 20:44:08.360 Galera cluster node   192.168.1.8:3306:HG=501
+2016/08/16 20:44:08.361 Galera cluster node   192.168.1.9:3306:HG=501
+2016/08/16 20:44:08.361 Galera cluster nodes loaded 
+2016/08/16 20:44:08.361 Creating new thread to manage server check:192.168.1.5:3306:HG500
+2016/08/16 20:44:08.389 Creating new thread to manage server check:192.168.1.6:3306:HG501
+2016/08/16 20:44:08.418 Creating new thread to manage server check:192.168.1.7:3306:HG501
+2016/08/16 20:44:08.389 Node check START 192.168.1.5:3306:HG500
+2016/08/16 20:44:08.438 Node check END 192.168.1.5:3306:HG500
+2016/08/16 20:44:08.452 Creating new thread to manage server check:192.168.1.8:3306:HG501
+2016/08/16 20:44:08.418 Node check START 192.168.1.6:3306:HG501
+2016/08/16 20:44:08.475 Node check END 192.168.1.6:3306:HG501
+2016/08/16 20:44:08.485 Creating new thread to manage server check:192.168.1.9:3306:HG501
+2016/08/16 20:44:08.452 Node check START 192.168.1.7:3306:HG501
+2016/08/16 20:44:08.513 Node check END 192.168.1.7:3306:HG501
+2016/08/16 20:44:08.485 Node check START 192.168.1.8:3306:HG501
+2016/08/16 20:44:08.546 Node check END 192.168.1.8:3306:HG501
+2016/08/16 20:44:08.524 Node check START 192.168.1.9:3306:HG501
+2016/08/16 20:44:08.582 Node check END 192.168.1.9:3306:HG501
+2016/08/16 20:44:08.552 Thread joined :   36
+2016/08/16 20:44:08.580 Thread joined :   37
+2016/08/16 20:44:08.601 Thread joined :   38
+2016/08/16 20:44:08.622 Thread joined :   39
+2016/08/16 20:44:08.643 Thread joined :   40
+2016/08/16 20:44:08.643 Multi Thread execution done in :   282.09400177002(ms) 
+2016/08/16 20:44:08.644 Evaluate nodes state 
+END EXECUTION Total Time:296.465158462524
+2016/08/16 20:44:10.647 Inizializing hostgroup 500 wwith maintenance HG 9500 mw
+2016/08/16 20:44:10.647 Inizializing hostgroup 501 rwith maintenance HG 9501 mr
+2016/08/16 20:44:10.660 Connecting to ProxySQL DBI:mysql:host=192.168.1.50;port=3310
+2016/08/16 20:44:10.660 Galera cluster object created  
+2016/08/16 20:44:10.663 Galera cluster node   192.168.1.5:3306:HG=500
+2016/08/16 20:44:10.663 Galera cluster node   192.168.1.6:3306:HG=501
+2016/08/16 20:44:10.664 Galera cluster node   192.168.1.7:3306:HG=501
+2016/08/16 20:44:10.664 Galera cluster node   192.168.1.8:3306:HG=501
+2016/08/16 20:44:10.664 Galera cluster node   192.168.1.9:3306:HG=501
+2016/08/16 20:44:10.665 Galera cluster nodes loaded 
+2016/08/16 20:44:10.665 Creating new thread to manage server check:192.168.1.5:3306:HG500
+2016/08/16 20:44:10.690 Creating new thread to manage server check:192.168.1.6:3306:HG501
+2016/08/16 20:44:10.714 Creating new thread to manage server check:192.168.1.7:3306:HG501
+2016/08/16 20:44:10.690 Node check START 192.168.1.5:3306:HG500
+2016/08/16 20:44:10.731 Node check END 192.168.1.5:3306:HG500
+2016/08/16 20:44:10.738 Creating new thread to manage server check:192.168.1.8:3306:HG501
+2016/08/16 20:44:10.714 Node check START 192.168.1.6:3306:HG501
+2016/08/16 20:44:10.754 Node check END 192.168.1.6:3306:HG501
+2016/08/16 20:44:10.762 Creating new thread to manage server check:192.168.1.9:3306:HG501
+2016/08/16 20:44:10.738 Node check START 192.168.1.7:3306:HG501
+2016/08/16 20:44:10.777 Node check END 192.168.1.7:3306:HG501
+2016/08/16 20:44:10.762 Node check START 192.168.1.8:3306:HG501
+2016/08/16 20:44:10.801 Node check END 192.168.1.8:3306:HG501
+2016/08/16 20:44:10.787 Node check START 192.168.1.9:3306:HG501
+2016/08/16 20:44:10.827 Node check END 192.168.1.9:3306:HG501
