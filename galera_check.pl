@@ -181,7 +181,7 @@ sub get_proxy($$$$){
     # Execution
     #============================================================================
     if(defined $Param->{log}){
-	open(FH, '>', $Param->{log}."_".$hg.".log") or die Utils->print_log(1,"cannot open file");
+	open(FH, '>>', $Param->{log}."_".$hg.".log") or die Utils->print_log(1,"cannot open file");
 	select FH;
     }
      
