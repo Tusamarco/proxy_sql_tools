@@ -1,34 +1,20 @@
 #!/usr/bin/perl
-
-
 # This tool is "fat-packed": most of its dependent modules are embedded
 # in this file.  
-
-
-
 
 package galera_check ;
 use Time::HiRes qw(gettimeofday);
 use strict;
 use DBI;
-
 use Getopt::Long;
 use Pod::Usage;
 
 $Getopt::Long::ignorecase = 0;
-
-
 my $Param = {};
 my $user = "admin";
 my $pass = "admin";
 my $help = '';
 my $host = '' ;
-my $outfile;
-my $strMySQLVersion="";
-
-my $CurrentTime;
-my $CurrentDate;
-my $baseSP;
 my $debug = 0 ;
 my %hostgroups;
 
@@ -71,26 +57,6 @@ sub get_proxy($$$$){
     return $proxynode;
     
 }
-
-######################################################################
-## get_cluster return a cluster object poulate with the whole info including the 
-## $dbh -- a non-null database handle, as returned from get_connection()
-##
-#sub get_cluster($$) {
-#  my $dbh = shift;
-#  my $debug = shift;
-#  
-#  my $cluster=Galeracluster->new();
-#  @HGIds=split('\,', $Param->{hostgroups});
-#  foreach my $hg (@HGIds){
-#    push(@HGIds,($hg + 9000));
-#  }
-#  
-#  $cluster->get_nodes($dbh,$debug);
-#  return \$cluster;
-#}
-
-
 
  sub main{
     # ============================================================================
@@ -135,14 +101,12 @@ sub get_proxy($$$$){
 #    }
 #    else{
     
-    
+   
        
 #    if ( defined $Param->{help}) {
 #	ShowOptions();
 #	exit(0);
 #    }
-    
-
 
     die print Utils->print_log(1,"Option --hostgroups not specified.\n") unless defined($Param->{hostgroups});
     die print Utils->print_log(1,"Option --host not specified.\n") unless defined $Param->{host};
@@ -151,12 +115,9 @@ sub get_proxy($$$$){
     #die "Option --log not specified. We need a place to log what is going on, don't we?\n" unless defined $Param->{log};
     print Utils->print_log(2,"Option --log not specified. We need a place to log what is going on, don't we?\n") unless defined $Param->{log};
     
-    
     if($Param->{debug}){
 	Utils::debugEnv();
     }
-    
-    # $dsn = "DBI:mysql:database=mysql;mysql_socket=/tmp/mysql.sock";
     
     $Param->{host} = URLDecode($host);    
     my $dsn  = "DBI:mysql:host=$Param->{host};port=$Param->{port}";
@@ -235,53 +196,21 @@ sub get_proxy($$$$){
 	sleep 2;
 	
     }
-    
-    #my $dbh = get_connection($dsn, $user, $pass,' ');
-    
-    #my $variables = get_variables($dbh,$debug);
-    #my $cluster = get_cluster($dbh,$debug);
     if(defined $Param->{log}){
     close FH;  # in the end
     }
-    
     
     `rm -f $base_path`;
     
     exit(0);
     
     
-    sub ShowOptions {
-	
-	
-#	print <<EOF;
-#    Usage: galera_check.pl
-#	   user|u
-#	   password|p
-#	   host|H
-#	   port|P
-#	   outfile|o
-#	   help|h
-#	   batch|b
-#	   time|t
-#	   mode|m
-#	   excludelist|x
-#	   includelist|i
-#	   compress|c
-#	   tar
-#    
-#    -u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --main_segment=1 --debug=1 --log=/tmp/check.log
-#    
-#EOF
-    }
  }
 
 # ############################################################################
 # Run the program.
 # ############################################################################
-    
     exit main(@ARGV);
-
-
 
 {
     package Galeracluster;
@@ -295,7 +224,6 @@ sub get_proxy($$$$){
         my $class = shift;
         my $SQL_get_mysql_servers=" SELECT a.* FROM mysql_servers a join stats_mysql_connection_pool b on a.hostname=b.srv_host and a.port=b.srv_port and a.hostgroup_id=b.hostgroup  WHERE b.status not in ('OFFLINE_HARD','SHUNNED')";;
         
-        
         # Variable section for  looping values
         #Generalize object for now I have conceptualize as:
         # Cluster (generic container)
@@ -305,7 +233,6 @@ sub get_proxy($$$$){
         # Cluster->{size}     cluster status [Primary|not Primary]
         # Cluster->{singlenode}=0;  0 if false 1 if true meaning only one ACTIVE node in the cluster 
         # Cluster->{haswriter}=0;  0 if false 1 if true at least a node is fully active as writer
-        
         
         my $self = {
             _name      => undef,
@@ -545,9 +472,6 @@ sub get_proxy($$$$){
 {
     package GaleraNode;
     #Node Proxy States
-
-
-    
     sub new {
         my $class = shift;
         my $SQL_get_variables="SHOW GLOBAL VARIABLES LIKE 'wsrep%";
@@ -602,10 +526,9 @@ sub get_proxy($$$$){
 	    _MOVE_UP_HG_CHANGE => 1010, #move a node from HG 9000 (plus hg id) to reader HG 
 	    _MOVE_DOWN_HG_CHANGE => 3001, #move a node from original HG to maintenance HG (HG 9000 (plus hg id) ) kill all existing connections
 	    _MOVE_DOWN_OFFLINE => 3010 , # move node to OFFLINE_soft keep existign connections, no new connections.
-	    #_MOVE_SWAP_READER_TO_WRITER => 5001, 
-	    #_MOVE_SWAP_WRITER_TO_READER => 5010,
+	    #_MOVE_SWAP_READER_TO_WRITER => 5001, #Future use
+	    #_MOVE_SWAP_WRITER_TO_READER => 5010, #Future use
 
-            
         };
         bless $self, $class;
         return $self;
@@ -830,8 +753,6 @@ sub get_proxy($$$$){
 
 {
     package ProxySqlNode;
-    
-
     sub new {
         my $class = shift;
 
@@ -1005,22 +926,7 @@ sub get_proxy($$$$){
 	my $action_nodes = undef;
 
 	#Rules:
-	# Set to offline_soft :
-	    #1) any non 4 or 2 state, read only =ON
-	    #1) donor node reject queries - 0 size of cluster > 2 of nodes in the same segments more then one writer, node is NOT read_only
-	# change HG t maintenance HG:
-	    #1) Node/cluster in non primary
-	    #2) wsrep_reject_queries different from NONE
-	    #3) Donor, node reject queries =1 size of cluster 
-
-	#Node comes back from offline_soft when (all of them):
-	    # 1) Node state is 4
-	    # 3) wsrep_reject_queries = none
-	    # 4) Primary state
-	# Node comes back from maintenance HG when (all of them):
-	    # 1) node state is 4
-	    # 3) wsrep_reject_queries = none
-	    # 4) Primary state
+	    #see rules in the doc
 	    
 	#do the checks
 	if($proxynode->debug >=1){print Utils->print_log(3," Evaluate nodes state ".caller(3)."\n" ) }	
@@ -1470,29 +1376,62 @@ galera_check will connect to the ProxySQL and retrieve the information related t
 It will then monitor the MySQL host that compose the HG and will check if any node require to be
 put OFFLINE_SOFT or moved to mantaince HG. If so will then check when put them back.
 
+=over
+
+=item 1
+
+Note that galera_check is also Segment aware, as such the checks on the presence of Writer /reader is done by segment, respecting the MainSegment as primary.
+
+=back
+
 =head1 Configure in ProxySQL
 
 
+INSERT  INTO scheduler (id,interval_ms,filename,arg1) values (10,2000,"/var/lib/proxysql/galera_check.pl","-u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --main_segment=1 --debug=0  --log=/var/lib/proxysql/galeraLog");
+LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
+  
+update scheduler set arg1="-u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --main_segment=1 --debug=1  --log=/var/lib/proxysql/galeraLog" where id =10;  
+LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
 
-=over 
+
+delete from scheduler where id=10;
+LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
 
 
-=item *
+
+=head1
 
 Rules:
+
+=over
+
+=item 1
+
 Set to offline_soft :
+    
     any non 4 or 2 state, read only =ON
     donor node reject queries - 0 size of cluster > 2 of nodes in the same segments more then one writer, node is NOT read_only
+
+=item 2
+
 change HG t maintenance HG:
+    
     Node/cluster in non primary
     wsrep_reject_queries different from NONE
     Donor, node reject queries =1 size of cluster 
 
+=item 3
+
 Node comes back from offline_soft when (all of them):
+
      1) Node state is 4
      3) wsrep_reject_queries = none
      4) Primary state
+
+=item 4
+
  Node comes back from maintenance HG when (all of them):
+
      1) node state is 4
      3) wsrep_reject_queries = none
      4) Primary state
