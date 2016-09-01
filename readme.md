@@ -23,8 +23,10 @@ Node states:
  * wsrep_ready 
  * wsrep_provider 
  * wsrep_segment 
+ * Number of nodes in by segment
+ * Retry loop 
 
-Number of nodes in by segment If a node is the only one in a segment, the check will behave accordingly. 
+If a node is the only one in a segment, the check will behave accordingly. 
 IE if a node is the only one in the MAIN segment, it will not put the node in OFFLINE_SOFT when the node become donor to prevent the cluster to become unavailable for the applications. 
 As mention is possible to declare a segment as MAIN, quite useful when managing prod and DR site.
 
