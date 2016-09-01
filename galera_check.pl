@@ -80,6 +80,7 @@ sub get_proxy($$$$){
     $Param->{main_segment} = 0;
     $Param->{retry_up} = 0;
     $Param->{retry_down} = 0;
+    $Param->{print_execution} = 0;
     my $run_pid_dir = "/tmp" ;
     
     #if (
@@ -94,6 +95,7 @@ sub get_proxy($$$$){
 	    'main_segment|S:s'=> \$Param->{main_segment},
 	    'retry_up:i' =>	\$Param->{retry_up},
 	    'retry_down:i' =>	\$Param->{retry_down},
+	    'execution_time:i' =>	\$Param->{print_execution},
 	    
 	    'help|?'       => \$Param->{help}
     
@@ -198,7 +200,7 @@ sub get_proxy($$$$){
     }
     
 	my $end = gettimeofday();
-	print Utils->print_log(3,"END EXECUTION Total Time:".($end - $start) * 1000 ."\n\n"); 
+	print Utils->print_log(3,"END EXECUTION Total Time:".($end - $start) * 1000 ."\n\n") if $Param->{print_execution} >0; 
     
 	$proxy_sql_node->disconnect();
 	
@@ -1574,45 +1576,48 @@ Galera check is a script to manage integration between ProxySQL and Galera (from
 Galera and its implementations like Percona Cluster (PCX), use the data-centric concept, as such the status of a node is relvant in relation to a cluster.
 
 In ProxySQL is possible to represent a cluster and its segments using HostGroups.
-Galera check is design to manage a X number of nodes that belong to a given Hostgroup (HG).
-In Galera_ceck it is also important to qualify the HG in case of use of Replication HG.
+Galera check is design to manage a X number of nodes that belong to a given Hostgroup (HG). 
+In Galera_check it is also important to qualify the HG in case of use of Replication HG.
 
-galera_check works by HG and as such it will perform isolated actions/checks by HG.
-It is not possible ot have more than one check running on the same HG.
-The check will create a lock file {proxysql_galera_check_${hg}.pid} that will be used by the check to prevent duplicates.
+galera_check works by HG and as such it will perform isolated actions/checks by HG. 
+It is not possible to have more than one check running on the same HG. The check will create a lock file {proxysql_galera_check_${hg}.pid} that will be used by the check to prevent duplicates.
 
-Galera_check will connect to the ProxySQL node and retrieve all the information regarding the Nodes/proxysql configuration.
+Galera_check will connect to the ProxySQL node and retrieve all the information regarding the Nodes/proxysql configuration. 
 It will then check in parallel each node and will retrieve the status and configuration.
 
 At the moment galera_check analyze and manage the following:
- - Node states:
-    read_only
-    wsrep_status
-    wsrep_rejectqueries
-    wsrep_donorrejectqueries
-    wsrep_connected
-    wsrep_desinccount
-    wsrep_ready
-    wsrep_provider
-    wsrep_segment
-    wsrep_pc_weight
 
+Node states: 
+  read_only 
+  wsrep_status 
+  wsrep_rejectqueries 
+  wsrep_donorrejectqueries 
+  wsrep_connected 
+  wsrep_desinccount 
+  wsrep_ready 
+  wsrep_provider 
+  wsrep_segment 
+  Number of nodes in by segment
+  Retry loop
+  
 - Number of nodes in by segment
-  If a node is the only one in a segment, the check will behave accordingly. 
-  IE if a node is the only one in the MAIN segment, it will not put the node in OFFLINE_SOFT when the node become donor to prevent the cluster to become unavailable for the applications.
-  As mention is possible to declare a segment as MAIN, quite useful when managing prod and DR site.
-  
-- The check can be configure to perform retry in a X interval. Where X is the time define in the ProxySQL scheduler.
-  As such if the check is set to have 2 retry for UP and 4 for down, it will loop that number before doing anything.
-  Given that Galera does some action behind the hood, this feature is very useful.
-  (IE whenever a node is set to READ_ONLY=1, galera desync and resync the node. A check not taking this into account will cause a node to be set OFFLINE and back for no reason.)
-  
-Another important differentiation for this check is that it use special HGs for maintenance, all in range of 9000.
+If a node is the only one in a segment, the check will behave accordingly. 
+IE if a node is the only one in the MAIN segment, it will not put the node in OFFLINE_SOFT when the node become donor to prevent the cluster to become unavailable for the applications. 
+As mention is possible to declare a segment as MAIN, quite useful when managing prod and DR site.
+
+-The check can be configure to perform retry in a X interval. 
+Where X is the time define in the ProxySQL scheduler. 
+As such if the check is set to have 2 retry for UP and 4 for down, it will loop that number before doing anything. Given that Galera does some action behind the hood.
+This feature is very useful in some not well known cases where Galera bhave weird.
+IE whenever a node is set to READ_ONLY=1, galera desync and resync the node. 
+A check not taking this into account will cause a node to be set OFFLINE and back for no reason.
+
+Another important differentiation for this check is that it use special HGs for maintenance, all in range of 9000. 
 So if a node belong to HG 10 and the check needs to put it in maintenance mode, the node will be moved to HG 9010. 
 Once all is normal again, the Node will be put back on his original HG.
 
-This check does NOT modify any state of the Nodes. Meaning It will NOT modify any variables or settings in the original node.
-It will ONLY change states in ProxySQL.  
+This check does NOT modify any state of the Nodes. 
+Meaning It will NOT modify any variables or settings in the original node. It will ONLY change states in ProxySQL. 
     
 The check is still a prototype and is not suppose to go to production (yet).
 
