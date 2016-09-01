@@ -14,15 +14,15 @@ It will then check in parallel each node and will retrieve the status and config
 At the moment galera_check analyze and manage the following:
 
 Node states: 
-  read_only 
-  wsrep_status 
-  wsrep_rejectqueries 
-  wsrep_donorrejectqueries 
-  wsrep_connected 
-  wsrep_desinccount 
-  wsrep_ready 
-  wsrep_provider 
-  wsrep_segment 
+ * read_only 
+ * wsrep_status 
+ * wsrep_rejectqueries 
+ * wsrep_donorrejectqueries 
+ * wsrep_connected 
+ * wsrep_desinccount 
+ * wsrep_ready 
+ * wsrep_provider 
+ * wsrep_segment 
 
 Number of nodes in by segment If a node is the only one in a segment, the check will behave accordingly. 
 IE if a node is the only one in the MAIN segment, it will not put the node in OFFLINE_SOFT when the node become donor to prevent the cluster to become unavailable for the applications. 
