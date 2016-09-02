@@ -124,13 +124,6 @@ sub get_proxy($$$$){
     my $hg =$Param->{hostgroups};
     $hg =~ s/[\:,\,]/_/g;
     my $base_path = "${run_pid_dir}/proxysql_galera_check_${hg}.pid";
-    if(!-e $base_path){
-	`echo "$$ : $hg" > $base_path`
-    }
-    else{
-        print Utils->print_log(1,"Another process is running using the same HostGroup and settings,\n Or orphan pid file. check in $base_path");
-	exit 1;
-    }    
     
     #============================================================================
     # Execution
@@ -139,6 +132,15 @@ sub get_proxy($$$$){
 	open(FH, '>>', $Param->{log}."_".$hg.".log") or die Utils->print_log(1,"cannot open file");
 	select FH;
     }
+    
+    if(!-e $base_path){
+	`echo "$$ : $hg" > $base_path`
+    }
+    else{
+        print Utils->print_log(1,"Another process is running using the same HostGroup and settings,\n Or orphan pid file. check in $base_path");
+	exit 1;
+    }    
+
      
     # for test only purpose comment for prod 
 #    my $xx = 10000000;
@@ -191,9 +193,8 @@ sub get_proxy($$$$){
     
 	$proxy_sql_node->disconnect();
 	
-	sleep 2;
-
     #debug braket 	
+    # sleep 2;
     #}
     if(defined $Param->{log}){
     close FH;  # in the end
