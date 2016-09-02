@@ -101,19 +101,6 @@ sub get_proxy($$$$){
     
 	) or pod2usage(2);
 	pod2usage(-verbose => 2) if $Param->{help};
-#      )
-#    {
-#	ShowOptions();
-#	exit(1);
-#    }
-#    else{
-    
-   
-       
-#    if ( defined $Param->{help}) {
-#	ShowOptions();
-#	exit(0);
-#    }
 
     die print Utils->print_log(1,"Option --hostgroups not specified.\n") unless defined($Param->{hostgroups});
     die print Utils->print_log(1,"Option --host not specified.\n") unless defined $Param->{host};
@@ -1038,7 +1025,7 @@ sub get_proxy($$$$){
 	    #see rules in the doc
 	    
 	#do the checks
-	if($proxynode->debug >=1){print Utils->print_log(3," Evaluate nodes state ".caller(3)."\n" ) }	
+	if($proxynode->debug >=1){print Utils->print_log(3," Evaluate nodes state \n" ) }	
 	foreach my $key (sort keys %{$nodes}){
             if(defined $nodes->{$key} ){
 		
@@ -1139,7 +1126,7 @@ sub get_proxy($$$$){
 		       $nodes->{$key}->wsrep_status eq 2
 		       && $nodes->{$key}->read_only eq "OFF"
 		       && $nodes->{$key}->wsrep_donorrejectqueries eq "OFF"
-		       && $GGalera_cluster->{_size}->{$nodes->{$key}->{_wsrep_segment}} > 2
+		       && $GGalera_cluster->{_size}->{$nodes->{$key}->{_wsrep_segment}} >= 2
 		       && $GGalera_cluster->{_hostgroups}->{$nodes->{$key}->{_hostgroups}}->{_size} > 1
 		       && $nodes->{$key}->proxy_status ne "OFFLINE_SOFT"
 		       ){
