@@ -50,6 +50,7 @@ The check is still a prototype and is not suppose to go to production (yet).
 More details
 
 How to use it
+```
 galera_check.pl -u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --main_segment=1 --debug=0  --log <full_path_to_file> --help
 sample [options] [file ...]
  Options:
@@ -65,47 +66,50 @@ sample [options] [file ...]
    --log	  Full path to the log file ie (/var/log/proxysql/galera_check_) the check will add
 		    the identifier for the specific HG.
    -help          help message
-   
+```   
 
 Note that galera_check is also Segment aware, as such the checks on the presence of Writer /reader is done by segment, respecting the MainSegment as primary.
 
 
 Configure in ProxySQL
 
-
-INSERT  INTO scheduler (id,interval_ms,filename,arg1) values (10,2000,"/var/lib/proxysql/galera_check.pl","-u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --retry_down=2 --retry_up=1 --main_segment=1 --debug=0  --log=/var/lib/proxysql/galeraLog");
+```
+INSERT  INTO scheduler (id,active,interval_ms,filename,arg1) values (10,0,2000,"/var/lib/proxysql/galera_check.pl","-u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --retry_down=2 --retry_up=1 --main_segment=1 --debug=0  --log=/var/lib/proxysql/galeraLog");
 LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
-  
+
+update scheduler set active=1 where id=10;
+LOAD SCHEDULER TO RUNTIME;
+
 update scheduler set arg1="-u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --main_segment=1 --debug=1  --log=/var/lib/proxysql/galeraLog" where id =10;  
 LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
 
 
 delete from scheduler where id=10;
 LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
-
+```
 Logic Rules use in the check:
 
-Set to offline_soft :
+* Set to offline_soft :
     
     any non 4 or 2 state, read only =ON
     donor node reject queries - 0 size of cluster > 2 of nodes in the same segments more then one writer, node is NOT read_only
 
 
-change HG for maintenance HG:
+* change HG for maintenance HG:
     
     Node/cluster in non primary
     wsrep_reject_queries different from NONE
     Donor, node reject queries =1 size of cluster 
 
 
-Node comes back from offline_soft when (all of them):
+* Node comes back from offline_soft when (all of them):
 
      1) Node state is 4
      3) wsrep_reject_queries = none
      4) Primary state
 
 
-Node comes back from maintenance HG when (all of them):
+* Node comes back from maintenance HG when (all of them):
 
      1) node state is 4
      3) wsrep_reject_queries = none
