@@ -104,15 +104,15 @@ Logic Rules use in the check:
 
 * Node comes back from offline_soft when (all of them):
 
-     1) Node state is 4
-     3) wsrep_reject_queries = none
-     4) Primary state
+     1. Node state is 4
+     2. wsrep_reject_queries = none
+     3. Primary state
 
 
 * Node comes back from maintenance HG when (all of them):
 
-     1) node state is 4
-     3) wsrep_reject_queries = none
-     4) Primary state
+     1. node state is 4
+     2. wsrep_reject_queries = none
+     3. Primary state
      
      
