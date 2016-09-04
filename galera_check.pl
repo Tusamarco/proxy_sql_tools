@@ -81,6 +81,7 @@ sub get_proxy($$$$){
     $Param->{retry_up} = 0;
     $Param->{retry_down} = 0;
     $Param->{print_execution} = 0;
+    $Param->{development} = 0;
     my $run_pid_dir = "/tmp" ;
     
     #if (
@@ -95,7 +96,8 @@ sub get_proxy($$$$){
 	    'main_segment|S:s'=> \$Param->{main_segment},
 	    'retry_up:i' =>	\$Param->{retry_up},
 	    'retry_down:i' =>	\$Param->{retry_down},
-	    'execution_time:i' =>	\$Param->{print_execution},
+	    'execution_time:i' => \$Param->{print_execution},
+	    'development:i' => \$Param->{development},
 	    
 	    'help|?'       => \$Param->{help}
     
@@ -133,20 +135,24 @@ sub get_proxy($$$$){
 	select FH;
     }
     
-    if(!-e $base_path){
-	`echo "$$ : $hg" > $base_path`
+    if($Param->{development} < 1){
+	if(!-e $base_path){
+	    `echo "$$ : $hg" > $base_path`
+	}
+	else{
+	    print Utils->print_log(1,"Another process is running using the same HostGroup and settings,\n Or orphan pid file. check in $base_path");
+	    exit 1;
+	}    
     }
-    else{
-        print Utils->print_log(1,"Another process is running using the same HostGroup and settings,\n Or orphan pid file. check in $base_path");
-	exit 1;
-    }    
-
      
-    # for test only purpose comment for prod 
-#    my $xx = 10000000;
-#    my $y =0;
-#     while($y < $xx){
-#	++$y ;
+    # for test only purpose comment for prod
+
+    my $xx =0;
+    my $y =0;
+    $xx=20000000 if($Param->{development} > 0);
+ 	
+     while($y < $xx){
+	++$y ;
 	
     my $start = gettimeofday();    
     if($Param->{debug} >= 1){
@@ -194,8 +200,8 @@ sub get_proxy($$$$){
 	$proxy_sql_node->disconnect();
 	
     #debug braket 	
-    # sleep 2;
-    #}
+     sleep 2 if($Param->{development} > 0);
+    }
     if(defined $Param->{log}){
     close FH;  # in the end
     }
@@ -222,7 +228,7 @@ sub get_proxy($$$$){
     
     sub new {
         my $class = shift;
-        my $SQL_get_mysql_servers=" SELECT a.* FROM mysql_servers a join stats_mysql_connection_pool b on a.hostname=b.srv_host and a.port=b.srv_port and a.hostgroup_id=b.hostgroup  WHERE b.status not in ('OFFLINE_HARD','SHUNNED')";;
+        my $SQL_get_mysql_servers=" SELECT a.* FROM mysql_servers a join stats_mysql_connection_pool b on a.hostname=b.srv_host and a.port=b.srv_port and a.hostgroup_id=b.hostgroup  WHERE b.status not in ('OFFLINE_HARD','SHUNNED') ";
         
         # Variable section for  looping values
         #Generalize object for now I have conceptualize as:
@@ -1091,9 +1097,16 @@ sub get_proxy($$$$){
 		    }		
 		    # 4) wsrep_reject_queries=NONE
 		    if($nodes->{$key}->wsrep_rejectqueries ne "NONE"){
-			$action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_HG_CHANGE}}= $nodes->{$key};
+			my $inc =0;
+			if($nodes->{$key}->wsrep_rejectqueries eq "ALL" && $nodes->{$key}->proxy_status ne "OFFLINE_SOFT"){
+			    $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_OFFLINE}}= $nodes->{$key};
+			    $inc=1;
+			}else{
+			    $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_HG_CHANGE}}= $nodes->{$key};
+			    $inc=1;
+			}
 			#if retry is > 0 then it's managed
-			if($proxynode->retry_down > 0){
+			if($proxynode->retry_down > 0 && $inc > 0){
 			    $nodes->{$key}->get_retry_down($nodes->{$key}->get_retry_down + 1);
 			}
 
