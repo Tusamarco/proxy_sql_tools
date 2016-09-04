@@ -147,7 +147,7 @@ sub get_proxy($$$$){
      
     # for test only purpose comment for prod
 
-    my $xx =0;
+    my $xx =1;
     my $y =0;
     $xx=20000000 if($Param->{development} > 0);
  	
