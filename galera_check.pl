@@ -200,12 +200,6 @@ sub get_proxy($$$$){
     my $end = gettimeofday();
     print Utils->print_log(3,"END EXECUTION Total Time:".($end - $start) * 1000 ."\n\n") if $Param->{print_execution} >0; 
 
-    #If failover option is activate will try to perform failover (only galera or Group replication cluster)
-#    if(defined $Param->{active_failover}){
-#	if($proxy_sql_node->initiate_failover() > 0){
-#	    print Utils->print_log(1,"Not OK Failover FAILS !!!!!! \n\n") ; 
-#	}
-#    }
 
     
     $proxy_sql_node->disconnect();
@@ -1655,18 +1649,20 @@ galera_check.pl
 galera_check.pl -u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --main_segment=1 --debug=0  --log <full_path_to_file> --help
 sample [options] [file ...]
  Options:
-   -u|user         user to connect to the proxy
-   -p|password     Password for the proxy
-   -h|host         Proxy host
-   -H              Hostgroups with role definition. List comma separated.
-		    Definition R = reader; W = writer [500:W,501:R]
-   --main_segment  If segments are in use which one is the leading at the moment
-   --retry_up      The number of loop/test the check has to do before moving a node up (default 0)
-   --retry_down    The number of loop/test the check has to do before moving a node Down (default 0)
+   -u|user            user to connect to the proxy
+   -p|password        Password for the proxy
+   -h|host            Proxy host
+   -H                 Hostgroups with role definition. List comma separated.
+		      Definition R = reader; W = writer [500:W,501:R]
+   --main_segment     If segments are in use which one is the leading at the moment
+   --retry_up         The number of loop/test the check has to do before moving a node up (default 0)
+   --retry_down       The number of loop/test the check has to do before moving a node Down (default 0)
    --debug
-   --log	  Full path to the log file ie (/var/log/proxysql/galera_check_) the check will add
-		    the identifier for the specific HG.
-   -help          help message
+   --log	      Full path to the log file ie (/var/log/proxysql/galera_check_) the check will add
+		      the identifier for the specific HG.
+   --active_failover  in case galera is set to use replication hg and in case of single wrter this EXPEIMENTAL feature will try to perform automatic failover activating the
+		      the node in the READER HG that has the lowest weight. It require (for the moment given it is experimental) monitor user (that connects to MySQL nodes), to have SUPER privileges 
+   -help              help message
    
 =head1 DESCRIPTION
 
