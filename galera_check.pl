@@ -82,6 +82,7 @@ sub get_proxy($$$$){
     $Param->{retry_down} = 0;
     $Param->{print_execution} = 0;
     $Param->{development} = 0;
+    
     my $run_pid_dir = "/tmp" ;
     
     #if (
@@ -98,6 +99,7 @@ sub get_proxy($$$$){
 	    'retry_down:i' =>	\$Param->{retry_down},
 	    'execution_time:i' => \$Param->{print_execution},
 	    'development:i' => \$Param->{development},
+	    'active_failover' => \$Param->{active_failover},
 	    
 	    'help|?'       => \$Param->{help}
     
@@ -165,6 +167,7 @@ sub get_proxy($$$$){
     $proxy_sql_node->retry_up($Param->{retry_up});
     $proxy_sql_node->retry_down($Param->{retry_down});
     $proxy_sql_node->hostgroups($Param->{hostgroups}) ;
+    $proxy_sql_node->require_failover(0) if defined $Param->{active_failover};
     
     $proxy_sql_node->connect();
     
@@ -194,10 +197,18 @@ sub get_proxy($$$$){
 	$proxy_sql_node->push_changes;
     }
     
-	my $end = gettimeofday();
-	print Utils->print_log(3,"END EXECUTION Total Time:".($end - $start) * 1000 ."\n\n") if $Param->{print_execution} >0; 
+    my $end = gettimeofday();
+    print Utils->print_log(3,"END EXECUTION Total Time:".($end - $start) * 1000 ."\n\n") if $Param->{print_execution} >0; 
+
+    #If failover option is activate will try to perform failover (only galera or Group replication cluster)
+#    if(defined $Param->{active_failover}){
+#	if($proxy_sql_node->initiate_failover() > 0){
+#	    print Utils->print_log(1,"Not OK Failover FAILS !!!!!! \n\n") ; 
+#	}
+#    }
+
     
-	$proxy_sql_node->disconnect();
+    $proxy_sql_node->disconnect();
 	
     #debug braket 	
      sleep 2 if($Param->{development} > 0);
@@ -781,7 +792,7 @@ sub get_proxy($$$$){
         $self->{_cluster_status} = $status->{wsrep_cluster_status};
         $self->{_cluster_size} = $status->{wsrep_cluster_size};
         
-        $dbh->disconnect if (!defined $dbh);
+        $dbh->disconnect if (defined $dbh);
 	#sleep 5;
 	
         $self->{_process_status} = 1;
@@ -829,6 +840,35 @@ sub get_proxy($$$$){
         $self->{_retry_down_saved} = $in if defined($in);
         return $self->{_retry_down_saved};
     }
+    
+    sub remove_read_only(){
+       my ( $self ) = @_;
+        
+	print Utils->print_log(3,"This Node Try to become a WRITER set READ_ONLY to 0 " 
+	    .$self->{_ip}
+	    .":".$self->{_port}
+	    .":HG".$self->{_hostgroups}
+	    ."\n"  );	
+	
+        my $dbh = Utils::get_connection($self->{_dns},$self->{_user},$self->{_password},' ');
+	if(!defined $dbh){
+	    return undef;
+	}
+	if($dbh->do("SET GLOBAL READ_ONLY=0")){
+	print Utils->print_log(3,"This Node NOW HAS READ_ONLY = 0 "
+	    .$self->{_ip}
+	    .":".$self->{_port}
+	    .":HG".$self->{_hostgroups}
+	    ."\n"  );	
+	    
+	}
+	else{
+	    die "Couldn't execute statement: " .  $dbh->errstr;
+	}
+	$dbh->disconnect if (defined $dbh);
+	#or die "Couldn't execute statement: " .  $dbh->errstr;
+	return 1;
+    }
 
     
 }
@@ -868,14 +908,27 @@ sub get_proxy($$$$){
             _check_timeout => 100, #timeout in ms
 	    _action_nodes => {},
     	    _retry_down => 0, # number of retry on a node before declaring it as failed.
-	    _retry_up => 0, # number of retry on a node before declaring it OK. 
+	    _retry_up => 0, # number of retry on a node before declaring it OK.
+	    _status_changed => 0, #if 1 something had happen and a node had be modify
+	    _require_failover => -1, #  -1 disable, 0 enable, 1 active and require failover if the HG has no writer and if there is a node in the same segment and IF it has read_only=1 it will try to promote it
 
         };
         bless $self, $class;
         return $self;
         
     }
+    sub require_failover{
+        my ( $self, $in ) = @_;
+        $self->{_require_failover} = $in if defined($in);
+        return $self->{_require_failover};
+    }
     
+    sub status_changed{
+        my ( $self, $in ) = @_;
+        $self->{_status_changed} = $in if defined($in);
+        return $self->{_status_changed};
+    }
+
     sub retry_down{
         my ( $self, $in ) = @_;
         $self->{_retry_down} = $in if defined($in);
@@ -1028,6 +1081,19 @@ sub get_proxy($$$$){
 	my ( $nodes ) = $GGalera_cluster->{_nodes};
 	my $action_nodes = undef;
 
+	#failover has higher priority as such it will happen before anything else
+	# and it will ends the script work (if successful)
+	if($proxynode->require_failover eq 0){
+	    if($GGalera_cluster->haswriter < 1){
+		if($proxynode->initiate_failover($GGalera_cluster) >0){
+		    if($proxynode->debug >=1){
+			print Utils->print_log(1,"!!!! FAILOVER !!!!! \n Cluster was without WRITER I have try to restore service promoting a node" );
+			#exit 0;
+		    }
+		}
+	    }
+	}
+
 	#Rules:
 	    #see rules in the doc
 	    
@@ -1096,9 +1162,9 @@ sub get_proxy($$$$){
 			next;
 		    }		
 		    # 4) wsrep_reject_queries=NONE
-		    if($nodes->{$key}->wsrep_rejectqueries ne "NONE"){
+		    if($nodes->{$key}->wsrep_rejectqueries ne "NONE" && $nodes->{$key}->proxy_status ne "OFFLINE_SOFT"){
 			my $inc =0;
-			if($nodes->{$key}->wsrep_rejectqueries eq "ALL" && $nodes->{$key}->proxy_status ne "OFFLINE_SOFT"){
+			if($nodes->{$key}->wsrep_rejectqueries eq "ALL"){
 			    $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_OFFLINE}}= $nodes->{$key};
 			    $inc=1;
 			}else{
@@ -1343,6 +1409,37 @@ sub get_proxy($$$$){
 	print Utils->print_log(2," Move node:" .$key
 	    ." SQL:" .$proxy_sql_command
 	    ."\n" ) ;			    
+    }
+    
+    sub initiate_failover{
+	my ($proxynode,$Galera_cluster)  = @_ ;
+	my ( $nodes ) = $Galera_cluster->{_nodes};
+	my $failover_node;
+	
+	foreach my $key (sort keys %{$nodes}){
+            if(defined $nodes->{$key} ){
+		
+		#only if node has HG that is not maintennce it vcan evaluate to be put down in some way
+		#Look for the node with the lowest weight in the same segment
+		if($nodes->{$key}->{_hostgroups} < 9000
+		   && $nodes->{$key}->{_process_status} > 0
+		   && $nodes->{$key}->{_wsrep_segment} == $Galera_cluster->{_main_segment}
+		   ){
+		    $failover_node = $nodes->{$key} if !defined $failover_node;
+		    if($nodes->{$key}->{_weight} < $failover_node->{_weight}){
+			$failover_node = $nodes->{$key};
+		    }
+		    
+		}
+	    }
+	}
+	#if a node was found, try to do the failover removing the READ_ONLY
+	if(defined $failover_node){
+	    return $failover_node->remove_read_only();
+	}
+
+	
+	return 0;
     }
 
 }
