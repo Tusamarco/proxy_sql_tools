@@ -1,6 +1,29 @@
 #!/usr/bin/perl
 # This tool is "fat-packed": most of its dependent modules are embedded
-# in this file.  
+# in this file.
+#######################################
+#
+# ProxySQL galera check v1 
+#
+# Author Marco Tusa 
+# Copyright (C) (2016 - 2017)
+# 
+#
+#THIS PROGRAM IS PROVIDED "AS IS" AND WITHOUT ANY EXPRESS OR IMPLIED
+#WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
+#MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+#
+#This program is free software; you can redistribute it and/or modify it under
+#the terms of the GNU General Public License as published by the Free Software
+#Foundation, version 2; OR the Perl Artistic License.  On UNIX and similar
+#systems, you can issue `man perlgpl' or `man perlartistic' to read these
+#licenses.
+#
+#You should have received a copy of the GNU General Public License along with
+#this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+#Place, Suite 330, Boston, MA  02111-1307  USA.
+
+#######################################
 
 package galera_check ;
 use Time::HiRes qw(gettimeofday);
@@ -62,6 +85,10 @@ sub get_proxy($$$$){
     # ============================================================================
     #+++++ INITIALIZATION
     # ============================================================================
+    if($#ARGV < 0){
+	pod2usage(-verbose => 2) ;
+	exit 1;
+    }
     
     if($#ARGV < 3){
 	#given a ProxySQL scheduler
@@ -69,6 +96,7 @@ sub get_proxy($$$$){
 	# and will split after
 	@ARGV = split('\ ',$ARGV[0]);
     }
+    
     $Param->{user}       = '';
     $Param->{log}       = undef ;
     $Param->{password}   = '';
@@ -80,7 +108,7 @@ sub get_proxy($$$$){
     $Param->{main_segment} = 0;
     $Param->{retry_up} = 0;
     $Param->{retry_down} = 0;
-    $Param->{print_execution} = 0;
+    $Param->{print_execution} = 1;
     $Param->{development} = 0;
     
     my $run_pid_dir = "/tmp" ;
@@ -137,13 +165,21 @@ sub get_proxy($$$$){
 	select FH;
     }
     
-    if($Param->{development} < 1){
+    if($Param->{development} < 2){
 	if(!-e $base_path){
-	    `echo "$$ : $hg" > $base_path`
+	    `echo "$$" > $base_path`
 	}
 	else{
-	    print Utils->print_log(1,"Another process is running using the same HostGroup and settings,\n Or orphan pid file. check in $base_path");
-	    exit 1;
+	    my $existing_pid=`cat $base_path`;
+	    my $exists = kill 0, $existing_pid;
+	    if($exists > 0){
+		print STDOUT "Another process is running using the same HostGroup and settings,\n Or orphan pid file. check in $base_path \n";
+		print Utils->print_log(1,"Another process is running using the same HostGroup and settings,\n Or orphan pid file. check in $base_path \n");
+		exit 1;
+	    }
+	    else{
+		`echo "$$" > $base_path`;
+	    }
 	}    
     }
      
@@ -198,7 +234,7 @@ sub get_proxy($$$$){
     }
     
     my $end = gettimeofday();
-    print Utils->print_log(3,"END EXECUTION Total Time:".($end - $start) * 1000 ."\n\n") if $Param->{print_execution} >0; 
+    print Utils->print_log(3,"END EXECUTION Total Time(ms):".($end - $start) * 1000 ."\n\n") if $Param->{print_execution} >0; 
 
 
     
@@ -213,6 +249,7 @@ sub get_proxy($$$$){
     
     `rm -f $base_path`;
     
+      
     exit(0);
     
     
@@ -357,7 +394,7 @@ sub get_proxy($$$$){
         my ( $self) = @_;
         
         my $dbh = $self->{_dbh_proxy};
-        my $cmd =$self->{_SQL_get_mysql_servers}." AND hostgroup_id IN (".join(",",sort keys($self->hostgroups)).") order by hostgroup_id, hostname";
+	my $cmd =$self->{_SQL_get_mysql_servers}." AND hostgroup_id IN (".join(",",sort keys($self->hostgroups())).") order by hostgroup_id, hostname";
         my $sth = $dbh->prepare($cmd);
         $sth->execute();
         my $i = 1;
@@ -498,7 +535,7 @@ sub get_proxy($$$$){
     sub new {
         my $class = shift;
         my $SQL_get_variables="SHOW GLOBAL VARIABLES LIKE 'wsrep%";
-        my $SQL_get_status="SHOW GLOBAL VARIABLES LIKE 'wsrep%";
+        my $SQL_get_status="SHOW GLOBAL STATUS LIKE 'wsrep%";
         my $SQL_get_read_only="SHOW GLOBAL VARIABLES LIKE 'read_only'";  
 
         # Variable section for  looping values
@@ -1488,8 +1525,8 @@ sub get_proxy($$$$){
       my $dbh = DBI->connect($dsn, $user, $pass);
     
       if (!defined($dbh)) {
-        print Utils->get_current_time ."[ERROR] Cannot connect to $dsn as $user\n";
-#        die();
+        die print Utils->print_log(1, "Cannot connect to $dsn as $user\n");
+        #die();
 	return undef;
       }
       
