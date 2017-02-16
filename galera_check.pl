@@ -394,7 +394,7 @@ sub get_proxy($$$$){
         my ( $self) = @_;
         
         my $dbh = $self->{_dbh_proxy};
-	my $cmd =$self->{_SQL_get_mysql_servers}." AND hostgroup_id IN (".join(",",sort keys($self->hostgroups())).") order by hostgroup_id, hostname";
+	my $cmd =$self->{_SQL_get_mysql_servers}." AND hostgroup_id IN (".join(",",sort keys(%{$self->hostgroups})).") order by hostgroup_id, hostname";
         my $sth = $dbh->prepare($cmd);
         $sth->execute();
         my $i = 1;
@@ -502,7 +502,7 @@ sub get_proxy($$$$){
 	if($self->debug){$run_milliseconds = (gettimeofday() -$start ) *1000};
 	
 	if($debug>=3){
-	    foreach my $key (sort keys $new_nodes){
+	    foreach my $key (sort keys %{$new_nodes}){
 		if($new_nodes->{$key}->{_process_status} == 1){
 		    print Utils->print_log(4,$new_nodes->{$key}->{_ip}.":".$new_nodes->{$key}->{_hostgroups}." Processed \n");
 		}
