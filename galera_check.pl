@@ -238,13 +238,14 @@ sub get_proxy($$$$){
        
        my $end = gettimeofday();
        print Utils->print_log(3,"END EXECUTION Total Time(ms):".($end - $start) * 1000 ."\n\n") if $Param->{print_execution} >0; 
-   
-   
+       print Utils->print_log(3,"");
+       FH->flush(); 
        
        $proxy_sql_node->disconnect();
     
        #debug braket 	
         sleep 2 if($Param->{development} > 0);
+
     }
     
     if(defined $Param->{log}){
