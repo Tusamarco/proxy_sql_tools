@@ -303,7 +303,8 @@ sub get_proxy($$$$){
             _monitor_password => undef,
             _nodes => {},
             _check_timeout => 100, #timeout in ms
-            _cluster_identifier => undef, 
+            _cluster_identifier => undef,
+            _hg_writer_id => 0,
             #_hg => undef,
         };
         bless $self, $class;
@@ -383,7 +384,14 @@ sub get_proxy($$$$){
         $self->{_hostgroups} = $hostgroups if defined($hostgroups);
         return $self->{_hostgroups};
     }
-        sub monitor_user{
+    sub hg_writer_id {
+        my ( $self, $hostgroups ) = @_;
+        $self->{_hg_writer_id} = $hostgroups if defined($hostgroups);
+        return $self->{_hg_writer_id};
+    }
+    
+    
+    sub monitor_user{
         my ( $self, $monitor_user ) = @_;
         $self->{_monitor_user} = $monitor_user if defined($monitor_user);
         return $self->{_monitor_user};
@@ -411,6 +419,7 @@ sub get_proxy($$$$){
             $node->ip($ref->{hostname});
             $node->port($ref->{port});
             $node->weight($ref->{weight});
+            $node->connections($ref->{max_connections});
             $node->user($self->{_monitor_user});
             $node->password($self->{_monitor_password});
             $node->proxy_status($ref->{status});
@@ -453,16 +462,16 @@ sub get_proxy($$$$){
                     $Threads{$key}=threads->create(sub  {return get_node_info($self,$key)});
 #                    $new_nodes->{$key} = get_node_info($self,$key);
 
-             #		    if(!exists $processed_nodes->{$new_nodes->{$key}->{_ip}} ){
-             #			$self->{_size}->{$new_nodes->{$key}->{_wsrep_segment}} = (($self->{_size}->{$new_nodes->{$key}->{_wsrep_segment}}|| 0) +1);
-             #			$processed_nodes->{$new_nodes->{$key}->{_ip}}=$self->{_size}->{$new_nodes->{$key}->{_wsrep_segment}};
-             #			#print  $self->{_size}->{$new_nodes->{$key}->{_wsrep_segment}}." segment " .$new_nodes->{$key}->{_wsrep_segment} ."\n"
-             #		    }
+             		#    if(!exists $processed_nodes->{$new_nodes->{$key}->{_ip}} ){
+             		#	$self->{_size}->{$new_nodes->{$key}->{_wsrep_segment}} = (($self->{_size}->{$new_nodes->{$key}->{_wsrep_segment}}|| 0) +1);
+             		#	$processed_nodes->{$new_nodes->{$key}->{_ip}}=$self->{_size}->{$new_nodes->{$key}->{_wsrep_segment}};
+             		#	#print  $self->{_size}->{$new_nodes->{$key}->{_wsrep_segment}}." segment " .$new_nodes->{$key}->{_wsrep_segment} ."\n"
+             		#    }
 
 		    
                 }
             }
-            #DEBUG SENZA THREADS coomenta da qui
+            #DEBUG SENZA THREADS commenta da qui
             foreach my $thr (sort keys %Threads) {
                 if ($Threads{$thr}->is_running()) {
                     my $tid = $Threads{$thr}->tid;
@@ -492,10 +501,11 @@ sub get_proxy($$$$){
                       }
                       
                    #checks for ONLINE writer(s)
-
+            
                		    if(defined $new_nodes->{$thr}->{_read_only}
                         && $new_nodes->{$thr}->{_read_only} eq "OFF"
-                        && $new_nodes->{$thr}->{_proxy_status} eq "ONLINE"){
+                        && $new_nodes->{$thr}->{_proxy_status} eq "ONLINE"
+                        && $new_nodes->{$thr}->{_hostgroups} == $self->hg_writer_id){
                            $self->{_haswriter} = 1 ;
                       }
                      
@@ -591,6 +601,7 @@ sub get_proxy($$$$){
             _port => undef,
             _proxy_status    => undef,
             _weight => 1,
+            _connections => 2000,
             _cluster_status    => undef,
             _cluster_size  => 0,
             _process_status => -1, 
@@ -603,18 +614,31 @@ sub get_proxy($$$$){
             #_MOVE_SWAP_WRITER_TO_READER => 5010, #Future use
             _retry_down_saved => 0, # number of retry on a node before declaring it as failed.
             _retry_up_saved => 0, # number of retry on a node before declaring it OK.
-            _comment => undef, 
+            _comment => undef,
+            _wsrep_gcomm_uuid => undef,
+            _wsrep_local_index => 0,
 
         };
         bless $self, $class;
         return $self;
         
     }
+    sub wsrep_local_index{
+        my ( $self, $in ) = @_;
+        $self->{_wsrep_local_index} = $in if defined($in);
+        return $self->{_wsrep_local_index};
+    }
 
     sub comment{
         my ( $self, $in ) = @_;
         $self->{_comment} = $in if defined($in);
         return $self->{_comment};
+    }
+
+    sub wsrep_gcomm_uuid{
+        my ( $self, $in ) = @_;
+        $self->{_wsrep_gcomm_uuid} = $in if defined($in);
+        return $self->{_wsrep_gcomm_uuid};
     }
     
     sub retry_down_saved{
@@ -682,6 +706,12 @@ sub get_proxy($$$$){
         my ( $self, $weight ) = @_;
         $self->{_weight} = $weight if defined($weight);
         return $self->{_weight};
+    }
+
+    sub connections {
+        my ( $self, $connections ) = @_;
+        $self->{_connections} = $connections if defined($connections);
+        return $self->{_connections};
     }
     
     sub proxy_status {
@@ -836,7 +866,13 @@ sub get_proxy($$$$){
         $self->{_wsrep_ready} = $status->{wsrep_ready};
         $self->{_cluster_status} = $status->{wsrep_cluster_status};
         $self->{_cluster_size} = $status->{wsrep_cluster_size};
-        
+        $self->{_wsrep_gcomm_uuid} = $status->{wsrep_gcomm_uuid};
+        my $pxc_view = Utils::get_pxc_clusterview($dbh, $self->{_wsrep_gcomm_uuid} );
+        $self->{_wsrep_local_index} = $pxc_view->{local_index};
+        if($self->{wsrep_segment} == 0){
+           $self->{_wsrep_segment} = $pxc_view->{segment};
+        }
+                
         $dbh->disconnect if (defined $dbh);
 	#sleep 5;
 	
@@ -889,7 +925,39 @@ sub get_proxy($$$$){
       return $self->{_retry_down_saved};
     }
     
-    sub remove_read_only(){
+    sub promote_writer(){
+      my ( $self,$proxynode ) = @_;
+        
+      print Utils->print_log(3,"This Node Try to become a WRITER promoting to HG to $proxynode->{hg_writer_id}" 
+          .$self->{_ip}
+          .":".$self->{_port}
+          .":HG".$self->{_hostgroups}
+          ."\n"  );	
+	
+      #my $dbh = Utils::get_connection($self->{_dns},$self->{_user},$self->{_password},' ');
+      #if(!defined $dbh){
+      #    return undef;
+      #}
+      
+      my $proxy_sql_command= "INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('$self->{_ip}',$proxynode->{_hg_writer_id},$self->{_port},$self->{_weight},$self->{_connections});";
+      $proxynode->{_dbh_proxy}->do($proxy_sql_command) or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
+      $proxynode->{_dbh_proxy}->do("LOAD MYSQL SERVERS TO RUNTIME") or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
+      $proxynode->{_dbh_proxy}->do("SAVE MYSQL SERVERS TO DISK") or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
+        print Utils->print_log(2," Move node:"
+            .$self->{_ip}.":"
+            .$self->{_port}
+            .$self->{_weight}
+            .$self->{_connections}
+            .$proxynode->{hg_writer_id}
+            ." SQL:" .$proxy_sql_command
+            ."\n" );			    
+
+      
+      
+      return 1;
+    }
+    
+    sub move_to_writer_hg(){
       my ( $self ) = @_;
         
       print Utils->print_log(3,"This Node Try to become a WRITER set READ_ONLY to 0 " 
@@ -942,6 +1010,7 @@ sub get_proxy($$$$){
             _dns  => undef,
             _pid  => undef,
             _hostgroups => undef,
+            _hg_writer_id => 0,
             _user => undef,
             _password => undef,
             _port => undef,
@@ -1018,6 +1087,12 @@ sub get_proxy($$$$){
         return $self->{_pid};
     }
 
+    sub hg_writer_id {
+        my ( $self, $pid ) = @_;
+        $self->{_hg_writer_id} = $pid if defined($pid);
+        return $self->{_hg_writer_id};
+    }
+    
     sub hostgroups {
         my ( $self, $hostgroups ) = @_;
         if (defined $hostgroups){
@@ -1029,6 +1104,9 @@ sub get_proxy($$$$){
                my  ($id,$type) = split /:/, $hg;
                $proxy_hg->id($id);
                $proxy_hg->type(lc($type));
+               if(lc($type) eq 'w'){
+                  $self->hg_writer_id($id); 
+               }
                $self->{_hostgroups}->{$id}=($proxy_hg);
                $proxy_hgM->id(($id + 9000));
                $proxy_hgM->type("m".lc($type));
@@ -1117,6 +1195,7 @@ sub get_proxy($$$$){
         $galera_cluster->monitor_user($self->monitor_user);
         $galera_cluster->monitor_password($self->monitor_password);
         $galera_cluster->debug($self->debug);
+        $galera_cluster->hg_writer_id($self->hg_writer_id);
         $self->get_galera_cluster($galera_cluster);
        if($self->debug >=1){print Utils->print_log(3," Galera cluster object created  " . caller(3). "\n" ); }
     }
@@ -1453,27 +1532,36 @@ sub get_proxy($$$$){
         my ($proxynode,$Galera_cluster)  = @_ ;
         my ( $nodes ) = $Galera_cluster->{_nodes};
         my $failover_node;
+        my $min_index = 100;
+        my $max_weight=0;
+        my $local_node;
+        my $hg_writer_id=0;
+        
         
         foreach my $key (sort keys %{$nodes}){
-                   if(defined $nodes->{$key} ){
+          if(defined $nodes->{$key} ){
          
-         #only if node has HG that is not maintennce it vcan evaluate to be put down in some way
-         #Look for the node with the lowest weight in the same segment
-         if($nodes->{$key}->{_hostgroups} < 9000
-            && $nodes->{$key}->{_process_status} > 0
-            && $nodes->{$key}->{_wsrep_segment} == $Galera_cluster->{_main_segment}
-            ){
-             $failover_node = $nodes->{$key} if !defined $failover_node;
-             if($nodes->{$key}->{_weight} < $failover_node->{_weight}){
-          $failover_node = $nodes->{$key};
+             #only if node has HG that is not maintenance it can be evaluated to be put down in some way
+             #Look for the node with the lowest weight in the same segment
+             if($nodes->{$key}->{_hostgroups} < 9000
+                && $nodes->{$key}->{_process_status} > 0
+                && $nodes->{$key}->{_wsrep_segment} == $Galera_cluster->{_main_segment}
+                ){
+              
+                  if($nodes->{$key}->{_weight} > $max_weight
+                     && $nodes->{$key}->{_wsrep_local_index} < $min_index
+                     ){
+                       $max_weight= $nodes->{$key}->{_weight};
+                       $min_index =  $nodes->{$key}->{_wsrep_local_index};
+                       $failover_node = $nodes->{$key};
+                   
+                  }
              }
-             
-         }
-            }
+          }
         }
         #if a node was found, try to do the failover removing the READ_ONLY
         if(defined $failover_node){
-            return $failover_node->remove_read_only();
+            return $failover_node->promote_writer($proxynode);
         }
        
         
@@ -1603,6 +1691,7 @@ sub get_proxy($$$$){
       while (my $ref = $sth->fetchrow_hashref()) {
         my $n = $ref->{'Variable_name'};
         $v{"\L$n\E"} = $ref->{'Value'};
+      #  print STDERR "$n  :  ".$v{$n}. " ZZZZZZZZZZZZZZZZZZ ". $ref->{'Value'} ."\n";
       }
       
      
@@ -1628,7 +1717,29 @@ sub get_proxy($$$$){
         }
         return \%v;
     }
-    
+    ##
+    ## get_variables -- return a hash ref to SHOW GLOBAL VARIABLES output
+    ##
+    ## $dbh -- a non-null database handle, as returned from get_connection()
+    ##
+    sub get_pxc_clusterview($$) {
+        my $dbh = shift;
+        my $variableName = shift;
+        #my $debug = shift;
+        my %v;
+        my $cmd = "select * from performance_schema.pxc_cluster_view where UUID = '$variableName'";
+      
+        my $sth = $dbh->prepare($cmd);
+        $sth->execute();
+        
+      while (my $ref = $sth->fetchrow_hashref()) {
+          foreach my $name ('HOST_NAME', 'UUID','STATUS','LOCAL_INDEX','SEGMENT'){  
+               my $n = $name;
+              $v{"\L$n\E"} = $ref->{$name};
+          }
+        }        
+        return \%v;
+    }    
     #Print time from invocation with milliseconds
     sub get_current_time{
         use POSIX qw(strftime);
@@ -1700,7 +1811,7 @@ sample [options] [file ...]
    --debug
    --log	      Full path to the log file ie (/var/log/proxysql/galera_check_) the check will add
 		      the identifier for the specific HG.
-   --active_failover  in case galera is set to use replication hg and in case of single wrter this EXPEIMENTAL feature will try to perform automatic failover activating the
+   --active_failover  in case galera is set to use replication hg and in case of single writer this EXPEIMENTAL feature will try to perform automatic failover activating the
 		      the node in the READER HG that has the lowest weight. It require (for the moment given it is experimental) monitor user (that connects to MySQL nodes), to have SUPER privileges 
    -help              help message
    
