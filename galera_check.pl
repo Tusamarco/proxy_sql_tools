@@ -110,6 +110,7 @@ sub get_proxy($$$$){
     $Param->{retry_down} = 0;
     $Param->{print_execution} = 1;
     $Param->{development} = 2;
+    $Param->{active_failover} = 0;
     
     my $run_pid_dir = "/tmp" ;
     
@@ -127,7 +128,7 @@ sub get_proxy($$$$){
         'retry_down:i' =>	\$Param->{retry_down},
         'execution_time:i' => \$Param->{print_execution},
         'development:i' => \$Param->{development},
-        'active_failover' => \$Param->{active_failover},
+        'active_failover:i' => \$Param->{active_failover},
         
         'help|?'       => \$Param->{help}
        
@@ -138,6 +139,12 @@ sub get_proxy($$$$){
     die print Utils->print_log(1,"Option --host not specified.\n") unless defined $Param->{host};
     die print Utils->print_log(1,"Option --user not specified.\n") unless defined $Param->{user};
     die print Utils->print_log(1,"Option --port not specified.\n") unless defined $Param->{port};
+    die print Utils->print_log(1,"Option --active_failover has an invalid value ($Param->{active_failover}).\n"
+                               ."Valid values are:\n"
+                               ." 0 [default] do not make failover\n"
+                               ." 1 make failover only if HG 8000 is specified in ProxySQL mysl_servers\n"
+                               ." 2 use PXC_CLUSTER_VIEW to identify a server in the same segment\n"
+                               ." 3 do whatever to keep service up also failover to another segment (use PXC_CLUSTER_VIEW) ") unless $Param->{active_failover} < 4;
     #die "Option --log not specified. We need a place to log what is going on, don't we?\n" unless defined $Param->{log};
     print Utils->print_log(2,"Option --log not specified. We need a place to log what is going on, don't we?\n") unless defined $Param->{log};
     
@@ -206,7 +213,7 @@ sub get_proxy($$$$){
        $proxy_sql_node->retry_up($Param->{retry_up});
        $proxy_sql_node->retry_down($Param->{retry_down});
        $proxy_sql_node->hostgroups($Param->{hostgroups}) ;
-       $proxy_sql_node->require_failover(0) if defined $Param->{active_failover};
+       $proxy_sql_node->require_failover($Param->{active_failover});
        
        $proxy_sql_node->connect();
        
@@ -275,7 +282,7 @@ sub get_proxy($$$$){
     
     sub new {
         my $class = shift;
-        my $SQL_get_mysql_servers=" SELECT a.* FROM mysql_servers a join stats_mysql_connection_pool b on a.hostname=b.srv_host and a.port=b.srv_port and a.hostgroup_id=b.hostgroup  WHERE b.status not in ('OFFLINE_HARD','SHUNNED') ";
+        my $SQL_get_mysql_servers=" SELECT a.* FROM runtime_mysql_servers a join stats_mysql_connection_pool b on a.hostname=b.srv_host and a.port=b.srv_port and a.hostgroup_id=b.hostgroup  WHERE b.status not in ('OFFLINE_HARD','SHUNNED') ";
         
         # Variable section for  looping values
         #Generalize object for now I have conceptualize as:
@@ -305,6 +312,7 @@ sub get_proxy($$$$){
             _check_timeout => 100, #timeout in ms
             _cluster_identifier => undef,
             _hg_writer_id => 0,
+            _has_failover_node =>0,
             #_hg => undef,
         };
         bless $self, $class;
@@ -312,6 +320,11 @@ sub get_proxy($$$$){
         
     }
 
+   sub has_failover_node{
+        my ( $self, $in ) = @_;
+        $self->{_has_failover_node} = $in if defined($in);
+        return $self->{_has_failover_node};
+    }
 
     sub cluster_identifier{
         my ( $self, $in ) = @_;
@@ -411,11 +424,18 @@ sub get_proxy($$$$){
         my $sth = $dbh->prepare($cmd);
         $sth->execute();
         my $i = 1;
+        my $locHg = $self->{_hostgroups};
+        
         while (my $ref = $sth->fetchrow_hashref()) {
             my $node = GaleraNode->new();
             $node->debug($self->debug);
             $node->dns("DBI:mysql:host=".$ref->{hostname}.";port=".$ref->{port});
             $node->hostgroups($ref->{hostgroup_id});
+            if($node->{_hostgroups} > 8000
+               && exists $locHg->{$node->{_hostgroups}}){
+                  $self->{_has_failover_node} = 1;
+                
+            }
             $node->ip($ref->{hostname});
             $node->port($ref->{port});
             $node->weight($ref->{weight});
@@ -927,8 +947,20 @@ sub get_proxy($$$$){
     
     sub promote_writer(){
       my ( $self,$proxynode ) = @_;
-        
-      print Utils->print_log(3,"This Node Try to become a WRITER promoting to HG to $proxynode->{hg_writer_id}" 
+      if($self->{_hostgroups} > 8000){
+         print Utils->print_log(3,"Special Backup - Group found! I am electing a node to writer following the indications\n This Node Try to become the new"
+                                  ." WRITER for HG $proxynode->{_hg_writer_id} Server details: " 
+             .$self->{_ip}
+             .":".$self->{_port}
+             .":HG".$self->{_hostgroups}
+             ."\n"  );	
+       
+      }
+      else{
+       
+       
+      }
+      print Utils->print_log(3,"This Node Try to become a WRITER promoting to HG $proxynode->{_hg_writer_id}" 
           .$self->{_ip}
           .":".$self->{_port}
           .":HG".$self->{_hostgroups}
@@ -992,7 +1024,7 @@ sub get_proxy($$$$){
         my $class = shift;
 
         my $SQL_get_monitor = "select variable_name name,variable_value value from global_variables where variable_name in( 'mysql-monitor_username','mysql-monitor_password','mysql-monitor_read_only_timeout' ) order by 1";
-        my $SQL_get_hostgroups = "select distinct hostgroup_id hg_isd from mysql_servers order by 1;";
+        my $SQL_get_hostgroups = "select distinct hostgroup_id hg_isd from runtime_mysql_servers order by 1;";
         my $SQL_get_rep_hg = "select writer_hostgroup,reader_hostgroup from mysql_replication_hostgroups order by 1;";
         my $SQL_get_pxc_cluster_view = "select * from performance_schema.pxc_cluster_view order by  SEGMENT, LOCAL_INDEX;";
 
@@ -1025,7 +1057,12 @@ sub get_proxy($$$$){
             _retry_down => 0, # number of retry on a node before declaring it as failed.
             _retry_up => 0, # number of retry on a node before declaring it OK.
             _status_changed => 0, #if 1 something had happen and a node had be modify
-            _require_failover => -1, #  -1 disable, 0 enable, 1 active and require failover if the HG has no writer and if there is a node in the same segment and IF it has read_only=1 it will try to promote it
+            _require_failover => 0, # Valid values are:
+                                      # 0 [default] do not make failover
+                                      # 1 make failover only if HG 8000 is specified in ProxySQL mysl_servers
+                                      # 2 use PXC_CLUSTER_VIEW to identify a server in the same segment
+                                      # 3 do whatever to keep service up also failover to another segment (use PXC_CLUSTER_VIEW) 
+                                                 
 
         };
         bless $self, $class;
@@ -1101,6 +1138,7 @@ sub get_proxy($$$$){
             foreach my $hg (@HGIds){
                my $proxy_hg = ProxySqlHG->new();
                my $proxy_hgM = ProxySqlHG->new();
+               my $proxy_hgB = ProxySqlHG->new();
                my  ($id,$type) = split /:/, $hg;
                $proxy_hg->id($id);
                $proxy_hg->type(lc($type));
@@ -1111,6 +1149,13 @@ sub get_proxy($$$$){
                $proxy_hgM->id(($id + 9000));
                $proxy_hgM->type("m".lc($type));
                $self->{_hostgroups}->{$proxy_hgM->id(($id + 9000))}=($proxy_hgM);
+               #add a special group in case of back server for failover
+               if(lc($type) eq "w"){
+                  $proxy_hgM->id(($id + 8000));
+                  $proxy_hgM->type("b".lc($type));
+                  $self->{_hostgroups}->{$proxy_hgM->id(($id + 8000))}=($proxy_hgM);
+               }
+
                if($self->debug >=1){print Utils->print_log(3," Inizializing hostgroup " . $proxy_hg->id ." ".$proxy_hg->type . "with maintenance HG ". $proxy_hgM->id ." ".$proxy_hgM->type."\n") ; }
             }
         }
@@ -1207,11 +1252,11 @@ sub get_proxy($$$$){
 
       #failover has higher priority as such it will happen before anything else
       # and it will ends the script work (if successful)
-      if($proxynode->require_failover eq 0){
+      if($proxynode->require_failover > 0){
         if($GGalera_cluster->haswriter < 1){
           if($proxynode->initiate_failover($GGalera_cluster) >0){
              if($proxynode->debug >=1){
-               print Utils->print_log(1,"!!!! FAILOVER !!!!! \n Cluster was without WRITER I have try to restore service promoting a node" );
+               print Utils->print_log(1,"!!!! FAILOVER !!!!! \n Cluster was without WRITER I have try to restore service promoting a node\n" );
                #exit 0;
              }
           }
@@ -1537,7 +1582,12 @@ sub get_proxy($$$$){
         my $local_node;
         my $hg_writer_id=0;
         
-        
+        #Valid values are:
+        #    0 [default] do not make failover
+        #    1 make failover only if HG 8000 is specified in ProxySQL mysl_servers
+        #    2 use PXC_CLUSTER_VIEW to identify a server in the same segment
+        #    3 do whatever to keep service up also failover to another segment (use PXC_CLUSTER_VIEW) 
+        #           
         foreach my $key (sort keys %{$nodes}){
           if(defined $nodes->{$key} ){
          
@@ -1545,17 +1595,47 @@ sub get_proxy($$$$){
              #Look for the node with the lowest weight in the same segment
              if($nodes->{$key}->{_hostgroups} < 9000
                 && $nodes->{$key}->{_process_status} > 0
-                && $nodes->{$key}->{_wsrep_segment} == $Galera_cluster->{_main_segment}
-                ){
+                && $nodes->{$key}->{_wsrep_status} == 4){
               
-                  if($nodes->{$key}->{_weight} > $max_weight
-                     && $nodes->{$key}->{_wsrep_local_index} < $min_index
-                     ){
-                       $max_weight= $nodes->{$key}->{_weight};
-                       $min_index =  $nodes->{$key}->{_wsrep_local_index};
-                       $failover_node = $nodes->{$key};
-                   
-                  }
+              #IN case failover option is 1 we need to have:
+              #The failover group defined in Proxysql (8xxx + id of the HG)
+              #Node must be of HG 8XXXX id
+              #And must be in the same segment of the writer 
+                 if(
+                    $proxynode->{_require_failover} == 1
+                    && $nodes->{$key}->{_wsrep_segment} == $Galera_cluster->{_main_segment}
+                    && $Galera_cluster->{_has_failover_node} >0
+                    && $nodes->{$key}->{_hostgroups} > 8000
+                    ){
+                       if($nodes->{$key}->{_weight} > $max_weight){
+                            $max_weight= $nodes->{$key}->{_weight};
+                            $failover_node = $nodes->{$key};
+                       }
+                 }
+              #IN case failover option is 2 we need to have:
+              # must be in the same segment of the writer
+              #and be in the PXC_CLUSTER_VIEW
+
+                 elsif(
+                    $proxynode->{_require_failover} == 2
+                    && $nodes->{$key}->{_wsrep_segment} == $Galera_cluster->{_main_segment}                  
+                 ){
+                      if($nodes->{$key}->{_wsrep_local_index} < $min_index
+                         ){
+                           $min_index =  $nodes->{$key}->{_wsrep_local_index};
+                           $failover_node = $nodes->{$key};
+                      }
+                 }
+                 elsif($proxynode->{_require_failover} == 3){
+                      if($nodes->{$key}->{_weight} > $max_weight
+                         && $nodes->{$key}->{_wsrep_local_index} < $min_index
+                         ){
+                           $max_weight= $nodes->{$key}->{_weight};
+                           $min_index =  $nodes->{$key}->{_wsrep_local_index};
+                           $failover_node = $nodes->{$key};
+                      }
+                  
+                 }
              }
           }
         }
