@@ -244,8 +244,10 @@ sub get_proxy($$$$){
        }
        
        my $end = gettimeofday();
-       print Utils->print_log(3,"END EXECUTION Total Time(ms):".($end - $start) * 1000 ."\n\n") if $Param->{print_execution} >0; 
-       print Utils->print_log(3,"");
+       print Utils->print_log(3,"END EXECUTION Total Time(ms):".($end - $start) * 1000 ."\n") if $Param->{print_execution} >0; 
+       if($Param->{debug} >= 1){
+          print Utils->print_log(3,"\n");
+       }
        FH->flush(); 
        
        $proxy_sql_node->disconnect();
@@ -956,10 +958,6 @@ sub get_proxy($$$$){
              ."\n"  );	
        
       }
-      else{
-       
-       
-      }
       print Utils->print_log(3,"This Node Try to become a WRITER promoting to HG $proxynode->{_hg_writer_id}" 
           .$self->{_ip}
           .":".$self->{_port}
@@ -1254,6 +1252,7 @@ sub get_proxy($$$$){
       # and it will ends the script work (if successful)
       if($proxynode->require_failover > 0){
         if($GGalera_cluster->haswriter < 1){
+          print Utils->print_log(2,"Fail-over in action Using Method = $proxynode->{_require_failover}\n" );
           if($proxynode->initiate_failover($GGalera_cluster) >0){
              if($proxynode->debug >=1){
                print Utils->print_log(1,"!!!! FAILOVER !!!!! \n Cluster was without WRITER I have try to restore service promoting a node\n" );
@@ -1577,8 +1576,12 @@ sub get_proxy($$$$){
         my ($proxynode,$Galera_cluster)  = @_ ;
         my ( $nodes ) = $Galera_cluster->{_nodes};
         my $failover_node;
+        my $candidate_failover_node;
         my $min_index = 100;
         my $max_weight=0;
+        my $cand_min_index = 100;
+        my $cand_max_weight=0;
+
         my $local_node;
         my $hg_writer_id=0;
         
@@ -1627,20 +1630,32 @@ sub get_proxy($$$$){
                       }
                  }
                  elsif($proxynode->{_require_failover} == 3){
-                      if($nodes->{$key}->{_weight} > $max_weight
-                         && $nodes->{$key}->{_wsrep_local_index} < $min_index
-                         ){
-                           $max_weight= $nodes->{$key}->{_weight};
-                           $min_index =  $nodes->{$key}->{_wsrep_local_index};
-                           $failover_node = $nodes->{$key};
-                      }
-                  
+                       if($nodes->{$key}->{_wsrep_segment} != $Galera_cluster->{_main_segment}
+                          && !defined $failover_node
+                          && $nodes->{$key}->{_weight} > $cand_max_weight
+                          && $nodes->{$key}->{_wsrep_local_index} < $cand_min_index){
+                            $cand_max_weight= $nodes->{$key}->{_weight};
+                            $cand_min_index =  $nodes->{$key}->{_wsrep_local_index};
+                            $candidate_failover_node = $nodes->{$key};
+                       }
+                       elsif($nodes->{$key}->{_weight} > $max_weight
+                          && $nodes->{$key}->{_wsrep_local_index} < $min_index){
+                          $max_weight= $nodes->{$key}->{_weight};
+                          $min_index =  $nodes->{$key}->{_wsrep_local_index};
+                          $failover_node = $nodes->{$key};
+                       }
                  }
              }
           }
         }
         #if a node was found, try to do the failover removing the READ_ONLY
-        if(defined $failover_node){
+        if(defined $candidate_failover_node && $failover_node){
+            return $failover_node->promote_writer($proxynode);
+        }
+        elsif(defined $candidate_failover_node && !defined $failover_node){
+            return $candidate_failover_node->promote_writer($proxynode);
+        }
+        else{
             return $failover_node->promote_writer($proxynode);
         }
        
@@ -2006,6 +2021,16 @@ Node comes back from offline_soft when (all of them):
      1) node state is 4
      3) wsrep_reject_queries = none
      4) Primary state
+
+
+=item 5
+ active_failover
+      Valid values are:
+          0 [default] do not make failover
+          1 make failover only if HG 8000 is specified in ProxySQL mysl_servers
+          2 use PXC_CLUSTER_VIEW to identify a server in the same segment
+          3 do whatever to keep service up also failover to another segment (use PXC_CLUSTER_VIEW) 
+
 
 =cut	
 
