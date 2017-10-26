@@ -109,7 +109,7 @@ sub get_proxy($$$$){
     $Param->{retry_up} = 0;
     $Param->{retry_down} = 0;
     $Param->{print_execution} = 1;
-    $Param->{development} = 2;
+    $Param->{development} = 0;
     $Param->{active_failover} = 0;
     
     my $run_pid_dir = "/tmp" ;
@@ -1906,8 +1906,13 @@ sample [options] [file ...]
    --debug
    --log	      Full path to the log file ie (/var/log/proxysql/galera_check_) the check will add
 		      the identifier for the specific HG.
-   --active_failover  in case galera is set to use replication hg and in case of single writer this EXPEIMENTAL feature will try to perform automatic failover activating the
-		      the node in the READER HG that has the lowest weight. It require (for the moment given it is experimental) monitor user (that connects to MySQL nodes), to have SUPER privileges 
+   --active_failover  A value from 0 to 3, indicating what level/kind of fail-over the script must perform.
+                       active_failover
+                       Valid values are:
+                          0 [default] do not make failover
+                          1 make failover only if HG 8000 is specified in ProxySQL mysl_servers
+                          2 use PXC_CLUSTER_VIEW to identify a server in the same segment
+                          3 do whatever to keep service up also failover to another segment (use PXC_CLUSTER_VIEW) 
    -help              help message
    
 =head1 DESCRIPTION

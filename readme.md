@@ -168,19 +168,36 @@ sample [options] [file ...]
 Note that galera_check is also Segment aware, as such the checks on the presence of Writer /reader is done by segment, respecting the MainSegment as primary.
 
 
-Configure in ProxySQL
+Examples of configurations in ProxySQL
 
+Simple check without retry
+```
+INSERT  INTO scheduler (id,active,interval_ms,filename,arg1) values (10,0,2000,"/var/lib/proxysql/galera_check.pl","-u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --main_segment=1 --debug=0  --log=/var/lib/proxysql/galeraLog");
+```
+
+Simple check with retry options
 ```
 INSERT  INTO scheduler (id,active,interval_ms,filename,arg1) values (10,0,2000,"/var/lib/proxysql/galera_check.pl","-u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --retry_down=2 --retry_up=1 --main_segment=1 --debug=0  --log=/var/lib/proxysql/galeraLog");
 LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
+```
 
+Script with supporting SINGLE writer HG and Backup nodes 
+```
+INSERT  INTO scheduler (id,active,interval_ms,filename,arg1) values (10,0,2000,"/var/lib/proxysql/galera_check.pl","-u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --main_segment=1 --debug=0 --active_failover=1 --log=/var/lib/proxysql/galeraLog");
+```
+
+For all to update the scheduler and make the script active:
+```
 update scheduler set active=1 where id=10;
 LOAD SCHEDULER TO RUNTIME;
-
+```
+or to update/change the arguments:
+```
 update scheduler set arg1="-u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --main_segment=1 --debug=1  --log=/var/lib/proxysql/galeraLog" where id =10;  
 LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
-
-
+```
+Remove a rule from scheduler:
+```
 delete from scheduler where id=10;
 LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
 ```
