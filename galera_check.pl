@@ -968,8 +968,10 @@ sub get_proxy($$$$){
       #if(!defined $dbh){
       #    return undef;
       #}
+      #(9000 + $proxynode->{_hg_writer_id})
       
       my $proxy_sql_command= "INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('$self->{_ip}',$proxynode->{_hg_writer_id},$self->{_port},$self->{_weight},$self->{_connections});";
+      $proxynode->{_dbh_proxy}->do("DELETE from mysql_servers where hostgroup_id in ($proxynode->{_hg_writer_id},".(9000 + $proxynode->{_hg_writer_id}).")") or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
       $proxynode->{_dbh_proxy}->do($proxy_sql_command) or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
       $proxynode->{_dbh_proxy}->do("LOAD MYSQL SERVERS TO RUNTIME") or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
       $proxynode->{_dbh_proxy}->do("SAVE MYSQL SERVERS TO DISK") or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
@@ -1248,19 +1250,6 @@ sub get_proxy($$$$){
       my ( $nodes ) = $GGalera_cluster->{_nodes};
       my $action_nodes = undef;
 
-      #failover has higher priority as such it will happen before anything else
-      # and it will ends the script work (if successful)
-      if($proxynode->require_failover > 0){
-        if($GGalera_cluster->haswriter < 1){
-          print Utils->print_log(2,"Fail-over in action Using Method = $proxynode->{_require_failover}\n" );
-          if($proxynode->initiate_failover($GGalera_cluster) >0){
-             if($proxynode->debug >=1){
-               print Utils->print_log(1,"!!!! FAILOVER !!!!! \n Cluster was without WRITER I have try to restore service promoting a node\n" );
-               #exit 0;
-             }
-          }
-        }
-      }
 
      #Rules:
 	    #see rules in the doc
@@ -1271,7 +1260,7 @@ sub get_proxy($$$$){
          if(defined $nodes->{$key} ){
 	
             #only if node has HG that is not maintennce it vcan evaluate to be put down in some way
-            if($nodes->{$key}->{_hostgroups} < 9000
+            if($nodes->{$key}->{_hostgroups} < 8000
                && $nodes->{$key}->{_process_status} > 0){
                 #Check major exclusions
                 # 1) wsrep state
@@ -1331,7 +1320,7 @@ sub get_proxy($$$$){
                if($nodes->{$key}->wsrep_rejectqueries ne "NONE" && $nodes->{$key}->proxy_status ne "OFFLINE_SOFT"){
                   my $inc =0;
                   if($nodes->{$key}->wsrep_rejectqueries eq "ALL"){
-                      $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_OFFLINE}}= $nodes->{$key};
+                      $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_HG_CHANGE}}= $nodes->{$key};
                       $inc=1;
                   }else{
                       $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_HG_CHANGE}}= $nodes->{$key};
@@ -1470,6 +1459,23 @@ sub get_proxy($$$$){
          }
        }
        $proxynode->action_nodes($action_nodes);
+       
+      #failover has higher priority BUT if it happens before other action will interfere with recovery and move nodes that may prevent the failover to happen
+      # and it will ends the script work (if successful)
+      if($proxynode->require_failover > 0
+         && !defined $action_nodes
+         ){
+        if($GGalera_cluster->haswriter < 1){
+          print Utils->print_log(2,"Fail-over in action Using Method = $proxynode->{_require_failover}\n" );
+          if($proxynode->initiate_failover($GGalera_cluster) >0){
+             if($proxynode->debug >=1){
+               print Utils->print_log(1,"!!!! FAILOVER !!!!! \n Cluster was without WRITER I have try to restore service promoting a node\n" );
+               #exit 0;
+             }
+          }
+        }
+      }
+
     }
     
     sub push_changes{
@@ -1597,8 +1603,12 @@ sub get_proxy($$$$){
              #only if node has HG that is not maintenance it can be evaluated to be put down in some way
              #Look for the node with the lowest weight in the same segment
              if($nodes->{$key}->{_hostgroups} < 9000
+                && $nodes->{$key}->{_proxy_status} eq "ONLINE"
                 && $nodes->{$key}->{_process_status} > 0
-                && $nodes->{$key}->{_wsrep_status} == 4){
+                && $nodes->{$key}->{_wsrep_status} == 4
+                && $nodes->{$key}->{_wsrep_rejectqueries} eq "NONE"
+                && $nodes->{$key}->{_wsrep_donorrejectqueries} eq "OFF"
+                ){
               
               #IN case failover option is 1 we need to have:
               #The failover group defined in Proxysql (8xxx + id of the HG)
