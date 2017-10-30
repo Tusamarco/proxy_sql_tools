@@ -428,7 +428,7 @@ sub get_proxy($$$$){
         my $i = 1;
         my $locHg = $self->{_hostgroups};
         
-        while (my $ref = $sth->fetchrow_hashref()) {
+       while (my $ref = $sth->fetchrow_hashref()) {
             my $node = GaleraNode->new();
             $node->debug($self->debug);
             $node->dns("DBI:mysql:host=".$ref->{hostname}.";port=".$ref->{port});
@@ -512,13 +512,17 @@ sub get_proxy($$$$){
                        ( $new_nodes->{$thr} ) = $Threads{$thr}->join;
                      #count the number of nodes by segment
                        if(($new_nodes->{$thr}->{_process_status} < 0 ||
-                           !exists $processed_nodes->{$new_nodes->{$thr}->{_ip}}) ){
+                           !exists $processed_nodes->{$new_nodes->{$thr}->{_ip}})
+                           && defined $new_nodes->{$thr}->{_wsrep_segment} 
+                         ){
                               $self->{_size}->{$new_nodes->{$thr}->{_wsrep_segment}} = (($self->{_size}->{$new_nodes->{$thr}->{_wsrep_segment}}|| 0) +1);
                               $processed_nodes->{$new_nodes->{$thr}->{_ip}}=$self->{_size}->{$new_nodes->{$thr}->{_wsrep_segment}};
                        }
                     
                     #assign size to HG
-                      if($new_nodes->{$thr}->{_proxy_status} ne "OFFLINE_SOFT"){
+                      if($new_nodes->{$thr}->{_proxy_status} ne "OFFLINE_SOFT"
+                         && defined $new_nodes->{$thr}->{_wsrep_segment} 
+                         ){
                           $self->{_hostgroups}->{$new_nodes->{$thr}->{_hostgroups}}->{_size} = ($self->{_hostgroups}->{$new_nodes->{$thr}->{_hostgroups}}->{_size}) + 1;
                       }
                       
@@ -611,7 +615,7 @@ sub get_proxy($$$$){
             _wsrep_desinccount => undef,
             _wsrep_ready => undef,
             _wsrep_provider => [],
-            _wsrep_segment => 0,
+            _wsrep_segment => 1000,
             _wsrep_pc_weight => 1,
             _SQL_get_variables => $SQL_get_variables,
             _SQL_get_status=> $SQL_get_status,
@@ -1666,6 +1670,14 @@ sub get_proxy($$$$){
             return $candidate_failover_node->promote_writer($proxynode);
         }
         else{
+            if(!defined $failover_node){
+                SWITCH: {
+                  if ($proxynode->{_require_failover} == 1) { print Utils->print_log(2,"No node for failover found , try to use active_failover=2 OR add a valid node to the 8000 HG pool \n" ) ;exit(1); last SWITCH; }
+                  if ($proxynode->{_require_failover} == 2) { print Utils->print_log(2,"No node for failover found , try to use active_failover=3 But that may move production to the other segment.\n" );exit(1); last SWITCH; }
+                  if ($proxynode->{_require_failover} == 3) { print Utils->print_log(2,"No node for failover found also in the other segments, I cannot continue you need to act manually \n" ); exit(1);last SWITCH; }
+                }
+            }
+         
             return $failover_node->promote_writer($proxynode);
         }
        
