@@ -500,7 +500,7 @@ sub get_proxy($$$$){
                     #print "  - Thread $tid running\n";
                    
                     if($run_milliseconds >  $self->{_check_timeout} ){
-                       if($self->debug >=0){print print Utils->print_log(2,"Check timeout :   " . $tid."\n")  }	
+                       if($self->debug >=0){print print Utils->print_log(2,"Check timeout :  THID " . $tid." for ms: $run_milliseconds \n")  }	
                           $irun = 0 ; 
                     }
                     else{
@@ -533,9 +533,15 @@ sub get_proxy($$$$){
                         && $new_nodes->{$thr}->{_proxy_status} eq "ONLINE"
                         && $new_nodes->{$thr}->{_hostgroups} == $self->hg_writer_id){
                            $self->{_haswriter} = 1 ;
-                      }
+                      }else{
+                      
+                           if($self->debug
+                              && $new_nodes->{$thr}->{_hostgroups} == $self->hg_writer_id){
+                                 print Utils->print_log(3," Not a writer :" .$new_nodes->{$thr}->{_ip} . " HG: $new_nodes->{$thr}->{_hostgroups}  \n" )
+                           }	
+                     }
                      
-                     if($self->debug){print print Utils->print_log(3," Thread joined :   " . $tid."\n" ) }	
+                     if($self->debug){print Utils->print_log(3," Thread joined :   " . $tid."\n" ) }	
                         #print "  - Results for thread $tid:\n";
                         #print "  - Thread $tid has been joined\n";
                 }
@@ -1056,7 +1062,7 @@ sub get_proxy($$$$){
             _SQL_get_hg=> $SQL_get_hostgroups,
             _SQL_get_replication_hg=> $SQL_get_rep_hg,
             _dbh_proxy => undef,
-            _check_timeout => 100, #timeout in ms
+            _check_timeout => 500, #timeout in ms
             _action_nodes => {},
             _retry_down => 0, # number of retry on a node before declaring it as failed.
             _retry_up => 0, # number of retry on a node before declaring it OK.
