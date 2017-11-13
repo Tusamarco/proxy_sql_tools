@@ -143,14 +143,18 @@ How to use it
 galera_check.pl -u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --main_segment=1 --debug=0  --log <full_path_to_file> --help
 sample [options] [file ...]
  Options:
+ Options:
    -u|user            user to connect to the proxy
    -p|password        Password for the proxy
    -h|host            Proxy host
    -H                 Hostgroups with role definition. List comma separated.
-		                      Definition R = reader; W = writer [500:W,501:R]
+		      Definition R = reader; W = writer [500:W,501:R]
    --main_segment     If segments are in use which one is the leading at the moment
    --retry_up         The number of loop/test the check has to do before moving a node up (default 0)
    --retry_down       The number of loop/test the check has to do before moving a node Down (default 0)
+   --debug
+   --log	      Full path to the log file ie (/var/log/proxysql/galera_check_) the check will add
+		      the identifier for the specific HG.
    --active_failover  A value from 0 to 3, indicating what level/kind of fail-over the script must perform.
                        active_failover
                        Valid values are:
@@ -158,11 +162,14 @@ sample [options] [file ...]
                           1 make failover only if HG 8000 is specified in ProxySQL mysl_servers
                           2 use PXC_CLUSTER_VIEW to identify a server in the same segment
                           3 do whatever to keep service up also failover to another segment (use PXC_CLUSTER_VIEW) 
-
-   --debug
-   --log	  Full path to the log file ie (/var/log/proxysql/galera_check_) the check will add
-		    the identifier for the specific HG.
-   -help          help message
+   Performance parameters 
+    --check_timeout    This parameter set in ms then time the script can alow a thread connecting to a MySQL node to wait, before forcing a returnn.
+                      In short if a node will take longer then check_timeout its entry will be not filled and it will eventually ignored in the evaluation.
+                      Setting the debug option  =1 and look for [WARN] Check timeout Node ip : Information will tell you how much your nodes are exceeding the allowed limit.
+                      You can use the difference ot correctly set the check_timeout 
+                      Default is 300 ms
+   
+   -help              help message
 ```   
 
 Note that galera_check is also Segment aware, as such the checks on the presence of Writer /reader is done by segment, respecting the MainSegment as primary.

@@ -111,6 +111,7 @@ sub get_proxy($$$$){
     $Param->{print_execution} = 1;
     $Param->{development} = 0;
     $Param->{active_failover} = 0;
+    $Param->{check_timeout} = 300;
     
     my $run_pid_dir = "/tmp" ;
     
@@ -129,6 +130,7 @@ sub get_proxy($$$$){
         'execution_time:i' => \$Param->{print_execution},
         'development:i' => \$Param->{development},
         'active_failover:i' => \$Param->{active_failover},
+        'check_timeout:i' => \$Param->{check_timeout},
         
         'help|?'       => \$Param->{help}
        
@@ -214,6 +216,7 @@ sub get_proxy($$$$){
        $proxy_sql_node->retry_down($Param->{retry_down});
        $proxy_sql_node->hostgroups($Param->{hostgroups}) ;
        $proxy_sql_node->require_failover($Param->{active_failover});
+       $proxy_sql_node->check_timeout($Param->{check_timeout});
        
        $proxy_sql_node->connect();
        
@@ -500,7 +503,10 @@ sub get_proxy($$$$){
                     #print "  - Thread $tid running\n";
                    
                     if($run_milliseconds >  $self->{_check_timeout} ){
-                       if($self->debug >=0){print print Utils->print_log(2,"Check timeout :  THID " . $tid." for ms: $run_milliseconds \n")  }	
+                       if($self->debug >=0){
+                         my $timeout = ($run_milliseconds -  $self->{_check_timeout});  
+                         print print Utils->print_log(2,"Check timeout Node ip : $new_nodes->{$thr}->{_ip} ,  THID " . $tid." (taken: $run_milliseconds   max_allowed: $self->{_check_timeout}  over for ms: $timeout  \n")
+                        }	
                           $irun = 0 ; 
                     }
                     else{
@@ -1062,7 +1068,7 @@ sub get_proxy($$$$){
             _SQL_get_hg=> $SQL_get_hostgroups,
             _SQL_get_replication_hg=> $SQL_get_rep_hg,
             _dbh_proxy => undef,
-            _check_timeout => 500, #timeout in ms
+            _check_timeout => 300, #timeout in ms
             _action_nodes => {},
             _retry_down => 0, # number of retry on a node before declaring it as failed.
             _retry_up => 0, # number of retry on a node before declaring it OK.
@@ -1221,7 +1227,10 @@ sub get_proxy($$$$){
         while (my $ref = $sth->fetchrow_hashref()) {
             if($ref->{'name'} eq 'mysql-monitor_password' ){$self->{_monitor_password} = $ref->{'value'};}
             if($ref->{'name'} eq 'mysql-monitor_username' ) {$self->{_monitor_user} = $ref->{'value'};}
-            if($ref->{'name'} eq 'mysql-monitor_read_only_timeout' ) {$self->{_check_timeout} = $ref->{'value'};}
+            #This is for now comment out.
+            # this is related to issue #10, where the node is not answering in time to the check.
+            # The timeout cannot be the same of the the ProxySQL read_only check
+            #if($ref->{'name'} eq 'mysql-monitor_read_only_timeout' ) {$self->{_check_timeout} = $ref->{'value'};}
             
         }
         if($self->debug >=1){print Utils->print_log(3," Connecting to ProxySQL " . $self->{_dns}. "\n" ); }
@@ -1626,14 +1635,28 @@ sub get_proxy($$$$){
               #And must be in the same segment of the writer 
                  if(
                     $proxynode->{_require_failover} == 1
-                    && $nodes->{$key}->{_wsrep_segment} == $Galera_cluster->{_main_segment}
+                   # && $nodes->{$key}->{_wsrep_segment} == $Galera_cluster->{_main_segment}
                     && $Galera_cluster->{_has_failover_node} >0
                     && $nodes->{$key}->{_hostgroups} > 8000
                     ){
-                       if($nodes->{$key}->{_weight} > $max_weight){
-                            $max_weight= $nodes->{$key}->{_weight};
-                            $failover_node = $nodes->{$key};
+
+                       if($nodes->{$key}->{_wsrep_segment} != $Galera_cluster->{_main_segment}
+                          && !defined $failover_node
+                          && $nodes->{$key}->{_weight} > $cand_max_weight){
+                            $cand_max_weight= $nodes->{$key}->{_weight};
+                            $cand_min_index =  $nodes->{$key}->{_wsrep_local_index};
+                            $candidate_failover_node = $nodes->{$key};
                        }
+                       elsif($nodes->{$key}->{_weight} > $max_weight){
+                          $max_weight= $nodes->{$key}->{_weight};
+                          $min_index =  $nodes->{$key}->{_wsrep_local_index};
+                          $failover_node = $nodes->{$key};
+                       }
+
+                       #if($nodes->{$key}->{_weight} > $max_weight){
+                       #     $max_weight= $nodes->{$key}->{_weight};
+                       #     $failover_node = $nodes->{$key};
+                       #}
                  }
               #IN case failover option is 2 we need to have:
               # must be in the same segment of the writer
@@ -1941,6 +1964,13 @@ sample [options] [file ...]
                           1 make failover only if HG 8000 is specified in ProxySQL mysl_servers
                           2 use PXC_CLUSTER_VIEW to identify a server in the same segment
                           3 do whatever to keep service up also failover to another segment (use PXC_CLUSTER_VIEW) 
+   Performance parameters 
+   --check_timeout    This parameter set in ms then time the script can alow a thread connecting to a MySQL node to wait, before forcing a returnn.
+                      In short if a node will take longer then check_timeout its entry will be not filled and it will eventually ignored in the evaluation.
+                      Setting the debug option  =1 and look for [WARN] Check timeout Node ip : Information will tell you how much your nodes are exceeding the allowed limit.
+                      You can use the difference ot correctly set the check_timeout 
+                      Default is 300 ms
+   
    -help              help message
    
 =head1 DESCRIPTION
