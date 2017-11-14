@@ -485,7 +485,7 @@ sub get_proxy($$$$){
                     $new_nodes->{$key}->{_process_status} = -1;
                     #  debug senza threads
                     $Threads{$key}=threads->create(sub  {return get_node_info($self,$key)});
-#                    $new_nodes->{$key} = get_node_info($self,$key);
+                    #next unless  $new_nodes->{$key} = get_node_info($self,$key);
 
              		#    if(!exists $processed_nodes->{$new_nodes->{$key}->{_ip}} ){
              		#	$self->{_size}->{$new_nodes->{$key}->{_wsrep_segment}} = (($self->{_size}->{$new_nodes->{$key}->{_wsrep_segment}}|| 0) +1);
@@ -496,8 +496,12 @@ sub get_proxy($$$$){
 		    
                 }
             }
-            #DEBUG SENZA THREADS commenta da qui
+            ##DEBUG SENZA THREADS commenta da qui
             foreach my $thr (sort keys %Threads) {
+                if($new_nodes->{$thr}->{_process_status} eq -100){
+                    next;
+                }
+                
                 if ($Threads{$thr}->is_running()) {
                     my $tid = $Threads{$thr}->tid;
                     #print "  - Thread $tid running\n";
@@ -513,7 +517,8 @@ sub get_proxy($$$$){
                          $irun = 1;
                     }
                 } 
-                elsif ($Threads{$thr}->is_joinable()) {
+                elsif ( $Threads{$thr}->is_joinable()) {
+                 
                        my $tid = $Threads{$thr}->tid;
                        ( $new_nodes->{$thr} ) = $Threads{$thr}->join;
                      #count the number of nodes by segment
@@ -581,7 +586,9 @@ sub get_proxy($$$$){
         my $key = shift;
         my $nodes =shift;
         my ( $node ) = $self->{_nodes}->{$key};
-        $node->get_node_info();
+        if(!defined $node->get_node_info()){
+           $node->{_process_status}=-100;
+         }
 	
         return $node;
         
@@ -974,10 +981,10 @@ sub get_proxy($$$$){
              ."\n"  );	
        
       }
-      print Utils->print_log(3,"This Node Try to become a WRITER promoting to HG $proxynode->{_hg_writer_id}" 
+      print Utils->print_log(3,"This Node Try to become a WRITER promoting to HG $proxynode->{_hg_writer_id} " 
           .$self->{_ip}
           .":".$self->{_port}
-          .":HG".$self->{_hostgroups}
+          .":HG ".$self->{_hostgroups}
           ."\n"  );	
 	
       #my $dbh = Utils::get_connection($self->{_dns},$self->{_user},$self->{_password},' ');
@@ -1488,7 +1495,7 @@ sub get_proxy($$$$){
           print Utils->print_log(2,"Fail-over in action Using Method = $proxynode->{_require_failover}\n" );
           if($proxynode->initiate_failover($GGalera_cluster) >0){
              if($proxynode->debug >=1){
-               print Utils->print_log(1,"!!!! FAILOVER !!!!! \n Cluster was without WRITER I have try to restore service promoting a node\n" );
+               print Utils->print_log(2,"!!!! FAILOVER !!!!! \n Cluster was without WRITER I have try to restore service promoting a node\n" );
                #exit 0;
              }
           }
@@ -1763,10 +1770,14 @@ sub get_proxy($$$$){
       my $user = shift;
       my $pass = shift;
       my $SPACER = shift;
-      my $dbh = DBI->connect($dsn, $user, $pass);
-    
+      my $dbh = DBI->connect($dsn, $user, $pass ,  {
+        PrintError => 0,
+        PrintWarn  => 0,
+        RaiseError => 0});
+      
       if (!defined($dbh)) {
-        die print Utils->print_log(1, "Cannot connect to $dsn as $user\n");
+        #die
+        print Utils->print_log(1, "Cannot connect to $dsn as $user\n");
         #die();
         return undef;
       }
