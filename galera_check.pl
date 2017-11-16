@@ -890,13 +890,28 @@ sub get_proxy($$$$){
             .":HG".$self->{_hostgroups}
             ."\n"  );
         }	
-	
+	       if($self->debug >=1){
+           print Utils->print_log(4," Getting connection START\n"  );
+        }	
         my $dbh = Utils::get_connection($self->{_dns},$self->{_user},$self->{_password},' ');
         if(!defined $dbh){
             return undef;
         }
+	       if($self->debug >=1){
+           print Utils->print_log(4," Getting connection END\n"  );
+        }	
+
+	       if($self->debug >=1){
+           print Utils->print_log(4," Getting NODE info START\n"  );
+        }	
+
         my $variables = Utils::get_variables($dbh,0);
         my $status = Utils::get_status_by_name($dbh,0,"wsrep_%");
+        my $pxc_view = Utils::get_pxc_clusterview($dbh, $self->{_wsrep_gcomm_uuid} );
+
+	       if($self->debug >=1){
+           print Utils->print_log(4," Getting NODE info END\n"  );
+        }	
         
         $self->{_name} = $variables->{wsrep_node_name};
         $self->{_clustername} = $variables->{wsrep_cluster_name};
@@ -912,7 +927,7 @@ sub get_proxy($$$$){
         $self->{_cluster_status} = $status->{wsrep_cluster_status};
         $self->{_cluster_size} = $status->{wsrep_cluster_size};
         $self->{_wsrep_gcomm_uuid} = $status->{wsrep_gcomm_uuid};
-        my $pxc_view = Utils::get_pxc_clusterview($dbh, $self->{_wsrep_gcomm_uuid} );
+       
         $self->{_wsrep_local_index} = $pxc_view->{local_index};
         if($self->{wsrep_segment} == 0){
            $self->{_wsrep_segment} = $pxc_view->{segment};
