@@ -111,7 +111,7 @@ sub get_proxy($$$$){
     $Param->{print_execution} = 1;
     $Param->{development} = 0;
     $Param->{active_failover} = 0;
-    $Param->{check_timeout} = 300;
+    $Param->{check_timeout} = 800;
     
     my $run_pid_dir = "/tmp" ;
     
@@ -1075,7 +1075,7 @@ sub get_proxy($$$$){
             _SQL_get_hg=> $SQL_get_hostgroups,
             _SQL_get_replication_hg=> $SQL_get_rep_hg,
             _dbh_proxy => undef,
-            _check_timeout => 300, #timeout in ms
+            _check_timeout => 800, #timeout in ms
             _action_nodes => {},
             _retry_down => 0, # number of retry on a node before declaring it as failed.
             _retry_up => 0, # number of retry on a node before declaring it OK.
