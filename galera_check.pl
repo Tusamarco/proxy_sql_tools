@@ -174,6 +174,7 @@ sub get_proxy($$$$){
     #============================================================================
     if(defined $Param->{log}){
        open(FH, '>>', $Param->{log}."_".$hg.".log") or die Utils->print_log(1,"cannot open file");
+       FH->autoflush if $Param->{development} < 2;
        select FH;
     }
     
@@ -891,7 +892,7 @@ sub get_proxy($$$$){
             ."\n"  );
         }	
 	       if($self->debug >=1){
-           print Utils->print_log(4," Getting connection START"
+           print Utils->print_log(4," Getting connection START "
             .$self->{_ip}
             .":".$self->{_port}
             .":HG".$self->{_hostgroups}." \n"  );
@@ -901,7 +902,7 @@ sub get_proxy($$$$){
             return undef;
         }
 	       if($self->debug >=1){
-           print Utils->print_log(4," Getting connection END"
+           print Utils->print_log(4," Getting connection END "
              .$self->{_ip}
             .":".$self->{_port}
             .":HG".$self->{_hostgroups}." \n"  );
@@ -909,7 +910,7 @@ sub get_proxy($$$$){
         }	
 
 	       if($self->debug >=1){
-           print Utils->print_log(4," Getting NODE info START"
+           print Utils->print_log(4," Getting NODE info START "
              .$self->{_ip}
             .":".$self->{_port}
             .":HG".$self->{_hostgroups}." \n"  );
@@ -917,10 +918,10 @@ sub get_proxy($$$$){
 
         my $variables = Utils::get_variables($dbh,0);
         my $status = Utils::get_status_by_name($dbh,0,"wsrep_%");
-        my $pxc_view = Utils::get_pxc_clusterview($dbh, $self->{_wsrep_gcomm_uuid} );
+        my $pxc_view = Utils::get_pxc_clusterview($dbh, $status->{wsrep_gcomm_uuid} );
 
 	       if($self->debug >=1){
-           print Utils->print_log(4," Getting NODE info END"
+           print Utils->print_log(4," Getting NODE info END "
              .$self->{_ip}
             .":".$self->{_port}
             .":HG".$self->{_hostgroups}." \n"  );
@@ -940,6 +941,7 @@ sub get_proxy($$$$){
         $self->{_cluster_status} = $status->{wsrep_cluster_status};
         $self->{_cluster_size} = $status->{wsrep_cluster_size};
         $self->{_wsrep_gcomm_uuid} = $status->{wsrep_gcomm_uuid};
+        
        
         $self->{_wsrep_local_index} = $pxc_view->{local_index};
         if($self->{wsrep_segment} == 0){
@@ -1675,17 +1677,19 @@ sub get_proxy($$$$){
                     && $nodes->{$key}->{_hostgroups} > 8000
                     ){
 
-                       if($nodes->{$key}->{_wsrep_segment} != $Galera_cluster->{_main_segment}
+                       if($nodes->{$key}->{_weight} > $max_weight
+                          && $nodes->{$key}->{_wsrep_segment} == $Galera_cluster->{_main_segment}
+                          ){
+                          $max_weight= $nodes->{$key}->{_weight};
+                          #$min_index =  $nodes->{$key}->{_wsrep_local_index};
+                          $failover_node = $nodes->{$key};
+                       }
+                       elsif($nodes->{$key}->{_wsrep_segment} != $Galera_cluster->{_main_segment}
                           && !defined $failover_node
                           && $nodes->{$key}->{_weight} > $cand_max_weight){
                             $cand_max_weight= $nodes->{$key}->{_weight};
-                            $cand_min_index =  $nodes->{$key}->{_wsrep_local_index};
+                           # $cand_min_index =  $nodes->{$key}->{_wsrep_local_index};
                             $candidate_failover_node = $nodes->{$key};
-                       }
-                       elsif($nodes->{$key}->{_weight} > $max_weight){
-                          $max_weight= $nodes->{$key}->{_weight};
-                          $min_index =  $nodes->{$key}->{_wsrep_local_index};
-                          $failover_node = $nodes->{$key};
                        }
 
                        #if($nodes->{$key}->{_weight} > $max_weight){
@@ -1708,19 +1712,16 @@ sub get_proxy($$$$){
                       }
                  }
                  elsif($proxynode->{_require_failover} == 3){
-                       if($nodes->{$key}->{_wsrep_segment} != $Galera_cluster->{_main_segment}
-                          && !defined $failover_node
-                          && $nodes->{$key}->{_weight} > $cand_max_weight
-                          && $nodes->{$key}->{_wsrep_local_index} < $cand_min_index){
-                            $cand_max_weight= $nodes->{$key}->{_weight};
-                            $cand_min_index =  $nodes->{$key}->{_wsrep_local_index};
-                            $candidate_failover_node = $nodes->{$key};
-                       }
-                       elsif($nodes->{$key}->{_weight} > $max_weight
+                       if($nodes->{$key}->{_wsrep_segment} == $Galera_cluster->{_main_segment}
                           && $nodes->{$key}->{_wsrep_local_index} < $min_index){
-                          $max_weight= $nodes->{$key}->{_weight};
                           $min_index =  $nodes->{$key}->{_wsrep_local_index};
                           $failover_node = $nodes->{$key};
+                       }
+                       elsif($nodes->{$key}->{_wsrep_segment} != $Galera_cluster->{_main_segment}
+                          && !defined $failover_node
+                          && $nodes->{$key}->{_wsrep_local_index} < $cand_min_index){
+                            $cand_min_index =  $nodes->{$key}->{_wsrep_local_index};
+                            $candidate_failover_node = $nodes->{$key};
                        }
                  }
              }
@@ -1919,8 +1920,8 @@ sub get_proxy($$$$){
         
       while (my $ref = $sth->fetchrow_hashref()) {
           foreach my $name ('HOST_NAME', 'UUID','STATUS','LOCAL_INDEX','SEGMENT'){  
-               my $n = $name;
-              $v{"\L$n\E"} = $ref->{$name};
+               my $n = lc $name;
+              $v{$n} = $ref->{$name};
           }
         }        
         return \%v;
