@@ -663,11 +663,17 @@ sub get_proxy($$$$){
             _comment => undef,
             _wsrep_gcomm_uuid => undef,
             _wsrep_local_index => 0,
+            _pxc_maint_mode => undef,
 
         };
         bless $self, $class;
         return $self;
         
+    }
+    sub pxc_maint_mode{
+        my ( $self, $in ) = @_;
+        $self->{_pxc_maint_mode} = $in if defined($in);
+        return $self->{_pxc_maint_mode};
     }
     sub wsrep_local_index{
         my ( $self, $in ) = @_;
@@ -933,6 +939,8 @@ sub get_proxy($$$$){
         $self->{_wsrep_rejectqueries} = $variables->{wsrep_reject_queries};
         $self->{_wsrep_donorrejectqueries} = $variables->{wsrep_sst_donor_rejects_queries};
         my ( @provider ) =  split('\;', $variables->{wsrep_provider_options});
+        $self->{_pxc_maint_mode} = $variables->{pxc_maint_mode};
+        
         $self->wsrep_provider( [ @provider]) ;
         $self->{_wsrep_status} = $status->{wsrep_local_state};
         $self->{_wsrep_connected} = $status->{wsrep_connected};
@@ -1315,7 +1323,7 @@ sub get_proxy($$$$){
        foreach my $key (sort keys %{$nodes}){
          if(defined $nodes->{$key} ){
 	
-            #only if node has HG that is not maintennce it vcan evaluate to be put down in some way
+            #only if node has HG that is not maintennce it can evaluate to be put down in some way
             if($nodes->{$key}->{_hostgroups} < 8000
                && $nodes->{$key}->{_process_status} > 0){
                 #Check major exclusions
@@ -1410,10 +1418,12 @@ sub get_proxy($$$$){
                
                   next;
                }
+               
                #Set OFFLINE_SOFT a writer: 
                #1) donor node reject queries - 0
                #2)size of cluster > 2 of nodes in the same segments
-               #3) more then one writer in the same HG 
+               #3) more then one writer in the same HG
+               #4) Node had pxc_maint_mode set to anything except DISABLED, not matter what it will go in OFFLINE_SOFT
                
                if(
                   $nodes->{$key}->wsrep_status eq 2
@@ -1435,16 +1445,37 @@ sub get_proxy($$$$){
                  
                     next;
                }
+               
+               #4) Node had pxc_maint_mode set to anything except DISABLED, not matter what it will go in OFFLINE_SOFT
+               if( defined $nodes->{$key}->pxc_maint_mode 
+                && $nodes->{$key}->pxc_maint_mode ne "DISABLED"
+                && $nodes->{$key}->proxy_status ne "OFFLINE_SOFT"){
+                     $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_OFFLINE}}= $nodes->{$key};
+             
+                     #if retry is > 0 then it's managed
+                     if($proxynode->retry_down > 0){
+                         $nodes->{$key}->get_retry_down($nodes->{$key}->get_retry_down + 1);
+                     }
+             
+                    if($proxynode->debug >=1){print Utils->print_log(3," Evaluate nodes state "
+                        .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_OFFLINE}
+                        ." Retry #".$nodes->{$key}->get_retry_down."\n" )   }	
+             
+                   next;
+               }
+               
             }    
             #Node comes back from offline_soft when (all of them):
             # 1) Node state is 4
             # 3) wsrep_reject_queries = none
             # 4) Primary state
+            # 5) pxc_maint_mode is DISABLED or undef
    
             if($nodes->{$key}->wsrep_status eq 4
                && $nodes->{$key}->proxy_status eq "OFFLINE_SOFT"
                && $nodes->{$key}->wsrep_rejectqueries eq "NONE"
                &&$nodes->{$key}->cluster_status eq "Primary"
+               &&(!defined $nodes->{$key}->pxc_maint_mode || $nodes->{$key}->pxc_maint_mode eq "DISABLED") 
                && $nodes->{$key}->hostgroups < 9000
                ){
                  $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_UP_OFFLINE}}= $nodes->{$key};
@@ -1807,7 +1838,7 @@ sub get_proxy($$$$){
       if (!defined($dbh)) {
         #die
         print Utils->print_log(1, "Cannot connect to $dsn as $user\n");
-        #die();
+        die();
         return undef;
       }
       
@@ -2099,7 +2130,9 @@ Rules:
 Set to offline_soft :
     
     any non 4 or 2 state, read only =ON
-    donor node reject queries - 0 size of cluster > 2 of nodes in the same segments more then one writer, node is NOT read_only
+    donor node reject queries - 0 size of cluster > 2 of nodes in the same segments more then one writer, node is NOT read_only.
+    
+    Changes to pxc_maint_mode to anything else DISABLED
 
 =item 2
 
