@@ -972,7 +972,7 @@ sub get_proxy($$$$){
     }
     
     sub set_retry_up_down(){
-      my ( $self, my $hg ) = @_;
+      my ( $self, $hg ) = @_;
       if($self->debug >=1){print Utils->print_log(4,"Calculate retry from comment Node:".$self->ip." port:".$self->port . " hg:".$self->hostgroups ." Time IN \n");}
 	
      	my %comments = split /[;=]/, $self->{_comment};
