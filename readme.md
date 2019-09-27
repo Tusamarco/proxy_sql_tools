@@ -236,4 +236,13 @@ Logic Rules use in the check:
      2. wsrep_reject_queries = none
      3. Primary state
      
-     
+WHY I add addition_to_sys_v2.sql
+=============================
+Adding addition_to_sys_v2.sql
+
+This file is the updated and correct version of the file create by LeFred https://gist.github.com/lefred/77ddbde301c72535381ae7af9f968322 which is not working correctly.
+Also I have tested this solution and compared it with https://gist.github.com/lefred/6f79fd02d333851b8d18f52716f04d91#file-addition_to_sys_gr-sql
+ and the output cost MORE in the file-addition_to_sys_gr-sql
+ version than this one.
+
+All the credit goes to @lefred who did the first version 
