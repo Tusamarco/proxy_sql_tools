@@ -26,7 +26,7 @@ Next, we're going to explain each type of variable in detail.
 
 Variable name|Default Value|From Version
 -------------|-------------|------------
-admin-admin_credentials                                      | admin:admin          |
+[admin-admin_credentials](#admin-admin_credentials)          | admin:admin          |
 admin-checksum_mysql_query_rules                             | true                 |
 admin-checksum_mysql_servers                                 | true                 |
 admin-checksum_mysql_users                                   | true                 |
@@ -199,7 +199,7 @@ mysql-wait_timeout                                           | 28800000         
 
 ## Admin Variables
 
-### `admin-admin_credentials`
+### `admin-admin_credentials` <a name="admin-admin_credentials "/>
 
 This is a list of semi-colon separated `user:password` pairs, that can be used to authenticate to the admin interface with read-write rights. For read-only credentials that can be used to connect to the admin, see the variable `admin-stats_credentials`. Note that the admin interface listens on a separate port from the main ProxySQL thread. This port is controlled through the variable `admin-mysql_ifaces`. 
 
