@@ -61,32 +61,32 @@ Variable name|Default Value|From Version
 [mysql-add_ldap_user_comment](#mysql-add_ldap_user_comment)|                      |
 [mysql-auditlog_filename](#mysql-auditlog_filename)|                      |
 [mysql-auditlog_filesize](#mysql-auditlog_filename)| 100MB            |
-mysql-auto_increment_delay_multiplex                         | 5                    |
-mysql-autocommit_false_is_transaction                        | false                |
-mysql-autocommit_false_not_reusable                          | false                |
-mysql-binlog_reader_connect_retry_msec                       | 3000                 |
-mysql-client_found_rows                                      | true                 |
-mysql-client_multi_statements                                | true                 |
-mysql-client_session_track_gtid                              | true                 |
-mysql-commands_stats                                         | true                 |
-mysql-connect_retries_delay                                  | 1                    |
-mysql-connect_retries_on_failure                             | 10                   |
-mysql-connect_timeout_server                                 | 3000                 |
-mysql-connect_timeout_server_max                             | 10000                |
-mysql-connection_delay_multiplex_ms                          | 0                    |
-mysql-connection_max_age_ms                                  | 0                    |
-mysql-connpoll_reset_queue_length                            | 50                   |
-mysql-default_character_set_results                          | NULL                 |
-mysql-default_charset                                        | utf8                 |
-mysql-default_collation_connection                           |                      |
-mysql-default_isolation_level                                | READ COMMITTED       |
-mysql-default_max_join_size                                  | 18446744073709551615 |
-mysql-default_max_latency_ms                                 | 1000                 |
-mysql-default_net_write_timeout                              | 60                   |
-mysql-default_query_delay                                    | 0                    |
-mysql-default_query_timeout                                  | 36000000             |
-mysql-default_reconnect                                      | true                 |
-mysql-default_schema                                         | information_schema   |
+[mysql-auto_increment_delay_multiplex](#mysql-auto_increment_delay_multiplex)| 5                    |
+[mysql-autocommit_false_is_transaction](#mysql-autocommit_false_is_transaction)| false                |
+[mysql-autocommit_false_not_reusable](#mysql-autocommit_false_not_reusable)| false                |
+[mysql-binlog_reader_connect_retry_msec](#mysql-binlog_reader_connect_retry_msec)| 3000                 |
+[mysql-client_found_rows](#mysql-client_found_rows)                                      | true                 |
+[mysql-client_multi_statements](#mysql-client_multi_statements)| true                 |
+[mysql-client_session_track_gtid](#mysql-client_session_track_gtid)| true                 |
+[mysql-commands_stats](#mysql-commands_stats)| true                 |
+[mysql-connect_retries_delay](#mysql-connect_retries_delay)| 1                    |
+[mysql-connect_retries_on_failure](#mysql-connect_retries_on_failure)| 10                   |
+[mysql-connect_timeout_server](#mysql-connect_timeout_server)| 3000                 |
+[mysql-connect_timeout_server_max](#mysql-connect_timeout_server_max)| 10000                |
+[mysql-connection_delay_multiplex_ms](#mysql-connection_delay_multiplex_ms)| 0                    |
+[mysql-connection_max_age_ms](#mysql-connection_max_age_ms)| 0                    |
+[mysql-connpoll_reset_queue_length](#mysql-connpoll_reset_queue_length)| 50                   |
+[mysql-default_character_set_results](#mysql-default_character_set_results)| NULL                 |
+[mysql-default_charset](#mysql-default_charset)| utf8                 |
+[mysql-default_collation_connection](#mysql-default_collation_connection)|                      |
+[mysql-default_isolation_level](#mysql-default_isolation_level)| READ COMMITTED       |
+[mysql-default_max_join_size](#mysql-default_max_join_size)| 18446744073709551615 |
+[mysql-default_max_latency_ms](#mysql-default_max_latency_ms)| 1000                 |
+[mysql-default_net_write_timeout](#mysql-default_net_write_timeout)| 60                   |
+[mysql-default_query_delay](#mysql-default_query_delay)| 0                    |
+[mysql-default_query_timeout](#mysql-default_query_timeout)| 36000000             |
+[mysql-default_reconnect](#mysql-default_reconnect)| true                 |
+[mysql-default_schema](#mysql-default_schema)| information_schema   |
 mysql-default_session_track_gtids                            | OFF                  |
 mysql-default_sql_auto_is_null                               | OFF                  |
 mysql-default_sql_mode                                       |                      |
@@ -859,7 +859,7 @@ Note that disabling multiplexing doesn't disable routing, so it is important to 
 </table>
 
 
-### `mysql-autocommit_false_is_transaction`
+### <a name="mysql-autocommit_false_is_transaction">`mysql-autocommit_false_is_transaction`</a>
 
 If `mysql-autocommit_false_is_transaction=true` (false by default), a connection with `autocommit=0` is treated as a transaction. If `forward_autocommit=true` (false by default), the same behavior applies.
 
@@ -884,7 +884,7 @@ If `mysql-autocommit_false_is_transaction=true` (false by default), a connection
     </tr>
 </table>​
 
-### `mysql-autocommit_false_not_reusable`
+### <a name="mysql-autocommit_false_not_reusable">`mysql-autocommit_false_not_reusable`</a>
 
 When set to `true`, a connection with `autocommit=0` is not re-used and is destroyed when the connection is returned to the connection pool.
 
@@ -909,7 +909,7 @@ When set to `true`, a connection with `autocommit=0` is not re-used and is destr
     </tr>
 </table>​
 
-### `mysql-binlog_reader_connect_retry_msec`
+### <a name="mysql-binlog_reader_connect_retry_msec">`mysql-binlog_reader_connect_retry_msec`</a>
 
 Controls the connect retry timeout for the binlog reader (introduced in ProxySQL 2.0).
 
@@ -942,7 +942,7 @@ Controls the connect retry timeout for the binlog reader (introduced in ProxySQL
     </tr>
 </table>​
 
-### `mysql-client_found_rows`
+### <a name="mysql-client_found_rows">`mysql-client_found_rows`</a>
 
 When set to `true`, client flag `CLIENT_FOUND_ROWS` is set when connecting to MySQL backends.
 
@@ -967,7 +967,7 @@ When set to `true`, client flag `CLIENT_FOUND_ROWS` is set when connecting to My
     </tr>
 </table>​
 
-### `mysql-client_multi_statements`
+### <a name="mysql-client_multi_statements">`mysql-client_multi_statements`</a>
 
 When set to `true`, client flag `CLIENT_MULTI_STATEMENTS` is set when connecting to MySQL backends. 
 
@@ -991,8 +991,31 @@ When set to `true`, client flag `CLIENT_MULTI_STATEMENTS` is set when connecting
         <td>true</td>
     </tr>
 </table>​
+### <a name="mysql-client_session_track_gtid">`mysql-client_session_track_gtid`</a>
+ When activate ProxySQL will keep track of the GTID status on the backend serves in the stats_mysql_gtid_executed table
+ 
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-client_session_track_gtid</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>Boolean</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>true</td>
+    </tr>
+</table> 
 
-### `mysql-commands_stats`
+### <a name="mysql-commands_stats">`mysql-commands_stats`</a>
 
 Enable per-command MySQL query statistics. A command is a type of SQL query that is being executed. Some examples are: SELECT, INSERT or ALTER TABLE.
 
@@ -1017,7 +1040,7 @@ Enable per-command MySQL query statistics. A command is a type of SQL query that
     </tr>
 </table>​
 
-### `mysql-connect_retries_delay`
+### <a name="mysql-connect_retries_delay">`mysql-connect_retries_delay`</a>
 
 The delay (in milliseconds) before trying to reconnect after a failed attempt to a backend MySQL server. Failed attempts can take place due to numerous reasons: too busy, timed out for the current attempt, etc. This will be retried for `mysql-connect_retries_on_failure` times.
 
@@ -1050,7 +1073,7 @@ The delay (in milliseconds) before trying to reconnect after a failed attempt to
     </tr>
 </table>​
 
-### `mysql-connect_retries_on_failure`
+### <a name="mysql-connect_retries_on_failure">`mysql-connect_retries_on_failure`</a>
 
 The number of times for which a reconnect should be attempted in case of an error, timeout, or any other event that led to an unsuccessful connection to a backend MySQL server. After the number of attempts is depleted, if a connection still couldn't be established, an error is returned. The error returned is either the last connection attempt error or a generic error ("Max connect failure while reaching hostgroup" with error code 28000).
 
@@ -1085,7 +1108,7 @@ Be careful about tweaking this parameter - a value that is too high can signific
     </tr>
 </table>​
 
-### `mysql-connect_timeout_server`
+### <a name="mysql-connect_timeout_server">`mysql-connect_timeout_server`</a>
 
 The timeout for a single attempt at connecting to a backend server from the proxy. If this fails, according to the other parameters, the attempt will be retried until too many errors per second are generated (and the server is automatically shunned) or until the final cut-off is reached and an error is returned to the client (see `mysql-connect_timeout_server_max`).
 
@@ -1118,7 +1141,7 @@ The timeout for a single attempt at connecting to a backend server from the prox
     </tr>
 </table>​
 
-### `mysql-connect_timeout_server_max`
+### <a name="mysql-connect_timeout_server_max">`mysql-connect_timeout_server_max`</a>
 
 The timeout for connecting to a backend server from the proxy. When this timeout is reached, an error is returned to the client with code 9001 and the message "Max connect timeout reached while reaching hostgroup...". 
 
@@ -1154,7 +1177,7 @@ See also [mysql-shun_recovery_time_sec](#mysql-shun_recovery_time_sec)
 </table>​
 Due a bug fixed in version 2.0.7, for all previous releases it is recommended to not set this value higher than 10 minutes.
  
-### `mysql-connection_delay_multiplex_ms`
+### <a name="mysql-connection_delay_multiplex_ms">`mysql-connection_delay_multiplex_ms`</a>
 
 Disable multiplexing for a short period of time on a connection, this will allow a frontend connection to re-use the same backend connection for successive queries (e.g. when batching queries). The delay is measured for the time there is no activity on the connection.
 
@@ -1187,7 +1210,7 @@ Disable multiplexing for a short period of time on a connection, this will allow
     </tr>
 </table>​
 
-### `mysql-connection_max_age_ms`
+### <a name="mysql-connection_max_age_ms">`mysql-connection_max_age_ms`</a>
 
 When `mysql-connection_max_age_ms` is set to a value greater than 0, inactive connections in the connection pool (therefore not currently used by any session) are closed if they were created more than `mysql-connection_max_age_ms` milliseconds ago. By default, connections aren't closed based on their age.  
 When `mysql-connection_max_age_ms` is reached, connections are simply disconnected, without sending `COM_QUIT` command to the server, so this might result in 'Aborted connection' warnings showing up in your MySQL server logs (this behaviour is intended, see #1861).
@@ -1221,7 +1244,7 @@ When `mysql-connection_max_age_ms` is reached, connections are simply disconnect
     </tr>
 </table>​
 
-### `mysql-connpoll_reset_queue_length`
+### <a name="mysql-connpoll_reset_queue_length">`mysql-connpoll_reset_queue_length`</a>
 
 PoxySQL 1.4.0 introduced a background thread (HGCU_thread_run()) responsible for resetting connections instead of dropping them when MySQL_HostGroups_Manager::destroy_MyConn_from_pool() is called. There could be cases in which this behavior is not beneficial. In ProxySQL 1.4.4 `mysql-connpoll_reset_queue_length` allows this behavior to be configurable by destroying the connection when the defined threshold is reached.
 
@@ -1254,7 +1277,7 @@ PoxySQL 1.4.0 introduced a background thread (HGCU_thread_run()) responsible for
     </tr>
 </table>​
 
-### `mysql-default_charset`
+### <a name="mysql-default_charset">`mysql-default_charset`</a>
 
 The default server charset to be used in the communication with the MySQL clients. Note that this is the defult for client connections, not for backend connections.
 
@@ -1283,7 +1306,124 @@ The default server charset to be used in the communication with the MySQL client
     </tr>
 </table>​
 
-### `mysql-default_max_latency_ms`
+### <a name="mysql-default_character_set_results">`mysql-default_character_set_results`</a>
+The character set used for returning query results to the client. This includes result data such as column values, result metadata such as column names, and error messages.
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-default_character_set_results</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>String</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>NULL</td>
+    </tr>
+    <tr>
+        <td><b>Valid Values</b></td>
+        <td></td>
+    </tr>
+</table>
+ 
+### <a name="mysql-default_collation_connection">mysql-default_collation_connection</a>
+The collation of the connection character set.
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-default_collation_connection</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>String</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>NULL</td>
+    </tr>
+    <tr>
+        <td><b>Valid Values</b></td>
+        <td></td>
+    </tr>
+</table>    
+  
+### <a name="mysql-default_isolation_level">`mysql-default_isolation_level`</a>
+The default transaction isolation level. 
+**Very important:** SESSION is mandatory, SET TRANSACTION ISOLATION LEVEL value is not supported and will disable multiplexing
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>mysql-default_isolation_level</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-default_collation_connection</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>String</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>READ COMMITTED</td>
+    </tr>
+    <tr>
+        <td><b>Valid Values</b></td>
+        <td>ONLY at SESSION level: REPEATBALE READ, READ COMMITTED, SERIALIZED  </td>
+    </tr>
+</table>   
+
+    
+### <a name="mysql-default_max_join_size">`mysql-default_max_join_size`</a>
+Do not permit statements that probably need to examine more than max_join_size rows (for single-table statements) or row combinations (for multiple-table statements) or that are likely to do more than max_join_size disk seeks. By setting this value, you can catch statements where keys are not used properly and that would probably take a long time. 
+Set it if your users tend to perform joins that lack a WHERE clause, that take a long time, or that return millions of rows.
+    Default: 18446744073709551615
+ <table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-default_max_join_size</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>Integer (milliseconds)</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>18446744073709551615</td>
+    </tr>
+    <tr>
+        <td><b>Minimum</b></td>
+        <td>0</td>
+    </tr>
+    <tr>
+        <td><b>Maximum</b></td>
+        <td>18446744073709551615</td>
+    </tr>
+</table>   
+
+
+### <a name="mysql-default_max_latency_ms">`mysql-default_max_latency_ms`</a>
 
 ProxySQL uses a mechanism to automatically ignore hosts if their latency is excessive. Note that hosts are not disabled, but only ignored: in other words, ProxySQL will prefer hosts with a smaller latency. It is possible to configure the maximum latency for each backend from `mysql_servers` table, column `max_latency_ms`. If `mysql_servers`.`max_latency_ms` is 0, the default value `mysql-default_max_latency_ms` applies.
 
@@ -1318,7 +1458,39 @@ ProxySQL uses a mechanism to automatically ignore hosts if their latency is exce
 
 Note: due to a limitation in SSL implementation, it is recommended to increase `mysql-default_max_latency_ms` if using SSL.
 
-### `mysql-default_query_delay`
+### <a name="mysql-default_net_write_timeout">`mysql-default_net_write_timeout`</a>
+The number of seconds to wait for a block to be written to a connection before aborting the write
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-default_net_write_timeout</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>Integer (seconds)</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>60</td>
+    </tr>
+    <tr>
+        <td><b>Minimum</b></td>
+        <td>0</td>
+    </tr>
+    <tr>
+        <td><b>Maximum</b></td>
+        <td></td>
+    </tr>
+</table>
+
+
+### <a name="mysql-default_query_delay">`mysql-default_query_delay`</a>
 
 Simple throttling mechanism for queries to the backends. Setting this variable to a non-zero value (in miliseconds) will delay the execution of all queries, globally. There is a more fine-grained throttling mechanism in the admin table `mysql_query_rules`, where for each rule there can be one delay that is applied to all queries matching the rule. That extra delay is added on top of the default, global one.
 
@@ -1351,7 +1523,7 @@ Simple throttling mechanism for queries to the backends. Setting this variable t
     </tr>
 </table>​
 
-### `mysql-default_query_timeout`
+### <a name="mysql-default_query_timeout">`mysql-default_query_timeout`</a>
 
 Mechanism for specifying the maximal duration of queries to the backend MySQL servers until ProxySQL should return an error to the MySQL client. Whenever ProxySQL detects that a query has timed out, it will spawn a separate thread that runs a KILL query against the specific MySQL backend in order to stop the query from running in the backend. Because the query is killed, an error will be returned to the MySQL client.
 
@@ -1384,11 +1556,11 @@ Mechanism for specifying the maximal duration of queries to the backend MySQL se
     </tr>
 </table>​
 
-### `mysql-default_reconnect`
+### <a name="mysql-default_reconnect">`mysql-default_reconnect`</a>
 
 Not used for now.
 
-### `mysql-default_schema`
+### <a name="mysql-default_schema">`mysql-default_schema`</a>
 
 The default schema to be used for incoming MySQL client connections which do not specify a schema name. This is required because ProxySQL doesn't allow connection without a schema.
 
