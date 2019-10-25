@@ -94,8 +94,8 @@ Variable name|Default Value|From Version
 [mysql-default_sql_select_limit](#mysql-default_sql_select_limit)| DEFAULT              |
 [mysql-default_time_zone](#mysql-default_time_zone)| SYSTEM               |
 [mysql-default_transaction_read](#mysql-default_transaction_read)| WRITE                |
-mysql-default_tx_isolation                                   | READ-COMMITTED       |
-mysql-enforce_autocommit_on_reads                            | false                |
+[mysql-default_tx_isolation](#mysql-default_tx_isolation)| READ-COMMITTED       |
+[mysql-enforce_autocommit_on_reads](#mysql-enforce_autocommit_on_reads)| false                |
 mysql-eventslog_default_log                                  | 0                    |
 mysql-eventslog_filename                                     |                      |
 mysql-eventslog_filesize                                     | 104857600            |
@@ -1814,6 +1814,36 @@ In MySQL by default, a transaction takes place in read/write mode, with both rea
     </tr>
 </table>
 
+### <a name="mysql-default_tx_isolation">`mysql-default_tx_isolation`</a>
+ProxySQL support the change of the Transaction Isolation level ONLY at **SESSION** level.
+Any attempts to run command like `SET TRANSACTION ISOLATION LEVEL value` are not supported, and it will automatically disable multiplexing.
+Correct syntax is: `SET SESSION TRANSACTION ISOLATION LEVEL value`
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-default_tx_isolation</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>String</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>READ-COMMITTED</td>
+    </tr>
+    <tr>
+        <td><b>Valid Values</b></td>
+        <td>READ COMMITTED, REPEATABLE READ, and SERIALIZABLE</td>
+    </tr>
+</table>
+
+
 
 
 
@@ -1845,7 +1875,7 @@ Please note that multiplexing can still be disabled for [other reasons](Multiple
 </table>​
 
 
-### `mysql-enforce_autocommit_on_reads`
+### <a name="mysql-enforce_autocommit_on_reads">`mysql-enforce_autocommit_on_reads`</a>
 
 <table>
     <tr>
