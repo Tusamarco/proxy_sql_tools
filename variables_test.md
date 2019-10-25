@@ -96,47 +96,47 @@ Variable name|Default Value|From Version
 [mysql-default_transaction_read](#mysql-default_transaction_read)| WRITE                |
 [mysql-default_tx_isolation](#mysql-default_tx_isolation)| READ-COMMITTED       |
 [mysql-enforce_autocommit_on_reads](#mysql-enforce_autocommit_on_reads)| false                |
-mysql-eventslog_default_log                                  | 0                    |
-mysql-eventslog_filename                                     |                      |
-mysql-eventslog_filesize                                     | 104857600            |
-mysql-eventslog_format                                       | 1                    |
-mysql-forward_autocommit                                     | false                |
-mysql-free_connections_pct                                   | 10                   |
-mysql-have_compress                                          | true                 |
-mysql-have_ssl                                               | false                |
-mysql-hostgroup_manager_verbose                              | 1                    |
-mysql-init_connect                                           |                      |
-mysql-interfaces                                             | 0.0.0.0:6033         |
-mysql-keep_multiplexing_variables                            | tx_isolation,version |
-mysql-kill_backend_connection_when_disconnect                | true                 |
-mysql-ldap_user_variable                                     |                      |
-mysql-long_query_time                                        | 1000                 |
-mysql-max_allowed_packet                                     | 4194304              |
-mysql-max_connections                                        | 2048                 |
-mysql-max_stmts_cache                                        | 10000                |
-mysql-max_stmts_per_connection                               | 20                   |
-mysql-max_transaction_time                                   | 14400000             |
-mysql-min_num_servers_lantency_awareness                     | 1000                 |
-mysql-mirror_max_concurrency                                 | 16                   |
-mysql-mirror_max_queue_length                                | 32000                |
-mysql-monitor_connect_interval                               | 60000                |
-mysql-monitor_connect_timeout                                | 600                  |
-mysql-monitor_enabled                                        | true                 |
-mysql-monitor_galera_healthcheck_interval                    | 5000                 |
-mysql-monitor_galera_healthcheck_max_timeout_count           | 3                    |
-mysql-monitor_galera_healthcheck_timeout                     | 800                  |
-mysql-monitor_groupreplication_healthcheck_interval          | 5000                 |
-mysql-monitor_groupreplication_healthcheck_max_timeout_count | 3                    |
-mysql-monitor_groupreplication_healthcheck_timeout           | 800                  |
-mysql-monitor_history                                        | 600000               |
-mysql-monitor_password                                       | monitor              |
-mysql-monitor_ping_interval                                  | 10000                |
-mysql-monitor_ping_max_failures                              | 3                    |
-mysql-monitor_ping_timeout                                   | 1000                 |
-mysql-monitor_query_interval                                 | 60000                |
-mysql-monitor_query_timeout                                  | 100                  |
-mysql-monitor_read_only_interval                             | 1500                 |
-mysql-monitor_read_only_max_timeout_count                    | 3                    |
+[mysql-eventslog_default_log](#mysql-eventslog_default_log)| 0                    |
+[mysql-eventslog_filename](#mysql-eventslog_filename)|                      |
+[mysql-eventslog_filesize](#mysql-eventslog_filesize)| 104857600            |
+[mysql-eventslog_format](#mysql-eventslog_format)| 1                    |
+[mysql-forward_autocommit](#mysql-forward_autocommit)| false                |
+[mysql-free_connections_pct](#mysql-free_connections_pct)| 10                   |
+[mysql-have_compress](#mysql-have_compress)| true                 |
+[mysql-have_ssl](#mysql-have_ssl)| false                |
+[mysql-hostgroup_manager_verbose](#mysql-hostgroup_manager_verbose)| 1                    |
+[mysql-init_connect](#mysql-init_connect)|                      |
+[mysql-interfaces](#mysql-interfaces)| 0.0.0.0:6033         |
+[mysql-keep_multiplexing_variables](#mysql-keep_multiplexing_variables)| tx_isolation,version |
+[mysql-kill_backend_connection_when_disconnect](#mysql-kill_backend_connection_when_disconnect)| true                 |
+[mysql-ldap_user_variable](#mysql-ldap_user_variable)|                      |
+[mysql-long_query_time](#mysql-long_query_time)| 1000                 |
+[mysql-max_allowed_packet](#mysql-max_allowed_packet)| 4194304              |
+[mysql-max_connections](#mysql-max_connections)| 2048                 |
+[mysql-max_stmts_cache](#mysql-max_stmts_cache)| 10000                |
+[mysql-max_stmts_per_connection](#mysql-max_stmts_per_connection)| 20                   |
+[mysql-max_transaction_time](#mysql-max_transaction_time)| 14400000             |
+[mysql-min_num_servers_lantency_awareness](#mysql-min_num_servers_lantency_awareness)| 1000                 |
+[mysql-mirror_max_concurrency](#mysql-mirror_max_concurrency)| 16                   |
+[mysql-mirror_max_queue_length](#mysql-mirror_max_queue_length)| 32000                |
+[mysql-monitor_connect_interval](#mysql-monitor_connect_interval)| 60000                |
+[mysql-monitor_connect_timeout](#mysql-monitor_connect_timeout)| 600                  |
+[mysql-monitor_enabled](#mysql-monitor_enabled)| true                 |
+[mysql-monitor_galera_healthcheck_interval](#mysql-monitor_galera_healthcheck_interval)| 5000                 |
+[mysql-monitor_galera_healthcheck_max_timeout_count](#mysql-monitor_galera_healthcheck_max_timeout_count)| 3                    |
+[mysql-monitor_galera_healthcheck_timeout](#mysql-monitor_galera_healthcheck_timeout)| 800                  |
+[mysql-monitor_groupreplication_healthcheck_interval](#mysql-monitor_groupreplication_healthcheck_interval)| 5000                 |
+[mysql-monitor_groupreplication_healthcheck_max_timeout_count](#mysql-monitor_groupreplication_healthcheck_max_timeout_count)| 3                    |
+[mysql-monitor_groupreplication_healthcheck_timeout](#mysql-monitor_groupreplication_healthcheck_timeout)| 800                  |
+[mysql-monitor_history](#mysql-monitor_history)| 600000               |
+[mysql-monitor_password](#mysql-monitor_password)| monitor              |
+[mysql-monitor_ping_interval](#mysql-monitor_ping_interval)| 10000                |
+[mysql-monitor_ping_max_failures](#mysql-monitor_ping_max_failures)| 3                    |
+[mysql-monitor_ping_timeout](#mysql-monitor_ping_timeout)| 1000                 |
+[mysql-monitor_query_interval](#mysql-monitor_query_interval)| 60000                |
+[mysql-monitor_query_timeout](#mysql-monitor_query_timeout)| 100                  |
+[mysql-monitor_read_only_interval](#mysql-monitor_read_only_interval)| 1500                 |
+[mysql-monitor_read_only_max_timeout_count](#mysql-monitor_read_only_max_timeout_count)| 3                    |
 mysql-monitor_read_only_timeout                              | 500                  |
 mysql-monitor_replication_lag_interval                       | 10000                |
 mysql-monitor_replication_lag_timeout                        | 1000                 |
@@ -1898,7 +1898,7 @@ Please note that multiplexing can still be disabled for [other reasons](Multiple
     </tr>
 </table>​
 
-### `mysql-eventslog_filename`
+### <a name="mysql-eventslog_filename">`mysql-eventslog_filename`</a>
 
 If this variable is set, ProxySQL will log all traffic to the specified filename. Note that the log file is not a text file, but a binary log with encoded traffic. The value of this variable can be set to an absolute pathname (e.g. "/data/events_log/events_log" or else a filename (e.g. "events_log") will be written to the defined data directory. A sequential number will always be suffixed in the file's extension (e.g. "events_log.00000001").
 
@@ -1927,7 +1927,7 @@ If this variable is set, ProxySQL will log all traffic to the specified filename
     </tr>
 </table>​
 
-### `mysql-eventslog_filesize`
+### <a name="mysql-eventslog_filesize">`mysql-eventslog_filesize`</a>
 
 This variable specifies the maximum size of files created by ProxySQL logger as specified in `mysql-eventslog_filename`. When the maximum size is reached, the file is rotated.
 
@@ -1960,7 +1960,67 @@ This variable specifies the maximum size of files created by ProxySQL logger as 
     </tr>
 </table>​
 
-### `mysql-forward_autocommit`
+### <a name="mysql-eventslog_default_log">`mysql-eventslog_default_log`</a>
+ProxySQL is able to log queries that pass through.
+If there is no definition for `Log` in a matching rule in mysql_query_rules, mysql-eventslog_default_log applies.
+See also https://github.com/sysown/proxysql/wiki/Query-Logging
+
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-eventslog_default_log</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>Boolean</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>false</td>
+    </tr>
+</table>
+
+### <a name="mysql-eventslog_format">mysql-eventslog_format</a>
+  From version 2.0.6 ProxySQL can handle two different log formats:
+    1 : this is the default: queries are logged in binary format (like before 2.0.6)
+    2 : the queries are logged in JSON format.
+  Default: 1
+  See also https://github.com/sysown/proxysql/wiki/Query-Logging
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-eventslog_format</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>Integer</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>1</td>
+    </tr>
+    <tr>
+        <td><b>Valid Values</b></td>
+        <td>
+            1 : this is the default: queries are logged in binary format (like before 2.0.6)<br>
+            2 : the queries are logged in JSON format.
+        </td>
+    </tr>
+</table>
+
+### <a name="mysql-forward_autocommit">`mysql-forward_autocommit`</a>
 
 When `mysql-forward_autocommit=false` (the default), ProxySQL will track (and remember) the autocommit value that the client wants and change `autocommit` on a backend connection as needed. For example, if a client sends `set autcommit=0`, ProxySQL will just reply OK. When the client sends a DDL, proxysql will get a connection to target hostgroup, and change `autocommit` before running the DDL.
 
@@ -1987,7 +2047,7 @@ If mysql-forward_autocommit=true, `SET autocommit=0` is forwarded to the backend
     </tr>
 </table>​
 
-### `mysql-free_connections_pct`
+### <a name="mysql-free_connections_pct">`mysql-free_connections_pct`</a>
 
 ProxySQL uses a connection pool to connect to backend servers.  
 Connections to backend are never pre-allocated if there is no need, so at start up there will 0 connections to the backend.  
@@ -2027,11 +2087,11 @@ A connection is idle if it hasn't used since the last round of pings. The time i
     </tr>
 </table>​
 
-### `mysql-have_compress`
+### <a name=""mysql-have_compress>`mysql-have_compress`</a>
 
 Currently unused.
 
-### `mysql-have_ssl`
+### <a name="mysql-have_ssl">`mysql-have_ssl`</a>
 
 Introduced in ProxySQL v2.0, enables frontend SSL support (see [SSL Support](https://github.com/sysown/proxysql/wiki/SSL-Support) for more information).
 
@@ -2056,7 +2116,7 @@ Introduced in ProxySQL v2.0, enables frontend SSL support (see [SSL Support](htt
     </tr>
 </table>​
 
-### `mysql-hostgroup_manager_verbose`
+### <a name="mysql-hostgroup_manager_verbose">`mysql-hostgroup_manager_verbose`</a>
 
 Enable verbose logging of hostgroup manager details in ProxySQL logs (e.g. when running `LOAD MYSQL SERVERS TO RUNTIME`).
 
@@ -2089,7 +2149,7 @@ Enable verbose logging of hostgroup manager details in ProxySQL logs (e.g. when 
     </tr>
 </table>​
 
-### `mysql-init_connect`
+### <a name="mysql-init_connect">`mysql-init_connect`</a>
 
 String containing one or more SQL statements, separated by semicolons, that will be executed by the ProxySQL for each backend connection when created or initialised e.g. `SET WAIT_TIMEOUT=28800` (works similarly to MySQL's `init_connect` variable).
 
@@ -2118,7 +2178,7 @@ String containing one or more SQL statements, separated by semicolons, that will
     </tr>
 </table>​
 
-### `mysql-interfaces`
+### <a name="mysql-interfaces">`mysql-interfaces`</a>
 
 Semicolon-separated list of hostname:port entries for interfaces for incoming MySQL traffic. Note that this also supports UNIX domain sockets for the cases where the connection is done from an application on the same machine.  
 Note that changing this value has no effect at runtime, if you need to change it you have to restart the proxy.  
@@ -2151,7 +2211,39 @@ In other words, after changing `mysql-interfaces`, you need to run `SAVE MYSQL V
     </tr>
 </table>​
 
-### `mysql-kill_backend_connection_when_disconnect`
+### <a name="mysql-keep_multiplexing_variables">`mysql-keep_multiplexing_variables`</a>
+Defines a list of variables that do not causes multiplexing to be disabled if queries.
+For example "SELECT @@version", by default proxysql would disable multiplexing.
+But because "version" is in mysql-keep_multiplexing_variables, multiplexing is not disabled.
+The list is define in ProxySQL and is not dynamic. 
+Default: trx_isolation,version
+
+### <a name="mysql-max_stmts_cache">`mysql-max_stmts_cache`</a>
+Set the total maximum number of statemnts that can be cached when using Prepare Statement
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-max_stmts_cache/td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>Integer</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>10000</td>
+    </tr>
+</table>
+     
+ 
+
+### <a name="mysql-kill_backend_connection_when_disconnect">`mysql-kill_backend_connection_when_disconnect`</a>
 
 When enabled the backend connection for a client connection is killed when the client disconnects (introduced in ProxySQL v2.0).
 
@@ -2176,7 +2268,7 @@ When enabled the backend connection for a client connection is killed when the c
     </tr>
 </table>​
 
-### `mysql-long_query_time`
+### <a name="mysql-long_query_time">`mysql-long_query_time`</a>
 
 Threshold for counting queries passing through the proxy as 'slow'. The total number of slow queries can be found in the `stats_mysql_global` table, in the variable named `Slow_queries` (each row in that table represents one variable).
 
@@ -2209,7 +2301,7 @@ Threshold for counting queries passing through the proxy as 'slow'. The total nu
     </tr>
 </table>​
 
-### `mysql-max_allowed_packet`
+### <a name="mysql-max_allowed_packet">`mysql-max_allowed_packet`</a>
 
 `mysql-max_allowed_packet` defines the maximum size of a single packet/command received by the client. It mimics the behavior of mysqld's [max_allowed_packet](http://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_max_allowed_packet)  
 
@@ -2242,7 +2334,7 @@ Threshold for counting queries passing through the proxy as 'slow'. The total nu
     </tr>
 </table>​
 
-### `mysql-max_connections`
+### <a name="mysql-max_connections">`mysql-max_connections`</a>
 
 The maximum number of client connections that the proxy can handle. After this number is reached, new connections will be rejected with the `#HY000` error, and the error message `Too many connections`.
 
@@ -2275,7 +2367,7 @@ The maximum number of client connections that the proxy can handle. After this n
     </tr>
 </table>​
 
-### `mysql-max_stmts_per_connection`
+### <a name="mysql-max_stmts_per_connection">`mysql-max_stmts_per_connection`</a>
 
 The threshold for the number of statements that can be prepared on a backend connection before that connection is closed (prior to version 1.4.3) or reset (starting version 1.4.4). This is evaluated when a connection is returned to the connection pool.
 
@@ -2309,7 +2401,7 @@ The threshold for the number of statements that can be prepared on a backend con
 </table>​
 
 
-### `mysql-max_transaction_time`
+### <a name="mysql-max_transaction_time">`mysql-max_transaction_time`</a>
 
 Sessions with active transactions running more than this timeout are killed.
 
@@ -2342,7 +2434,35 @@ Sessions with active transactions running more than this timeout are killed.
     </tr>
 </table>​
 
-### `mysql-mirror_max_concurrency`
+
+### <a name="mysql-min_num_servers_lantency_awareness">`mysql-min_num_servers_lantency_awareness`</a>
+Latency awareness is an algorithm uses to send traffic only to closest backends.
+IE: In case of slaves in multiple AZs, ProxySQL will sends traffic only to the slaves on the same AZ.
+But to trigger this algorithm, a minimum number of servers is required.
+In case of 3 slaves in 3 AZs, and application/ProxySQL is in one AZ, you MAY not want to send almost all the traffic to only one slave.
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-min_num_servers_lantency_awarenes</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>Integer</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>1000</td>
+    </tr>
+</table>
+
+
+### <a name="mysql-mirror_max_concurrency">`mysql-mirror_max_concurrency`</a>
 
 ToDo
 
@@ -2375,7 +2495,7 @@ ToDo
     </tr>
 </table>​
 
-### `mysql-mirror_max_queue_length`
+### <a name="mysql-mirror_max_queue_length">`mysql-mirror_max_queue_length`</a>
 
 ToDo
 
@@ -2408,7 +2528,7 @@ ToDo
     </tr>
 </table>​
 
-### `mysql-monitor_connect_interval`
+### <a name="mysql-monitor_connect_interval">`mysql-monitor_connect_interval`</a>
 
 The interval at which the Monitor module of the proxy will try to connect to all the MySQL servers in order to check whether they are available or not.
 
@@ -2441,7 +2561,7 @@ The interval at which the Monitor module of the proxy will try to connect to all
     </tr>
 </table>​
 
-### `mysql-monitor_connect_timeout`
+### <a name="mysql-monitor_connect_timeout">`mysql-monitor_connect_timeout`</a>
 
 Connection timeout in milliseconds. The current implementation rounds this value to an integer number of seconds less or equal to the original interval, with 1 second as minimum. This lazy rounding is done because SSL connections are blocking calls.
 
@@ -2474,7 +2594,7 @@ Connection timeout in milliseconds. The current implementation rounds this value
     </tr>
 </table>​
 
-### `mysql-monitor_enabled`
+### <a name="mysql-monitor_enabled">`mysql-monitor_enabled`</a>
 
 It enables or disables MySQL Monitor.
 
@@ -2499,7 +2619,7 @@ It enables or disables MySQL Monitor.
     </tr>
 </table>​
 
-### `mysql-monitor_galera_healthcheck_interval`
+### <a name="mysql-monitor_galera_healthcheck_interval">`mysql-monitor_galera_healthcheck_interval`</a>
 
 The interval at which the proxy should connect to the backend servers in order to monitor the Galera staus of a node. Nodes can be temporarily shunned if their status is not available which is controlled by the `mysql_galera_hostgroups`.`max_transactions_behind` column in the admin interface, at a per-hostgroup level (introduced in ProxySQL v2.0).
 
@@ -2532,7 +2652,30 @@ The interval at which the proxy should connect to the backend servers in order t
     </tr>
 </table>​
 
-### `mysql-monitor_galera_healthcheck_timeout`
+### <a name="mysql-monitor_galera_healthcheck_max_timeout_count">`mysql-monitor_galera_healthcheck_max_timeout_count`</a>
+Set the max number of times ProxySQL has timeout checking on a Galera Node before declaring it OFFLINE.
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-monitor_galera_healthcheck_max_timeout_count</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>Integer</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>3</td>
+    </tr>
+</table>
+
+### <a name="mysql-monitor_galera_healthcheck_timeout">`mysql-monitor_galera_healthcheck_timeout`</a>
 
 How long the Monitor module will wait for a Galera status check reply (introduced in ProxySQL v2.0).
 
@@ -2565,7 +2708,7 @@ How long the Monitor module will wait for a Galera status check reply (introduce
     </tr>
 </table>​
 
-### `mysql-monitor_groupreplication_healthcheck_interval`
+### <a name="mysql-monitor_groupreplication_healthcheck_interval">`mysql-monitor_groupreplication_healthcheck_interval`</a>
 
 The interval at which the proxy should connect to the backend servers in order to monitor the Group Replication staus of a node. Nodes can be temporarily shunned if their status is not available which is controlled by the `mysql_group_replication_hostgroups`.`max_transactions_behind` column in the admin interface, at a per-hostgroup level.
 
@@ -2598,7 +2741,8 @@ The interval at which the proxy should connect to the backend servers in order t
     </tr>
 </table>​
 
-### `mysql-monitor_groupreplication_healthcheck_timeout`
+
+### <a name="mysql-monitor_groupreplication_healthcheck_timeout">`mysql-monitor_groupreplication_healthcheck_timeout`</a>
 
 How long the Monitor module will wait for a Group Replication status check reply.
 
@@ -2631,7 +2775,7 @@ How long the Monitor module will wait for a Group Replication status check reply
     </tr>
 </table>​
 
-### `mysql-monitor_history`
+### <a name="mysql-monitor_history">`mysql-monitor_history`</a>
 
 The duration for which the events for the checks made by the Monitor module are kept. Such events include connecting to backend servers (to check for connectivity issues), querying them with a simple query (in order to check that they are running correctly) or checking their replication lag. These logs are kept in the following admin tables:
 * `mysql_server_connect_log`
@@ -2667,7 +2811,7 @@ The duration for which the events for the checks made by the Monitor module are 
     </tr>
 </table>​
 
-### `mysql-monitor_password`
+### <a name="mysql-monitor_password">`mysql-monitor_password`</a>
 
 Specifies the password that the Monitor module will use to connect to the backends.
 
@@ -2692,7 +2836,7 @@ Specifies the password that the Monitor module will use to connect to the backen
     </tr>
 </table>​
 
-### `mysql-monitor_ping_interval`
+### <a name="mysql-monitor_ping_interval">`mysql-monitor_ping_interval`</a>
 
 The interval at which the Monitor module should ping the backend servers by using the [mysql_ping](https://dev.mysql.com/doc/refman/5.0/en/mysql-ping.html) API.
 
@@ -2727,7 +2871,7 @@ Before version 1.4.14, the default was 60000 (1 minute).
     </tr>
 </table>​
 
-### `mysql-monitor_ping_max_failures`
+### <a name="mysql-monitor_ping_max_failures">`mysql-monitor_ping_max_failures`</a>
 
 The maximum number of ping failures the Monitor module should tolerate before sending a signal to MySQL_Hostgroups_Manager to kill all connections to the backend server.
 
@@ -2760,7 +2904,7 @@ The maximum number of ping failures the Monitor module should tolerate before se
     </tr>
 </table>​
 
-### `mysql-monitor_ping_timeout`
+### <a name="mysql-monitor_ping_timeout">`mysql-monitor_ping_timeout`</a>
 
 How long the Monitor module will wait for a ping reply.
 
@@ -2793,7 +2937,7 @@ How long the Monitor module will wait for a ping reply.
     </tr>
 </table>​
 
-### `mysql-monitor_query_interval`
+### <a name="mysql-monitor_query_interval">`mysql-monitor_query_interval`</a>
 
 Currently unused. Will be used by the Monitor module in order to collect data about the global status of the backend servers.
 
@@ -2826,7 +2970,7 @@ Currently unused. Will be used by the Monitor module in order to collect data ab
     </tr>
 </table>​
 
-### `mysql-monitor_query_timeout`
+### <a name="mysql-monitor_query_timeout">`mysql-monitor_query_timeout`</a>
 
 Currently unused. Will be used by the Monitor module in order to collect data about the global status of the backend servers.
 
@@ -2851,7 +2995,7 @@ Currently unused. Will be used by the Monitor module in order to collect data ab
     </tr>
 </table>​
 
-### `mysql-monitor_read_only_interval`
+### <a name="mysql-monitor_read_only_interval">`mysql-monitor_read_only_interval`</a>
 
 Defines the frequency to check the Read Only status of a backend server (in milliseconds).
 
@@ -2884,7 +3028,7 @@ Defines the frequency to check the Read Only status of a backend server (in mill
     </tr>
 </table>​
 
-### `mysql-monitor_read_only_max_timeout_count`
+### <a name="mysql-monitor_read_only_max_timeout_count">`mysql-monitor_read_only_max_timeout_count`</a>
 
 When the monitor thread performs a read_only check, AND the check exceeds `mysql-monitor_read_only_timeout`, repeat the read_only check up to `mysql-monitor_read_only_max_timeout_count` times before setting the slave to OFFLINE HARD.
 
