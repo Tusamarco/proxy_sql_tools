@@ -34,15 +34,15 @@ Variable name|Default Value|From Version
 [admin-cluster_check_status_frequency](#admin-cluster_check_status_frequency)| 10                   |
 [admin-cluster_mysql_query_rules_diffs_before_sync](#admin-cluster_mysql_query_rules_diffs_before_sync)| 3                    |
 [admin-cluster_mysql_query_rules_save_to_disk](#admin-cluster_mysql_query_rules_save_to_disk)| true                 |
-admin-cluster_mysql_servers_diffs_before_sync                | 3                    |
-admin-cluster_mysql_servers_save_to_disk                     | true                 |
-admin-cluster_mysql_users_diffs_before_sync                  | 3                    |
-admin-cluster_mysql_users_save_to_disk                       | true                 |
-admin-cluster_password                                       |                      |
-admin-cluster_proxysql_servers_diffs_before_sync             | 3                    |
-admin-cluster_proxysql_servers_save_to_disk                  | true                 |
-admin-cluster_username                                       |                      |
-admin-hash_passwords                                         | true                 |
+[admin-cluster_mysql_servers_diffs_before_sync](#admin-cluster_mysql_servers_diffs_before_sync)| 3                    |
+[admin-cluster_mysql_servers_save_to_disk](#admin-cluster_mysql_servers_save_to_disk)| true                 |
+[admin-cluster_mysql_users_diffs_before_sync](#admin-cluster_mysql_users_diffs_before_sync)| 3                    |
+[admin-cluster_mysql_users_save_to_disk](#admin-cluster_mysql_users_save_to_disk)| true                 |
+[admin-cluster_password](#admin-cluster_password)|                      |
+[admin-cluster_proxysql_servers_diffs_before_sync](#admin-cluster_proxysql_servers_diffs_before_sync)| 3                    |
+[admin-cluster_proxysql_servers_save_to_disk](#admin-cluster_proxysql_servers_save_to_disk)| true                 |
+[admin-cluster_username](#admin-cluster_username)|                      |
+[admin-hash_passwords](#admin-hash_passwords)| true                 |
 admin-mysql_ifaces                                           | 0.0.0.0:6032         |
 admin-read_only                                              | false                |
 admin-refresh_interval                                       | 2000                 |
@@ -256,39 +256,39 @@ See [ProxySQL Cluster](https://github.com/sysown/proxysql/wiki/ProxySQL-Cluster)
 
 See [ProxySQL Cluster](https://github.com/sysown/proxysql/wiki/ProxySQL-Cluster)
 
-### `admin-cluster_mysql_servers_diffs_before_sync`
+### <a name="admin-cluster_mysql_servers_diffs_before_sync">`admin-cluster_mysql_servers_diffs_before_sync`</a>
 
 See [ProxySQL Cluster](https://github.com/sysown/proxysql/wiki/ProxySQL-Cluster)
 
-### `admin-cluster_mysql_servers_save_to_disk`
+### <a name="admin-cluster_mysql_servers_save_to_disk">`admin-cluster_mysql_servers_save_to_disk`</a>
 
 See [ProxySQL Cluster](https://github.com/sysown/proxysql/wiki/ProxySQL-Cluster)
 
-### `admin-cluster_mysql_users_diffs_before_sync`
+### <a name="admin-cluster_mysql_users_diffs_before_sync">`admin-cluster_mysql_users_diffs_before_sync`</a>
 
 See [ProxySQL Cluster](https://github.com/sysown/proxysql/wiki/ProxySQL-Cluster)
 
-### `admin-cluster_mysql_users_save_to_disk`
+### <a name="admin-cluster_mysql_users_save_to_disk">`admin-cluster_mysql_users_save_to_disk`</a>
 
 See [ProxySQL Cluster](https://github.com/sysown/proxysql/wiki/ProxySQL-Cluster)
 
-### `admin-cluster_password`
+### <a name="admin-cluster_password">`admin-cluster_password`</a>
 
 See [ProxySQL Cluster](https://github.com/sysown/proxysql/wiki/ProxySQL-Cluster)
 
-### `admin-cluster_proxysql_servers_diffs_before_sync`
+### <a name="admin-cluster_proxysql_servers_diffs_before_sync">`admin-cluster_proxysql_servers_diffs_before_sync`</a>
 
 See [ProxySQL Cluster](https://github.com/sysown/proxysql/wiki/ProxySQL-Cluster)
 
-### `admin-cluster_proxysql_servers_save_to_disk`
+### <a name="admin-cluster_proxysql_servers_save_to_disk">`admin-cluster_proxysql_servers_save_to_disk`/<a>
 
 See [ProxySQL Cluster](https://github.com/sysown/proxysql/wiki/ProxySQL-Cluster)
 
-### `admin-cluster_username`
+### <a name="admin-cluster_username">`admin-cluster_username`</a>
 
 See [ProxySQL Cluster](https://github.com/sysown/proxysql/wiki/ProxySQL-Cluster)
 
-### `admin-hash_passwords`
+### <a name="admin-hash_passwords">`admin-hash_passwords`</a>
 
 ProxySQL v1.2.3 introduced a new global boolean variable, `admin-hash_passwords`, enabled by default.
 When `admin-hash_passwords=true`, password are automatically hashed at RUNTIME when running `LOAD MYSQL USERS TO RUNTIME`. Passwords in mysql_users tables are not automatically hashed and require you to run `SAVE MYSQL USERS FROM RUNTIME`.
