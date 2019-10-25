@@ -54,13 +54,13 @@ Variable name|Default Value|From Version
 [admin-stats_system_memory](#admin-stats_system_memory)| 60                   |
 [admin-telnet_admin_ifaces](#admin-telnet_admin_ifaces)| (null)               |
 [admin-telnet_stats_ifaces](#admin-telnet_stats_ifaces)| (null)               |
-[admin-vacuum_stats](#admin-vacuum_stats)|1|2.0.6
-admin-version                                                | 2.0.7-80-g4dd4ef5f   |
-admin-web_enabled                                            | false                |
-admin-web_port                                               | 6080                 |
-mysql-add_ldap_user_comment                                  |                      |
-mysql-auditlog_filename                                      |                      |
-mysql-auditlog_filesize                                      | 104857600            |
+[admin-vacuum_stats](#admin-vacuum_stats)|true|2.0.6
+[admin-version](#admin-version)| 2.0.7-80-g4dd4ef5f   |
+[admin-web_enabled](#admin-web_enabled)| false                |
+[admin-web_port](#admin-web_port)| 6080                 |
+[mysql-add_ldap_user_comment](#mysql-add_ldap_user_comment)|                      |
+[mysql-auditlog_filename](#mysql-auditlog_filename)|                      |
+[mysql-auditlog_filesize](#mysql-auditlog_filename)| 104857600            |
 mysql-auto_increment_delay_multiplex                         | 5                    |
 mysql-autocommit_false_is_transaction                        | false                |
 mysql-autocommit_false_not_reusable                          | false                |
@@ -440,7 +440,7 @@ Not currently used (planned usage in a future version).
 
 Not currently used (planned usage in a future version).
 
-### `admin-version`
+### <a name="admin-version">`admin-version`</a>
 
 This variable displays ProxySQL version. This variable is read only.
 
@@ -639,11 +639,11 @@ The refresh interval (in seconds) to update the historical statistics of memory 
     </tr>
     <tr>
         <td><b>Default</b></td>
-        <td>True</td>
+        <td>true</td>
     </tr>
     <tr>
         <td><b>Valid values</b></td>
-        <td>True, False</td>
+        <td>true, false</td>
     </tr>
 </table>
     
@@ -652,7 +652,7 @@ The refresh interval (in seconds) to update the historical statistics of memory 
 ProxySQL 1.4.4 embeds an HTTP web server from where is possible to gather certain metrics.  
 Credentials to access the web interfaces are the same defined in `admin-stats_credentials`.  
 
-### `admin-web_enabled`
+### <a name="admin-web_enabled">`admin-web_enabled`</a>
 
 If `admin-web_enabled` is set to `true`, the web server is automatically enabled.  
 
@@ -678,7 +678,7 @@ If `admin-web_enabled` is set to `true`, the web server is automatically enabled
 </table>​
 
 
-### `admin-web_port`
+### <a name="admin-web_port">`admin-web_port`</a>
 
 This variable defines on which port the web server is listening.  
 
@@ -705,6 +705,51 @@ This variable defines on which port the web server is listening.
 
 
 ## MySQL Variables
+
+## <a name="mysql-add_ldap_user_comment">mysql-add_ldap_user_comment</a>
+    If mysql-add_ldap_user_comment is enabled, a comment like the following will be added on the query:
+    ```SQL
+    /*  valueof_mysql-add_ldap_user_comment=frontend_username */
+    ```
+    <table>
+    <tr>
+        <td valign="top" rowspan="2"><b>MySQL Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-add_ldap_user_comment</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>Boolean (seconds)</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td><b>Valid values</b></td>
+        <td>true, false</td>
+    </tr>
+</table>
+
+ mysql-ldap_user_variable 
+  When enable each session will have a variable set with the user_name value, ie: SET @mysql-ldap_user_variable:='username' 
+  The use of this variable can be for auditing purposed backend side. For example, if a trigger on a table will use that session variable.
+
+
+ 
+ mysql-auditlog_filename 
+  This variable defines the base name of the audit log where audit events are logged. The filename of the log file will be the base name followed by an 8 digits progressive number.
+  The default value is an empty string (``).
+ 
+ mysql-auditlog_filesize 
+  This variable defines the maximum file size of the audit log when the current file will be closed and a new file will be created.
+  The default value is 104857600 (100MB)
+
 
 ### `mysql-auto_increment_delay_multiplex`
 
