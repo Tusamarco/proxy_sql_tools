@@ -30,10 +30,10 @@ Variable name|Default Value|From Version
 [admin-checksum_mysql_query_rules](#admin-checksum_mysql_query_rules)| true                 |
 [admin-checksum_mysql_servers](#admin-checksum_mysql_servers)| true                 |
 [admin-checksum_mysql_users](#admin-checksum_mysql_users)| true                 |
-admin-cluster_check_interval_ms                              | 1000                 |
-admin-cluster_check_status_frequency                         | 10                   |
-admin-cluster_mysql_query_rules_diffs_before_sync            | 3                    |
-admin-cluster_mysql_query_rules_save_to_disk                 | true                 |
+[admin-cluster_check_interval_ms](#admin-cluster_check_interval_ms)| 1000                 |
+[admin-cluster_check_status_frequency](#admin-cluster_check_status_frequency)| 10                   |
+[admin-cluster_mysql_query_rules_diffs_before_sync](#admin-cluster_mysql_query_rules_diffs_before_sync)| 3                    |
+[admin-cluster_mysql_query_rules_save_to_disk](#admin-cluster_mysql_query_rules_save_to_disk)| true                 |
 admin-cluster_mysql_servers_diffs_before_sync                | 3                    |
 admin-cluster_mysql_servers_save_to_disk                     | true                 |
 admin-cluster_mysql_users_diffs_before_sync                  | 3                    |
@@ -240,19 +240,19 @@ See [ProxySQL Cluster](https://github.com/sysown/proxysql/wiki/ProxySQL-Cluster)
 
 See [ProxySQL Cluster](https://github.com/sysown/proxysql/wiki/ProxySQL-Cluster)
 
-### `admin-cluster_check_interval_ms`
+### <a name="admin-cluster_check_interval_ms">`admin-cluster_check_interval_ms`</a>
 
 See [ProxySQL Cluster](https://github.com/sysown/proxysql/wiki/ProxySQL-Cluster)
 
-### `admin-cluster_check_status_frequency`
+### <a name="admin-cluster_check_status_frequency">`admin-cluster_check_status_frequency`</a>
 
 See [ProxySQL Cluster](https://github.com/sysown/proxysql/wiki/ProxySQL-Cluster)
 
-### `admin-cluster_mysql_query_rules_diffs_before_sync`
+### <a name="admin-cluster_mysql_query_rules_diffs_before_sync">`admin-cluster_mysql_query_rules_diffs_before_sync`</a>
 
 See [ProxySQL Cluster](https://github.com/sysown/proxysql/wiki/ProxySQL-Cluster)
 
-### `admin-cluster_mysql_query_rules_save_to_disk`
+### <a name="admin-cluster_mysql_query_rules_save_to_disk">`admin-cluster_mysql_query_rules_save_to_disk`</a>
 
 See [ProxySQL Cluster](https://github.com/sysown/proxysql/wiki/ProxySQL-Cluster)
 
