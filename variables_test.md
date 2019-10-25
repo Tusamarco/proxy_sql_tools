@@ -27,9 +27,9 @@ Next, we're going to explain each type of variable in detail.
 Variable name|Default Value|From Version
 -------------|-------------|------------
 [admin-admin_credentials](#admin-admin_credentials)          | admin:admin          |
-admin-checksum_mysql_query_rules                             | true                 |
-admin-checksum_mysql_servers                                 | true                 |
-admin-checksum_mysql_users                                   | true                 |
+[admin-checksum_mysql_query_rules](#admin-checksum_mysql_query_rules)| true                 |
+[admin-checksum_mysql_servers](#admin-checksum_mysql_servers)| true                 |
+[admin-checksum_mysql_users](#admin-checksum_mysql_users)| true                 |
 admin-cluster_check_interval_ms                              | 1000                 |
 admin-cluster_check_status_frequency                         | 10                   |
 admin-cluster_mysql_query_rules_diffs_before_sync            | 3                    |
@@ -228,15 +228,15 @@ It is important to note that:
     </tr>
 </table>​
 
-### `admin-checksum_mysql_query_rules`
+### <a name="admin-checksum_mysql_query_rules">`admin-checksum_mysql_query_rules`</a>
 
 See [ProxySQL Cluster](https://github.com/sysown/proxysql/wiki/ProxySQL-Cluster)
 
-### `admin-checksum_mysql_servers`
+### <a name="admin-checksum_mysql_servers">`admin-checksum_mysql_servers`</a>
 
 See [ProxySQL Cluster](https://github.com/sysown/proxysql/wiki/ProxySQL-Cluster)
 
-### `admin-checksum_mysql_users`
+### <a name="admin-checksum_mysql_users">`admin-checksum_mysql_users`</a>
 
 See [ProxySQL Cluster](https://github.com/sysown/proxysql/wiki/ProxySQL-Cluster)
 
