@@ -60,7 +60,7 @@ Variable name|Default Value|From Version
 [admin-web_port](#admin-web_port)| 6080                 |
 [mysql-add_ldap_user_comment](#mysql-add_ldap_user_comment)|                      |
 [mysql-auditlog_filename](#mysql-auditlog_filename)|                      |
-[mysql-auditlog_filesize](#mysql-auditlog_filename)| 104857600            |
+[mysql-auditlog_filesize](#mysql-auditlog_filename)| 100MB            |
 mysql-auto_increment_delay_multiplex                         | 5                    |
 mysql-autocommit_false_is_transaction                        | false                |
 mysql-autocommit_false_not_reusable                          | false                |
@@ -819,7 +819,7 @@ valueof_mysql-add_ldap_user_comment=frontend_username
     </tr>
     <tr>
         <td><b>Maximum</b></td>
-        <td>@GB</td>
+        <td>1GB</td>
     </tr>
 </table>
 
