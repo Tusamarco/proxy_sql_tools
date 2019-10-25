@@ -706,12 +706,12 @@ This variable defines on which port the web server is listening.
 
 ## MySQL Variables
 
-## <a name="mysql-add_ldap_user_comment">mysql-add_ldap_user_comment</a>
-    If mysql-add_ldap_user_comment is enabled, a comment like the following will be added on the query:
-    ```SQL
-    /*  valueof_mysql-add_ldap_user_comment=frontend_username */
-    ```
-    <table>
+### <a name="mysql-add_ldap_user_comment">`mysql-add_ldap_user_comment`</a>
+If mysql-add_ldap_user_comment is set, a comment like the following will be added on the query::
+``` SQL
+valueof_mysql-add_ldap_user_comment=frontend_username 
+```
+<table>
     <tr>
         <td valign="top" rowspan="2"><b>MySQL Variable</b></td>
         <td><b>Name</b></td>
@@ -724,34 +724,106 @@ This variable defines on which port the web server is listening.
     <tr>
         <td valign="top" rowspan="4"><b>Permitted Values</b></td>
         <td><b>Type</b></td>
-        <td>Boolean (seconds)</td>
+        <td>String</td>
     </tr>
     <tr>
         <td><b>Default</b></td>
-        <td></td>
+        <td>NULL</td>
     </tr>
     <tr>
         <td><b>Valid values</b></td>
-        <td>true, false</td>
+        <td></td>
     </tr>
 </table>
 
- mysql-ldap_user_variable 
-  When enable each session will have a variable set with the user_name value, ie: SET @mysql-ldap_user_variable:='username' 
+### <a name="mysql-ldap_user_variable">`mysql-ldap_user_variable`</a>
+  When set, sessions will have a variable set with the user_name value, ie: `SET @mysql-ldap_user_variable:='username'` 
   The use of this variable can be for auditing purposed backend side. For example, if a trigger on a table will use that session variable.
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>MySQL Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-ldap_user_variable</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>String</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>NULL</td>
+    </tr>
+    <tr>
+        <td><b>Valid values</b></td>
+        <td></td>
+    </tr>
+</table>  
 
-
- 
- mysql-auditlog_filename 
+### <a name="mysql-auditlog_filename">`mysql-auditlog_filename`</a>
   This variable defines the base name of the audit log where audit events are logged. The filename of the log file will be the base name followed by an 8 digits progressive number.
-  The default value is an empty string (``).
- 
- mysql-auditlog_filesize 
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>MySQL Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-auditlog_filename</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>String</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>NULL</td>
+    </tr>
+    <tr>
+        <td><b>Valid values</b></td>
+        <td></td>
+    </tr>
+</table>
+
+### <a name="mysql-auditlog_filesize">`mysql-auditlog_filesize`</a>
   This variable defines the maximum file size of the audit log when the current file will be closed and a new file will be created.
   The default value is 104857600 (100MB)
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-auditlog_filesize</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>Integer (count)</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>104857600</td>
+    </tr>
+    <tr>
+        <td><b>Minimum</b></td>
+        <td>1MB</td>
+    </tr>
+    <tr>
+        <td><b>Maximum</b></td>
+        <td>@GB</td>
+    </tr>
+</table>
 
-
-### `mysql-auto_increment_delay_multiplex`
+### <a name="mysql-auto_increment_delay_multiplex">`mysql-auto_increment_delay_multiplex`</a>
 
 Several applications rely, explicitly or implicitly, to the value returned by `LAST_INSERT_ID()`. If multiplexing is not configured correctly, or if the queries pattern is really unpredictable (for example if new queries are often deployed), it is possible that the query using `LAST_INSERT_ID()` uses a connection different than the connection where an auto-increment was used.  
 If `mysql-auto_increment_delay_multiplex` is set, after an OK packet with `last_insert_id` is received, multiplexing is temporary disabled for the same number of queries as specified in `mysql-auto_increment_delay_multiplex`.  
@@ -784,7 +856,7 @@ Note that disabling multiplexing doesn't disable routing, so it is important to 
         <td><b>Maximum</b></td>
         <td>1000000</td>
     </tr>
-</table>​
+</table>
 
 
 ### `mysql-autocommit_false_is_transaction`
