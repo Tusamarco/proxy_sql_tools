@@ -1,0 +1,6 @@
+Variable name|Default value|From Version
+-------------|-------------|------------
+[admin-vacuum_stats](#admin-vacuum_stats)|1|2.0.6
+
+<a name="admin-vacuum_stats">admin-vacuum_stats</a>
+
