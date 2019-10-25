@@ -43,17 +43,17 @@ Variable name|Default Value|From Version
 [admin-cluster_proxysql_servers_save_to_disk](#admin-cluster_proxysql_servers_save_to_disk)| true                 |
 [admin-cluster_username](#admin-cluster_username)|                      |
 [admin-hash_passwords](#admin-hash_passwords)| true                 |
-admin-mysql_ifaces                                           | 0.0.0.0:6032         |
-admin-read_only                                              | false                |
-admin-refresh_interval                                       | 2000                 |
-admin-stats_credentials                                      | stats:stats          |
-admin-stats_mysql_connection_pool                            | 60                   |
-admin-stats_mysql_connections                                | 60                   |
-admin-stats_mysql_query_cache                                | 60                   |
-admin-stats_system_cpu                                       | 60                   |
-admin-stats_system_memory                                    | 60                   |
-admin-telnet_admin_ifaces                                    | (null)               |
-admin-telnet_stats_ifaces                                    | (null)               |
+[admin-mysql_ifaces](#admin-mysql_ifaces)| 0.0.0.0:6032         |
+[admin-read_only](#admin-read_only)| false                |
+[admin-refresh_interval](#admin-refresh_interval)| 2000                 |
+[admin-stats_credentials](#admin-stats_credentials)| stats:stats          |
+[admin-stats_mysql_connection_pool](#admin-stats_mysql_connection_pool)| 60                   |
+[admin-stats_mysql_connections](#admin-stats_mysql_connections)| 60                   |
+[admin-stats_mysql_query_cache](#admin-stats_mysql_query_cache)| 60                   |
+[admin-stats_system_cpu](#admin-stats_system_cpu)| 60                   |
+[admin-stats_system_memory](#admin-stats_system_memory)| 60                   |
+[admin-telnet_admin_ifaces](#admin-telnet_admin_ifaces)| (null)               |
+[admin-telnet_stats_ifaces](#admin-telnet_stats_ifaces)| (null)               |
 [admin-vacuum_stats](#admin-vacuum_stats)|1|2.0.6
 admin-version                                                | 2.0.7-80-g4dd4ef5f   |
 admin-web_enabled                                            | false                |
@@ -195,7 +195,6 @@ mysql-use_tcp_keepalive                                      | 0                
 mysql-verbose_query_error                                    | false                |
 mysql-wait_timeout                                           | 28800000             |
 
-<a name="admin-vacuum_stats">admin-vacuum_stats</a>
 
 ## Admin Variables
 
@@ -316,7 +315,7 @@ See [Password Management](https://github.com/sysown/proxysql/wiki/Password-manag
     </tr>
 </table>​
 
-### `admin-mysql_ifaces`
+### <a name="admin-mysql_ifaces">`admin-mysql_ifaces`</a>
 
 Semicolon-separated list of hostname:port entries for interfaces on which the admin interface should listen on. Note that this also supports UNIX domain sockets for the cases where the connection is done from an application on the same machine E.G.: `SET admin-mysql_ifaces='127.0.0.1:6032;/tmp/proxysql_admin.sock'`. Please note that the default `admin` user can only connect locally, in order to connect remotely a secondary user needs to be created by defining this in the `admin-admin_credentials` variable E.G. `admin-admin_credentials="admin:admin;radminuser:radminpass"`. 
 
@@ -345,7 +344,7 @@ Semicolon-separated list of hostname:port entries for interfaces on which the ad
     </tr>
 </table>​
 
-### `admin-read_only`
+### <a name="admin-read_only">`admin-read_only`</a>
 
 When this variable is set to true and loaded at runtime, the Admin module does not accept write anymore. This is useful to ensure that ProxySQL is not reconfigured.
 When `admin-read_only=true`, the only way to revert it to false at runtime (and make the Admin module writable again) is to run the command `PROXYSQL READWRITE`.
@@ -371,7 +370,7 @@ When `admin-read_only=true`, the only way to revert it to false at runtime (and 
     </tr>
 </table>​
 
-### `admin-refresh_interval`
+### <a name="admin-refresh_interval">`admin-refresh_interval`</a>
 
 The refresh interval (in microseconds) for updates to the query rules statistics and commands counters statistics. Be careful about tweaking this to a value that is:
 * too low, because it might affect the overall performance of the proxy
@@ -407,7 +406,7 @@ The refresh interval (in microseconds) for updates to the query rules statistics
     </tr>
 </table>​
 
-### `admin-stats_credentials`
+### <a name="admin-stats_credentials">`admin-stats_credentials`</a>
 
 This is a list of semi-colon separated `user:password` pairs that defines the read-only credentials for connecting to the admin interface. These are not allowed updates to internal data structures such as the list of MySQL backend servers (or hostgroups), query rules, etc. They only allow readings from the statistics and monitoring tables (the other tables are not only even visible).
 Note: users in `admin-stats_credentials` cannot be used also in `mysql_users` table.
@@ -433,11 +432,11 @@ Note: users in `admin-stats_credentials` cannot be used also in `mysql_users` ta
     </tr>
 </table>​
 
-### `admin-telnet_admin_ifaces`
+### <a name="admin-telnet_admin_ifaces">`admin-telnet_admin_ifaces`</a>
 
 Not currently used (planned usage in a future version).
 
-### `admin-telnet_stats_ifaces`
+### <a name="admin-telnet_stats_ifaces">`admin-telnet_stats_ifaces`</a>
 
 Not currently used (planned usage in a future version).
 
@@ -471,7 +470,7 @@ This variable displays ProxySQL version. This variable is read only.
 Since ProxySQL 1.4.4 Admin stores historical metrics in new database named `proxysql_stats.db` in the datadir.  
 Tables structures is subject to future changes.  
 
-### `admin-stats_mysql_connection_pool`
+### <a name="admin-stats_mysql_connection_pool">`admin-stats_mysql_connection_pool`</a>
 
 The refresh interval (in seconds) to update the historical statistics of the connection pool.  
 
@@ -501,7 +500,7 @@ The refresh interval (in seconds) to update the historical statistics of the con
 </table>​
 
 
-### `admin-stats_mysql_connections`
+### <a name="admin-stats_mysql_connections">`admin-stats_mysql_connections`</a>
 
 The refresh interval (in seconds) to update the historical statistics of MySQL connections, both frontends and backends.  
 
@@ -531,7 +530,7 @@ The refresh interval (in seconds) to update the historical statistics of MySQL c
 </table>​
 
 
-### `admin-stats_mysql_query_cache`
+### <a name="admin-stats_mysql_query_cache">`admin-stats_mysql_query_cache`</a>
 
 The refresh interval (in seconds) to update the historical statistics of MySQL Query Cache.  
 
@@ -560,7 +559,7 @@ The refresh interval (in seconds) to update the historical statistics of MySQL Q
     </tr>
 </table>​
 
-### `admin-stats_system_cpu`
+### <a name="admin-stats_system_cpu">`admin-stats_system_cpu`</a>
 
 The refresh interval (in seconds) to update the historical statistics of CPU usage.  
 
@@ -590,7 +589,7 @@ The refresh interval (in seconds) to update the historical statistics of CPU usa
 </table>​
 
 
-### `admin-stats_system_memory`
+### <a name="admin-stats_system_memory">`admin-stats_system_memory`</a>
 
 The refresh interval (in seconds) to update the historical statistics of memory usage.  
 *Note*: These statistics are not available if ProxySQL is not compiled with jemalloc.  Note that all official packages are compiled with jemalloc.  
@@ -618,8 +617,36 @@ The refresh interval (in seconds) to update the historical statistics of memory 
         <td><b>Valid values</b></td>
         <td>5, 10, 30, 60, 120, 300</td>
     </tr>
-</table>​
+</table>
 
+## <a name="admin-vacuum_stats">admin-vacuum_stats</a>
+ This parameter enable|disable the vacuum operation on the SQLite database storing the statistics. 
+    VACUUM command cleans the main database by copying its contents to a temporary database file and reloading the original database file from the copy. This eliminates free pages, aligns table data to be contiguous, and otherwise cleans up the database file structure.
+    <table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>admin-vacuum_stats</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>Boolean (seconds)</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>True</td>
+    </tr>
+    <tr>
+        <td><b>Valid values</b></td>
+        <td>True, False</td>
+    </tr>
+</table>
+    
 ## Admin web interface
 
 ProxySQL 1.4.4 embeds an HTTP web server from where is possible to gather certain metrics.  
