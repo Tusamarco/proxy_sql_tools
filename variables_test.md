@@ -137,62 +137,62 @@ Variable name|Default Value|From Version
 [mysql-monitor_query_timeout](#mysql-monitor_query_timeout)| 100                  |
 [mysql-monitor_read_only_interval](#mysql-monitor_read_only_interval)| 1500                 |
 [mysql-monitor_read_only_max_timeout_count](#mysql-monitor_read_only_max_timeout_count)| 3                    |
-mysql-monitor_read_only_timeout                              | 500                  |
-mysql-monitor_replication_lag_interval                       | 10000                |
-mysql-monitor_replication_lag_timeout                        | 1000                 |
-mysql-monitor_replication_lag_use_percona_heartbeat          |                      |
-mysql-monitor_slave_lag_when_null                            | 60                   |
-mysql-monitor_threads_max                                    | 128                  |
-mysql-monitor_threads_min                                    | 8                    |
-mysql-monitor_threads_queue_maxsize                          | 128                  |
-mysql-monitor_username                                       | monitor              |
-mysql-monitor_wait_timeout                                   | true                 |
-mysql-monitor_writer_is_also_reader                          | true                 |
-mysql-multiplexing                                           | true                 |
-mysql-ping_interval_server_msec                              | 120000               |
-mysql-ping_timeout_server                                    | 500                  |
-mysql-poll_timeout                                           | 2000                 |
-mysql-poll_timeout_on_failure                                | 100                  |
-mysql-query_cache_size_MB                                    | 256                  |
-mysql-query_cache_stores_empty_result                        | true                 |
-mysql-query_digests                                          | true                 |
-mysql-query_digests_lowercase                                | false                |
-mysql-query_digests_max_digest_length                        | 2048                 |
-mysql-query_digests_max_query_length                         | 65000                |
-mysql-query_digests_no_digits                                | false                |
-mysql-query_digests_normalize_digest_text                    | false                |
-mysql-query_digests_replace_null                             | false                |
-mysql-query_digests_track_hostname                           | false                |
-mysql-query_processor_iterations                             | 0                    |
-mysql-query_processor_regex                                  | 1                    |
-mysql-query_retries_on_failure                               | 1                    |
-mysql-reset_connection_algorithm                             | 2                    |
-mysql-server_capabilities                                    | 569867               |
-mysql-server_version                                         | 5.5.30               |
-mysql-servers_stats                                          | true                 |
-mysql-session_idle_ms                                        | 1000                 |
-mysql-session_idle_show_processlist                          | true                 |
-mysql-sessions_sort                                          | true                 |
-mysql-set_query_lock_on_hostgroup                            | 1                    |
-mysql-show_processlist_extended                              | 0                    |
-mysql-shun_on_failures                                       | 5                    |
-mysql-shun_recovery_time_sec                                 | 10                   |
-mysql-ssl_p2s_ca                                             |                      |
-mysql-ssl_p2s_cert                                           |                      |
-mysql-ssl_p2s_cipher                                         |                      |
-mysql-ssl_p2s_key                                            |                      |
-mysql-stacksize                                              | 1048576              |
-mysql-stats_time_backend_query                               | false                |
-mysql-stats_time_query_processor                             | false                |
-mysql-tcp_keepalive_time                                     | 0                    |
-mysql-threads                                                | 4                    |
-mysql-threshold_query_length                                 | 524288               |
-mysql-threshold_resultset_size                               | 4194304              |
-mysql-throttle_connections_per_sec_to_hostgroup              | 1000000              |
-mysql-throttle_max_bytes_per_second_to_client                | 0                    |
-mysql-throttle_ratio_server_to_client                        | 0                    |
-mysql-use_tcp_keepalive                                      | 0                    |
-mysql-verbose_query_error                                    | false                |
+[mysql-monitor_read_only_timeout](#mysql-monitor_read_only_timeout)| 500                  |
+[mysql-monitor_replication_lag_interval](#mysql-monitor_replication_lag_interval)| 10000                |
+[mysql-monitor_replication_lag_timeout}(#mysql-monitor_replication_lag_timeout)| 1000                 |
+[mysql-monitor_replication_lag_use_percona_heartbeat](#mysql-monitor_replication_lag_use_percona_heartbeat)|                      |
+[mysql-monitor_slave_lag_when_null](#mysql-monitor_slave_lag_when_null)| 60                   |
+[mysql-monitor_threads_max](#mysql-monitor_threads_max)| 128                  |
+[mysql-monitor_threads_min](#mysql-monitor_threads_min)| 8                    |
+[mysql-monitor_threads_queue_maxsize](#mysql-monitor_threads_queue_maxsize)| 128                  |
+[mysql-monitor_username](#mysql-monitor_username)| monitor              |
+[mysql-monitor_wait_timeout](#mysql-monitor_wait_timeout)| true                 |
+[mysql-monitor_writer_is_also_reader](#mysql-monitor_writer_is_also_reader)| true                 |
+[mysql-multiplexing](#mysql-multiplexing)| true                 |
+[mysql-ping_interval_server_msec](#mysql-ping_interval_server_msec)| 120000               |
+[mysql-ping_timeout_server](#mysql-ping_timeout_server)| 500                  |
+[mysql-poll_timeout](#mysql-poll_timeout)| 2000                 |
+[mysql-poll_timeout_on_failure](#mysql-poll_timeout_on_failure)| 100                  |
+[mysql-query_cache_size_MB](#mysql-query_cache_size_MB)| 256                  |
+[mysql-query_cache_stores_empty_result](#mysql-query_cache_stores_empty_result)| true                 |
+[mysql-query_digests](#mysql-query_digests)| true                 |
+[mysql-query_digests_lowercase](#mysql-query_digests_lowercase)| false                |
+[mysql-query_digests_max_digest_length](#mysql-query_digests_max_digest_length)| 2048                 |
+[mysql-query_digests_max_query_length](#mysql-query_digests_max_query_length)| 65000                |
+[mysql-query_digests_no_digits](#mysql-query_digests_no_digits)| false                |
+[mysql-query_digests_normalize_digest_text](#mysql-query_digests_normalize_digest_text)| false                |
+[mysql-query_digests_replace_null](#mysql-query_digests_replace_null)| false                |
+[mysql-query_digests_track_hostname](#mysql-query_digests_track_hostname)| false                |
+[mysql-query_processor_iterations](#mysql-query_processor_iterations)| 0                    |
+[mysql-query_processor_regex](#mysql-query_processor_regex)| 1                    |
+[mysql-query_retries_on_failure](#mysql-query_retries_on_failure)| 1                    |
+[mysql-reset_connection_algorithm](#mysql-reset_connection_algorithm)| 2                    |
+[mysql-server_capabilities](#mysql-server_capabilities)| 569867               |
+[mysql-server_version](#mysql-server_version)| 5.5.30               |
+[mysql-servers_stats](#mysql-servers_stats)| true                 |
+[mysql-session_idle_ms](#mysql-session_idle_ms)| 1000                 |
+[mysql-session_idle_show_processlist](#mysql-session_idle_show_processlist)| true                 |
+[mysql-sessions_sort](#mysql-sessions_sort)| true                 |
+[mysql-set_query_lock_on_hostgroup](#mysql-set_query_lock_on_hostgroup)| 1                    |
+[mysql-show_processlist_extended](#mysql-show_processlist_extended)| 0                    |
+[mysql-shun_on_failures](#mysql-shun_on_failures)| 5                    |
+[mysql-shun_recovery_time_sec](#mysql-shun_recovery_time_sec)| 10                   |
+[mysql-ssl_p2s_ca](#mysql-ssl_p2s_ca)|                      |
+[mysql-ssl_p2s_cert](#mysql-ssl_p2s_cert)|                      |
+[mysql-ssl_p2s_cipher](#mysql-ssl_p2s_cipher)|                      |
+[mysql-ssl_p2s_key](#mysql-ssl_p2s_key)|                      |
+[mysql-stacksize](#mysql-stacksize)| 1048576              |
+[mysql-stats_time_backend_query](#mysql-stats_time_backend_query)| false                |
+[mysql-stats_time_query_processor](#mysql-stats_time_query_processor)| false                |
+[mysql-tcp_keepalive_time](#mysql-tcp_keepalive_time)| 0                    |
+[mysql-threads](#mysql-threads)| 4                    |
+[mysql-threshold_query_length](#mysql-threshold_query_length)| 524288               |
+[mysql-threshold_resultset_size](#mysql-threshold_resultset_size)| 4194304              |
+[mysql-throttle_connections_per_sec_to_hostgroup](#mysql-throttle_connections_per_sec_to_hostgroup)| 1000000              |
+[mysql-throttle_max_bytes_per_second_to_client](#mysql-throttle_max_bytes_per_second_to_client)| 0                    |
+[mysql-throttle_ratio_server_to_client](#mysql-throttle_ratio_server_to_client)| 0                    |
+[mysql-use_tcp_keepalive](#mysql-use_tcp_keepalive)| 0                    |
+[mysql-verbose_query_error](#mysql-verbose_query_error)| false                |
 mysql-wait_timeout                                           | 28800000             |
 
 
@@ -1848,7 +1848,7 @@ Correct syntax is: `SET SESSION TRANSACTION ISOLATION LEVEL value`
 
 
 
-### `mysql-multiplexing`
+### <a name="mysql-multiplexing">`mysql-multiplexing`</a>
 
 Enable multiplexing by default. We recommend to leave multiplexing on (the default).
 Please note that multiplexing can still be disabled for [other reasons](Multiplexing), enabling this parameters makes sure it never enabled.
@@ -3061,7 +3061,7 @@ When the monitor thread performs a read_only check, AND the check exceeds `mysql
     </tr>
 </table>​
 
-### `mysql-monitor_read_only_timeout`
+### <a name="mysql-monitor_read_only_timeout">`mysql-monitor_read_only_timeout`</a>
 
 The timeout for a single attempt at checking the Read Only status on a backend server from the proxy. 
 
@@ -3094,7 +3094,7 @@ The timeout for a single attempt at checking the Read Only status on a backend s
     </tr>
 </table>​
 
-### `mysql-monitor_replication_lag_interval`
+### <a name="mysql-monitor_replication_lag_interval">`mysql-monitor_replication_lag_interval`</a>
 
 The interval at which the proxy should connect to the backend servers in order to monitor the replication lag between those that are slaves and their masters. Slaves can be temporarily shunned if the replication lag is too large. This setting is controlled by the `mysql_servers`.`max_replication_lag` column in the admin interface, at a per-hostgroup level.
 
@@ -3127,7 +3127,7 @@ The interval at which the proxy should connect to the backend servers in order t
     </tr>
 </table>​
 
-### `mysql-monitor_replication_lag_timeout`
+### <a name="mysql-monitor_replication_lag_timeout">`mysql-monitor_replication_lag_timeout`</a>
 
 How long the Monitor module will wait for the output of `SHOW SLAVE STATUS` to be returned from the database.
 
@@ -3160,7 +3160,7 @@ How long the Monitor module will wait for the output of `SHOW SLAVE STATUS` to b
     </tr>
 </table>​
 
-### `mysql-monitor_replication_lag_use_percona_heartbeat`
+### <a name="mysql-monitor_replication_lag_use_percona_heartbeat">`mysql-monitor_replication_lag_use_percona_heartbeat`</a>
 
 This variable defines the `<schema>`.`<table>` where `pt-heartbeat` information is written, when this variable is defined replication lag checks are determined based on the values in this table rather than `SHOW SLAVE STATUS`. This is empty by default, when using `pt-heartbeat` the value is typically defined as `percona.heartbeat`.
 
@@ -3185,7 +3185,7 @@ This variable defines the `<schema>`.`<table>` where `pt-heartbeat` information 
     </tr>
 </table>​
 
-### `mysql-monitor_slave_lag_when_null`
+### <a name="mysql-monitor_slave_lag_when_null">`mysql-monitor_slave_lag_when_null`</a>
 
 When replication check returns that `Seconds_Behind_Master=NULL` , the value of `mysql-monitor_slave_lag_when_null` (in seconds) is assumed to be the current replication lag. This allow to either shun or keep online a server where replication is broken/stopped.
 
@@ -3222,7 +3222,7 @@ When replication check returns that `Seconds_Behind_Master=NULL` , the value of 
     </tr>
 </table>​
 
-### `mysql-monitor_threads_max`
+### <a name="mysql-monitor_threads_max">`mysql-monitor_threads_max`</a>
 
 Controls the maximum number of threads within the Monitor Module thread pool. Introduced in ProxySQL v2.0. From 1.3.2 and before 2.0 the minimum value was hardcoded.
 <table>
@@ -3254,7 +3254,7 @@ Controls the maximum number of threads within the Monitor Module thread pool. In
     </tr>
 </table>​
 
-### `mysql-monitor_threads_min`
+### <a name="mysql-monitor_threads_min">`mysql-monitor_threads_min`</a>
 
 Controls the minimum number of threads within the Monitor Module thread pool. Introduced in ProxySQL v2.0. From 1.3.2 and before 2.0 the minimum value was hardcoded.
 
@@ -3287,7 +3287,7 @@ Controls the minimum number of threads within the Monitor Module thread pool. In
     </tr>
 </table>​
 
-### `mysql-monitor_threads_queue_maxsize`
+### <a name="mysql-monitor_threads_queue_maxsize">`mysql-monitor_threads_queue_maxsize`</a>
 
 The variable controls how many checks are queued before starting new monitor threads.
 
@@ -3349,7 +3349,7 @@ This variable controls whether ProxySQL should use a cached (and less accurate) 
     </tr>
 </table>​
 
-### `mysql-monitor_username`
+### <a name="mysql-monitor_username">`mysql-monitor_username`</a>
 
 Specifies the username that the Monitor module will use to connect to the backends. The user needs only `USAGE` privileges to connect, ping and check read_only. The user needs also `REPLICATION CLIENT` if it needs to monitor replication lag.
 
@@ -3374,7 +3374,7 @@ Specifies the username that the Monitor module will use to connect to the backen
     </tr>
 </table>​
 
-### `mysql-monitor_wait_timeout`
+### <a name="mysql-monitor_wait_timeout">`mysql-monitor_wait_timeout`</a>
 
 In order to avoid being disconnected the Monitor Module tunes wait_timeout on its connections to backend. This is generally a good thing, however it could become a problem if ProxySQL is acting as a "forwarder", when `mysql-monitor_wait_timeout` is set to `false` the feature is disabled.
 
@@ -3400,7 +3400,7 @@ In order to avoid being disconnected the Monitor Module tunes wait_timeout on it
 </table>​
 
 
-### `mysql-monitor_writer_is_also_reader`
+### <a name="mysql-monitor_writer_is_also_reader">`mysql-monitor_writer_is_also_reader`</a>
 
 When a node change its read_only value from 1 to 0, this variable determines if the node should be present in both hostgroups or not:
 
@@ -3429,7 +3429,7 @@ When a node change its read_only value from 1 to 0, this variable determines if 
 </table>​
 
 
-### `mysql-ping_interval_server_msec`
+### <a name="mysql-ping_interval_server_msec">`mysql-ping_interval_server_msec`</a>
 
 The interval at which the proxy should ping backend connections in order to maintain them alive, even though there is no outgoing traffic. The purpose here is to keep some connections alive in order to reduce the latency of new queries towards a less frequently used destination backend server.
 
@@ -3462,7 +3462,7 @@ The interval at which the proxy should ping backend connections in order to main
     </tr>
 </table>​
 
-### `mysql-ping_timeout_server`
+### <a name="mysql-ping_timeout_server">`mysql-ping_timeout_server`</a>
 
 The proxy internally pings the connections it has opened in order to keep them alive. This eliminates the cost of opening a new connection towards a hostgroup when a query needs to be routed, at the cost of additional memory footprint inside the proxy and some extra traffic. This is the timeout allowed for those pings to succeed.
 
@@ -3495,7 +3495,7 @@ The proxy internally pings the connections it has opened in order to keep them a
     </tr>
 </table>​
 
-### `mysql-poll_timeout`
+### <a name="mysql-poll_timeout">`mysql-poll_timeout`</a>
 
 The minimal timeout used by the proxy in order to detect incoming/outgoing traffic via the `poll()` system call. If the proxy determines that it should stick to a higher timeout because of its internal computations, it will use that one, but it will never use a value less than this one.
 
@@ -3528,7 +3528,7 @@ The minimal timeout used by the proxy in order to detect incoming/outgoing traff
     </tr>
 </table>​
 
-### `mysql-poll_timeout_on_failure`
+### <a name="mysql-poll_timeout_on_failure">`mysql-poll_timeout_on_failure`</a>
 
 The timeout used in order to detect incoming/outgoing traffic after a connection error has occured. The proxy automatically tweaks its timeout to a lower value in such an event in order to be able to quickly respond with a valid connection.
 
@@ -3561,7 +3561,7 @@ The timeout used in order to detect incoming/outgoing traffic after a connection
     </tr>
 </table>​
 
-### `mysql-query_cache_size_MB`
+### <a name="mysql-query_cache_size_MB">`mysql-query_cache_size_MB`</a>
 
 The total amount of memory used by the Query Cache, note: the current implementation of mysql-query_cache_size_MB doesn't impose a hard limit . Instead, it is used as an argument by the purging thread.
 
@@ -3595,7 +3595,7 @@ The total amount of memory used by the Query Cache, note: the current implementa
 </table>​
 
 
-### `mysql-query_cache_stores_empty_result`
+### <a name="mysql-query_cache_stores_empty_result">`mysql-query_cache_stores_empty_result`</a>
 
 The variable controls if resultset without rows will be cached or not (introduced in ProxySQL v2.0).
 
@@ -3620,7 +3620,7 @@ The variable controls if resultset without rows will be cached or not (introduce
     </tr>
 </table>​
 
-### `mysql-query_digests`
+### <a name="mysql-query_digests">`mysql-query_digests`</a>
 
 When this variable is set to true, the proxy analyzes the queries passing through it and divides them into classes of queries having different values for the same parameters. It computes a couple of metrics for these classes of queries, all found in the `stats_mysql_query_digest` table. For more details, please refer to the [admin tables documentation](https://github.com/sysown/proxysql/wiki/Main-(runtime)#mysql_query_rules).  
 It is also very important to note that query digest is required to determine when multiplexing needs to be disabled, for example in case of `TEMPORARY` tables, `SQL_CALC_FOUND_ROWS` , `GET_LOCK`, etc.  
@@ -3647,7 +3647,7 @@ Do not disable `mysql-query_digests` unless you are really sure it won't break y
     </tr>
 </table>​
 
-### `mysql-query_digests_lowercase`
+### <a name="mysql-query_digests_lowercase">`mysql-query_digests_lowercase`</a>
 
 When this variable is set to true, query digest is automatically converted to lowercase otherwise when false, query digests are case sensitive.
 
@@ -3672,7 +3672,7 @@ When this variable is set to true, query digest is automatically converted to lo
     </tr>
 </table>​
 
-### `mysql-query_digests_max_digest_length`
+### <a name="mysql-query_digests_max_digest_length">`mysql-query_digests_max_digest_length`</a>
 
 Defines the maximum length of `digest_text` as then reported in `stats_mysql_query_digest`
 
@@ -3709,7 +3709,7 @@ Defines the maximum length of `digest_text` as then reported in `stats_mysql_que
     </tr>
 </table>​
 
-### `mysql-query_digests_max_query_length`
+### <a name="mysql-query_digests_max_query_length">`mysql-query_digests_max_query_length`</a>
 
 Defines the maximum query length processed when computing query's `digest` and `digest_text`
 
@@ -3746,7 +3746,115 @@ Defines the maximum query length processed when computing query's `digest` and `
     </tr>
 </table>​
 
-### `mysql-query_processor_iterations`
+### <a name="mysql-query_digests_no_digits">`mysql-query_digests_no_digits`</a>
+When active ProxySQL will replace all numbers in the query to '?' signs for generating digest. This functionality can be controlled by 
+Testing was done with queries like this: CALL `76_char_14`.gen_v67_chr_camp_item_upsert_5();
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-query_digests_no_digits</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="5"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>Boolean</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>false</td>
+    </tr>
+</table>
+
+### <a name="mysql-query_digests_normalize_digest_text">`mysql-query_digests_normalize_digest_text`</a>
+When set to FALSE (default), ProxySQL will cache the SQL digest and related information in the table stats.stats_mysql_query_digest by schema.
+When this variable is TRUE, queries statistics store digest_text on a different internal hash table. In this way ProxySQL will be able to normalize data, digest_text is internally stored elsewhere, and it deduplicate data.
+When you query stats_mysql_query_digest, the data is merged together. 
+This drastically reduces memory usage on setups with many schemas but similar queries patterns
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-query_digests_normalize_digest_text</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="5"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>Boolean</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>false</td>
+    </tr>
+</table>    
+    
+### <a name="mysql-query_digests_replace_null">`mysql-query_digests_replace_null`</a>
+When TRUE, ProxySQL will replace NULLs when creating the Query digest with '?'.
+This approach will normalize statements like the following:
+```SQL
+    SQL                                       Digest
+    INSERT INTO tablename(id) VALUES (1);     INSERT INTO tablename(id) VALUES (?);
+    INSERT INTO tablename(id) VALUES (NULL);  INSERT INTO tablename(id) VALUES (?);
+    CALL spa(NULL, null, NULL, null);         CALL spa(?, ?, ?, ?);
+    CALL spa(1, null, NULL, 4);               CALL spa(?, ?, ?, ?);
+    CALL spa(1, 2, 3, 4);                     CALL spa(?, ?, ?, ?);
+```              
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-query_digests_replace_null</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="5"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>Boolean</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>false</td>
+    </tr>
+</table>
+
+### <a name="mysql-query_digests_track_hostname">`mysql-query_digests_track_hostname`</a> 
+If active it reports the original client address in the table stats_mysql_query_digest
+See also https://github.com/sysown/proxysql/wiki/STATS-(statistics)
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-query_digests_track_hostname</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="5"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>Boolean</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>false</td>
+    </tr>
+</table> 
+
+
+
+### <a name="mysql-query_processor_iterations">`mysql-query_processor_iterations`</a>
 
 If `mysql_query_rules`.`flagOUT` is set and `mysql-query_processor_iterations` is greater than 0, a matching rule will set `flagIN` and starts processing rules from the beginning up to `mysql-query_processor_iterations` iterations.  
 Therefore, mysql-query_processor_iterations allows to jump back to previous `mysql_query_rules`.
@@ -3780,8 +3888,7 @@ Therefore, mysql-query_processor_iterations allows to jump back to previous `mys
     </tr>
 </table>​
 
-### `mysql-query_processor_regex`
-
+### <a name="mysql-query_processor_regex">`mysql-query_processor_regex`</a>
 This variable defines which regex engine to use:
 * 1 : [PCRE](http://www.pcre.org/)
 * 2 : [RE2](https://github.com/google/re2) 
@@ -3821,7 +3928,7 @@ Although, RE2 doesn't support both *CASELESS* and *GLOBAL* at the same time if t
     </tr>
 </table>​
 
-### `mysql-query_retries_on_failure`
+### <a name="mysql-query_retries_on_failure">`mysql-query_retries_on_failure`</a>
 
 In case of failures while running a query, the same can be retried `mysql-query_retries_on_failure` times.
 
@@ -3854,7 +3961,7 @@ In case of failures while running a query, the same can be retried `mysql-query_
     </tr>
 </table>​
 
-### `mysql-reset_connection_algorithm`
+### <a name="mysql-reset_connection_algorithm">`mysql-reset_connection_algorithm`</a>
 
 When `reset_connection_algorithm = 2`, MySQL_Thread itself tries to reset connections instead of relying on connections purger HGCU_thread_run() (introduced in ProxySQL v2.0), `reset_connection_algorithm` can be set to:
 
@@ -3891,7 +3998,7 @@ When `reset_connection_algorithm = 2`, MySQL_Thread itself tries to reset connec
     </tr>
 </table>​
 
-### `mysql-server_capabilities`
+### <a name="mysql-server_capabilities">`mysql-server_capabilities`</a>
 
 The bitmask of MySQL capabilities (encoded as bits) with which the proxy will respond to clients connecting to it.  
 This is useful in order to prevent certain features from being used, although it is planned to be deprecated in the future.  
@@ -3932,7 +4039,7 @@ More details about server capabilities in the [official documentation](https://d
     </tr>
 </table>​
 
-### `mysql-server_version`
+### <a name="mysql-server_version">`mysql-server_version`</a>
 
 The server version with which the proxy will respond to the clients. Note that regardless of the versions of the backend servers, the proxy will respond with this.
 
@@ -3957,7 +4064,7 @@ The server version with which the proxy will respond to the clients. Note that r
     </tr>
 </table>​
 
-### `mysql-servers_stats`
+### <a name="mysql-servers_stats">`mysql-servers_stats`</a>
 
 Currently unused. Will be removed in a future version.
 
@@ -4007,7 +4114,7 @@ Currently unused. Will be removed in a future version.
     </tr>
 </table>​
 
-### `mysql-session_idle_ms`
+### <a name="mysql-session_idle_ms">`mysql-session_idle_ms`</a>
 
 Starting from v1.3.0 , each MySQL_Thread has an auxiliary thread that is responsible to handle idle sessions (client connections). `mysql-session_idle_ms` defines when a session is idle and passed from the main thread to the auxiliary thread.
 
@@ -4040,7 +4147,7 @@ Starting from v1.3.0 , each MySQL_Thread has an auxiliary thread that is respons
     </tr>
 </table>​
 
-### `mysql-session_idle_show_processlist`
+### <a name="mysql-session_idle_show_processlist">`mysql-session_idle_show_processlist`</a>
 
 `mysql-session_idle_show_processlist` defines if in idle session (as defined by `mysql-session_idle_ms`) should be listed in `SHOW PROCESSLIST` (or in general, in `stats_mysql_processlist` table). For performance reason, idle sessions are not listed by default.
 
@@ -4065,7 +4172,7 @@ Starting from v1.3.0 , each MySQL_Thread has an auxiliary thread that is respons
     </tr>
 </table>​
 
-### `mysql-sessions_sort`
+### <a name="mysql-sessions_sort">`mysql-sessions_sort`</a>
 
 Sessions are conversations between a MySQL client and a backend server in the proxy. Sessions are generally processed in a stable order but in certain scenarios (like using a transaction workload, which makes sessions bind to certain MySQL connections from the pool), processing them in the same order leads to starvation.
 
@@ -4092,7 +4199,53 @@ This variable controls whether sessions should be processed in the order of wait
     </tr>
 </table>​
 
-### `mysql-shun_on_failures`
+### <a name="mysql-set_query_lock_on_hostgroup">`mysql-set_query_lock_on_hostgroup`</a>
+When active (default from 2.0.6), if SET statement is used in multi-statements commands or if parsing of SET statement it is not successful, both multiplexing and query routing is disabled. The client will remain bind to a single backend connections. Any SET statement that ProxySQL doesn't understands will disables multiplexing and routing.
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-set_query_lock_on_hostgroup</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>Boolean</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>true</td>
+    </tr>
+</table>
+
+### <a name="mysql-show_processlist_extended">`mysql-show_processlist_extended`</a>
+When active ProxySQL will show extended information in JSON format about the processes running.
+Information will be available in stats_mysql_processlist.extended_info 
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-show_processlist_extended/td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>Boolean</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>false</td>
+    </tr>
+</table>
+### <a name="mysql-shun_on_failures">`mysql-shun_on_failures`</a>
 
 The number of connection errors tolerated to the same server within an interval of 1 second until it is automatically shunned temporarily. For now, this can not be disabled by setting it to a special value, so if you want to do that, you can increase it to a very large value.
 
@@ -4125,7 +4278,7 @@ The number of connection errors tolerated to the same server within an interval 
     </tr>
 </table>​
 
-### `mysql-shun_recovery_time_sec`
+### <a name="mysql-shun_recovery_time_sec">`mysql-shun_recovery_time_sec`</a>
 
 A backend server that has been automatically shunned will be recovered after at least this amount of time.  
 Note that if ProxySQL isn't handling client traffic, there is no actual hard guarantee of the exact timing, but in practice it shouldn't exceed this value by more than a couple of seconds.  
@@ -4163,7 +4316,7 @@ Self tuning:
     </tr>
 </table>​
 
-### `mysql-ssl_p2s_ca`
+### <a name="mysql-ssl_p2s_ca">`mysql-ssl_p2s_ca`</a>
 
 SSL CA to be used for backend connections.
 
@@ -4188,7 +4341,7 @@ SSL CA to be used for backend connections.
     </tr>
 </table>​
 
-### `mysql-ssl_p2s_cert`
+### <a name="mysql-ssl_p2s_cert">`mysql-ssl_p2s_cert`</a>
 
 SSL Certificate to be used for backend connections.
 
@@ -4213,7 +4366,7 @@ SSL Certificate to be used for backend connections.
     </tr>
 </table>​
 
-### `mysql-ssl_p2s_cipher`
+### <a name="mysql-ssl_p2s_cipher">`mysql-ssl_p2s_cipher`</a>
 
 SSL Cipher to be used for backend connections (MySQL CIPHER list can be found [here](https://dev.mysql.com/doc/refman/8.0/en/encrypted-connection-protocols-ciphers.html)).
 
@@ -4238,7 +4391,7 @@ SSL Cipher to be used for backend connections (MySQL CIPHER list can be found [h
     </tr>
 </table>​
 
-### `mysql-ssl_p2s_key`
+### <a name="mysql-ssl_p2s_key">`mysql-ssl_p2s_key`</a>
 
 SSL Key to be used for backend connections.
 
@@ -4263,7 +4416,7 @@ SSL Key to be used for backend connections.
     </tr>
 </table>​
 
-### `mysql-stacksize`
+### <a name="mysql-stacksize">`mysql-stacksize`</a>
 
 The stack size to be used with the background threads that the proxy uses to handle MySQL traffic and connect to the backends. Note that changing this value has no effect at runtime, if you need to change it you have to restart the proxy.
 
@@ -4296,7 +4449,7 @@ The stack size to be used with the background threads that the proxy uses to han
     </tr>
 </table>​
 
-### `mysql-stats_time_backend_query `
+### <a name="mysql-stats_time_backend_query">`mysql-stats_time_backend_query`</a>
 
 Enables / disables collection of backend query CPU time statistics.
 
@@ -4325,7 +4478,7 @@ Enables / disables collection of backend query CPU time statistics.
     </tr>
 </table>​
 
-### `mysql-stats_time_query_processor`
+### <a name="mysql-stats_time_query_processor">`mysql-stats_time_query_processor`</a>
 
 Enables / disables collection of query processor CPU time statistics.
 
@@ -4354,7 +4507,54 @@ Enables / disables collection of query processor CPU time statistics.
     </tr>
 </table>​
 
-### `mysql-threads`
+### <a name="mysql-tcp_keepalive_time">`mysql-tcp_keepalive_time`</a>
+When mysql-use_tcp_keepalive is active, ProxySQL will send a KeepAlive to the destination every tcp_keepalive_time in seconds
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-tcp_keepalive_time</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>Integer (seconds)</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>0</td>
+    </tr>
+</table>
+
+### <a name="mysql-use_tcp_keepalive">`mysql-use_tcp_keepalive`</a>
+When active ProxySQL will send KeepAlive signal during the client open session.
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-tcp_keepalive_time</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>Boolean</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>false</td>
+    </tr>
+</table>
+
+
+### <a name="mysql-threads">`mysql-threads`</a>
 
 The number of background threads that ProxySQL uses in order to process MySQL traffic. Note that there are other "administrative" threads on top of these, such as:
 * the admin interface thread
@@ -4395,7 +4595,7 @@ In other words, after changing `mysql-threads`, you need to run `SAVE MYSQL VARI
     </tr>
 </table>​
 
-### `mysql-threshold_query_length`
+### <a name="mysql-threshold_query_length">`mysql-threshold_query_length`</a>
 
 The maximal size of an incoming SQL query to the proxy that will mark the background MySQL connection as non-reusable. This will force the proxy to open a new connection to the backend server, in order to make sure that the memory footprint of the server stays within reasonable limits.
 
@@ -4432,7 +4632,7 @@ Relevant quote from the mysqld documentation: "The connection buffer and result 
     </tr>
 </table>​
 
-### `mysql-threshold_resultset_size`
+### <a name="mysql-threshold_resultset_size">`mysql-threshold_resultset_size`</a>
 
 If a resultset returned by a backend server is bigger than this, proxysql will start sending the result to the MySQL client that was requesting the result in order to limit its memory footprint.
 
@@ -4467,17 +4667,22 @@ If a resultset returned by a backend server is bigger than this, proxysql will s
 
 Default value: `4194304` (bytes, the equivalent of 4 MB)
 
-### `mysql-throttle_connections_per_sec_to_hostgroup`
+### <a name="mysql-throttle_connections_per_sec_to_hostgroup">`mysql-throttle_connections_per_sec_to_hostgroup`</a>
 
 ToDo
 
-### `mysql-throttle_max_bytes_per_second_to_client`
+### <a name="mysql-throttle_max_bytes_per_second_to_client">`mysql-throttle_max_bytes_per_second_to_client`</a>
 
 ToDo
 
-### `mysql-throttle_ratio_server_to_client`
+### <a name="mysql-throttle_ratio_server_to_client">`mysql-throttle_ratio_server_to_client`</a>
 
 ToDo
+
+mysql-verbose_query_error   no explanation https://github.com/sysown/proxysql/wiki/Main-(runtime)
+   When active ProxySQL will print additional information in case of error like: user, schema,digest_text, address, port.
+   Default: false
+
 
 ### `mysql-wait_timeout`
 
