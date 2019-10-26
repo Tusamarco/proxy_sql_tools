@@ -139,7 +139,7 @@ Variable name|Default Value|From Version
 [mysql-monitor_read_only_max_timeout_count](#mysql-monitor_read_only_max_timeout_count)| 3                    |
 [mysql-monitor_read_only_timeout](#mysql-monitor_read_only_timeout)| 500                  |
 [mysql-monitor_replication_lag_interval](#mysql-monitor_replication_lag_interval)| 10000                |
-[mysql-monitor_replication_lag_timeout}(#mysql-monitor_replication_lag_timeout)| 1000                 |
+[mysql-monitor_replication_lag_timeout](#mysql-monitor_replication_lag_timeout)| 1000                 |
 [mysql-monitor_replication_lag_use_percona_heartbeat](#mysql-monitor_replication_lag_use_percona_heartbeat)|                      |
 [mysql-monitor_slave_lag_when_null](#mysql-monitor_slave_lag_when_null)| 60                   |
 [mysql-monitor_threads_max](#mysql-monitor_threads_max)| 128                  |
@@ -193,7 +193,7 @@ Variable name|Default Value|From Version
 [mysql-throttle_ratio_server_to_client](#mysql-throttle_ratio_server_to_client)| 0                    |
 [mysql-use_tcp_keepalive](#mysql-use_tcp_keepalive)| 0                    |
 [mysql-verbose_query_error](#mysql-verbose_query_error)| false                |
-mysql-wait_timeout                                           | 28800000             |
+[mysql-wait_timeout](#mysql-wait_timeout)| 28800000             |
 
 
 ## Admin Variables
@@ -4679,12 +4679,30 @@ ToDo
 
 ToDo
 
-mysql-verbose_query_error   no explanation https://github.com/sysown/proxysql/wiki/Main-(runtime)
-   When active ProxySQL will print additional information in case of error like: user, schema,digest_text, address, port.
-   Default: false
+### <a name="mysql-verbose_query_error">`mysql-verbose_query_error`</a>
+When active ProxySQL will print additional information in case of error like: user, schema,digest_text, address, port.
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-verbose_query_error</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>Boolean</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>false</td>
+    </tr>
+</table>
 
-
-### `mysql-wait_timeout`
+### <a name="mysql-wait_timeout">`mysql-wait_timeout`</a>
 
 If a proxy session (which is a conversation between a MySQL client and a ProxySQL) has been idle for more than this threshold, the proxy will kill the session.
 
