@@ -2742,7 +2742,28 @@ The interval at which the proxy should connect to the backend servers in order t
         <td>604800000</td>
     </tr>
 </table>​
-
+### <a name="mysql-monitor_groupreplication_healthcheck_max_timeout_count">`mysql-monitor_groupreplication_healthcheck_max_timeout_count`</a>
+Set the max number of times ProxySQL has timeout checking on a Group Replication Node before declaring it OFFLINE.
+<table>
+    <tr>
+        <td valign="top" rowspan="2"><b>System Variable</b></td>
+        <td><b>Name</b></td>
+        <td>mysql-monitor_groupreplication_healthcheck_max_timeout_count</td>
+    </tr>
+    <tr>
+        <td><b>Dynamic</b></td>
+        <td>Yes</td>
+    </tr>
+    <tr>
+        <td valign="top" rowspan="4"><b>Permitted Values</b></td>
+        <td><b>Type</b></td>
+        <td>Integer</td>
+    </tr>
+    <tr>
+        <td><b>Default</b></td>
+        <td>3</td>
+    </tr>
+</table>
 
 ### <a name="mysql-monitor_groupreplication_healthcheck_timeout">`mysql-monitor_groupreplication_healthcheck_timeout`</a>
 
