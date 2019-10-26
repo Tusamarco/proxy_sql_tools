@@ -24,8 +24,8 @@ SET admin-version = '1.1.1beta8';
 
 Next, we're going to explain each type of variable in detail.
 
-Variable name|Default Value|From Version
--------------|-------------|------------
+Variable name|Default Value
+-------------|-------------
 [admin-admin_credentials](#admin-admin_credentials)          | admin:admin          
 [admin-checksum_mysql_query_rules](#admin-checksum_mysql_query_rules)| true                 
 [admin-checksum_mysql_servers](#admin-checksum_mysql_servers)| true                 
@@ -54,7 +54,7 @@ Variable name|Default Value|From Version
 [admin-stats_system_memory](#admin-stats_system_memory)| 60                   
 [admin-telnet_admin_ifaces](#admin-telnet_admin_ifaces)| (null)               
 [admin-telnet_stats_ifaces](#admin-telnet_stats_ifaces)| (null)               
-[admin-vacuum_stats](#admin-vacuum_stats)|true|2.0.6
+[admin-vacuum_stats](#admin-vacuum_stats)|true
 [admin-version](#admin-version)| 2.0.7-80-g4dd4ef5f   
 [admin-web_enabled](#admin-web_enabled)| false                
 [admin-web_port](#admin-web_port)| 6080                 
@@ -194,6 +194,7 @@ Variable name|Default Value|From Version
 [mysql-use_tcp_keepalive](#mysql-use_tcp_keepalive)| 0                    
 [mysql-verbose_query_error](#mysql-verbose_query_error)| false                
 [mysql-wait_timeout](#mysql-wait_timeout)| 28800000             
+
 
 
 
