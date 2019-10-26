@@ -26,174 +26,175 @@ Next, we're going to explain each type of variable in detail.
 
 Variable name|Default Value|From Version
 -------------|-------------|------------
-[admin-admin_credentials](#admin-admin_credentials)          | admin:admin          |
-[admin-checksum_mysql_query_rules](#admin-checksum_mysql_query_rules)| true                 |
-[admin-checksum_mysql_servers](#admin-checksum_mysql_servers)| true                 |
-[admin-checksum_mysql_users](#admin-checksum_mysql_users)| true                 |
-[admin-cluster_check_interval_ms](#admin-cluster_check_interval_ms)| 1000                 |
-[admin-cluster_check_status_frequency](#admin-cluster_check_status_frequency)| 10                   |
-[admin-cluster_mysql_query_rules_diffs_before_sync](#admin-cluster_mysql_query_rules_diffs_before_sync)| 3                    |
-[admin-cluster_mysql_query_rules_save_to_disk](#admin-cluster_mysql_query_rules_save_to_disk)| true                 |
-[admin-cluster_mysql_servers_diffs_before_sync](#admin-cluster_mysql_servers_diffs_before_sync)| 3                    |
-[admin-cluster_mysql_servers_save_to_disk](#admin-cluster_mysql_servers_save_to_disk)| true                 |
-[admin-cluster_mysql_users_diffs_before_sync](#admin-cluster_mysql_users_diffs_before_sync)| 3                    |
-[admin-cluster_mysql_users_save_to_disk](#admin-cluster_mysql_users_save_to_disk)| true                 |
-[admin-cluster_password](#admin-cluster_password)|                      |
-[admin-cluster_proxysql_servers_diffs_before_sync](#admin-cluster_proxysql_servers_diffs_before_sync)| 3                    |
-[admin-cluster_proxysql_servers_save_to_disk](#admin-cluster_proxysql_servers_save_to_disk)| true                 |
-[admin-cluster_username](#admin-cluster_username)|                      |
-[admin-hash_passwords](#admin-hash_passwords)| true                 |
-[admin-mysql_ifaces](#admin-mysql_ifaces)| 0.0.0.0:6032         |
-[admin-read_only](#admin-read_only)| false                |
-[admin-refresh_interval](#admin-refresh_interval)| 2000                 |
-[admin-stats_credentials](#admin-stats_credentials)| stats:stats          |
-[admin-stats_mysql_connection_pool](#admin-stats_mysql_connection_pool)| 60                   |
-[admin-stats_mysql_connections](#admin-stats_mysql_connections)| 60                   |
-[admin-stats_mysql_query_cache](#admin-stats_mysql_query_cache)| 60                   |
-[admin-stats_system_cpu](#admin-stats_system_cpu)| 60                   |
-[admin-stats_system_memory](#admin-stats_system_memory)| 60                   |
-[admin-telnet_admin_ifaces](#admin-telnet_admin_ifaces)| (null)               |
-[admin-telnet_stats_ifaces](#admin-telnet_stats_ifaces)| (null)               |
+[admin-admin_credentials](#admin-admin_credentials)          | admin:admin          
+[admin-checksum_mysql_query_rules](#admin-checksum_mysql_query_rules)| true                 
+[admin-checksum_mysql_servers](#admin-checksum_mysql_servers)| true                 
+[admin-checksum_mysql_users](#admin-checksum_mysql_users)| true                 
+[admin-cluster_check_interval_ms](#admin-cluster_check_interval_ms)| 1000                 
+[admin-cluster_check_status_frequency](#admin-cluster_check_status_frequency)| 10                   
+[admin-cluster_mysql_query_rules_diffs_before_sync](#admin-cluster_mysql_query_rules_diffs_before_sync)| 3                    
+[admin-cluster_mysql_query_rules_save_to_disk](#admin-cluster_mysql_query_rules_save_to_disk)| true                 
+[admin-cluster_mysql_servers_diffs_before_sync](#admin-cluster_mysql_servers_diffs_before_sync)| 3                    
+[admin-cluster_mysql_servers_save_to_disk](#admin-cluster_mysql_servers_save_to_disk)| true                 
+[admin-cluster_mysql_users_diffs_before_sync](#admin-cluster_mysql_users_diffs_before_sync)| 3                    
+[admin-cluster_mysql_users_save_to_disk](#admin-cluster_mysql_users_save_to_disk)| true                 
+[admin-cluster_password](#admin-cluster_password)|                      
+[admin-cluster_proxysql_servers_diffs_before_sync](#admin-cluster_proxysql_servers_diffs_before_sync)| 3                    
+[admin-cluster_proxysql_servers_save_to_disk](#admin-cluster_proxysql_servers_save_to_disk)| true                 
+[admin-cluster_username](#admin-cluster_username)|                      
+[admin-hash_passwords](#admin-hash_passwords)| true                 
+[admin-mysql_ifaces](#admin-mysql_ifaces)| 0.0.0.0:6032         
+[admin-read_only](#admin-read_only)| false                
+[admin-refresh_interval](#admin-refresh_interval)| 2000                 
+[admin-stats_credentials](#admin-stats_credentials)| stats:stats          
+[admin-stats_mysql_connection_pool](#admin-stats_mysql_connection_pool)| 60                   
+[admin-stats_mysql_connections](#admin-stats_mysql_connections)| 60                   
+[admin-stats_mysql_query_cache](#admin-stats_mysql_query_cache)| 60                   
+[admin-stats_system_cpu](#admin-stats_system_cpu)| 60                   
+[admin-stats_system_memory](#admin-stats_system_memory)| 60                   
+[admin-telnet_admin_ifaces](#admin-telnet_admin_ifaces)| (null)               
+[admin-telnet_stats_ifaces](#admin-telnet_stats_ifaces)| (null)               
 [admin-vacuum_stats](#admin-vacuum_stats)|true|2.0.6
-[admin-version](#admin-version)| 2.0.7-80-g4dd4ef5f   |
-[admin-web_enabled](#admin-web_enabled)| false                |
-[admin-web_port](#admin-web_port)| 6080                 |
-[mysql-add_ldap_user_comment](#mysql-add_ldap_user_comment)|                      |
-[mysql-auditlog_filename](#mysql-auditlog_filename)|                      |
-[mysql-auditlog_filesize](#mysql-auditlog_filename)| 100MB            |
-[mysql-auto_increment_delay_multiplex](#mysql-auto_increment_delay_multiplex)| 5                    |
-[mysql-autocommit_false_is_transaction](#mysql-autocommit_false_is_transaction)| false                |
-[mysql-autocommit_false_not_reusable](#mysql-autocommit_false_not_reusable)| false                |
-[mysql-binlog_reader_connect_retry_msec](#mysql-binlog_reader_connect_retry_msec)| 3000                 |
-[mysql-client_found_rows](#mysql-client_found_rows)                                      | true                 |
-[mysql-client_multi_statements](#mysql-client_multi_statements)| true                 |
-[mysql-client_session_track_gtid](#mysql-client_session_track_gtid)| true                 |
-[mysql-commands_stats](#mysql-commands_stats)| true                 |
-[mysql-connect_retries_delay](#mysql-connect_retries_delay)| 1                    |
-[mysql-connect_retries_on_failure](#mysql-connect_retries_on_failure)| 10                   |
-[mysql-connect_timeout_server](#mysql-connect_timeout_server)| 3000                 |
-[mysql-connect_timeout_server_max](#mysql-connect_timeout_server_max)| 10000                |
-[mysql-connection_delay_multiplex_ms](#mysql-connection_delay_multiplex_ms)| 0                    |
-[mysql-connection_max_age_ms](#mysql-connection_max_age_ms)| 0                    |
-[mysql-connpoll_reset_queue_length](#mysql-connpoll_reset_queue_length)| 50                   |
-[mysql-default_character_set_results](#mysql-default_character_set_results)| NULL                 |
-[mysql-default_charset](#mysql-default_charset)| utf8                 |
-[mysql-default_collation_connection](#mysql-default_collation_connection)|                      |
-[mysql-default_isolation_level](#mysql-default_isolation_level)| READ COMMITTED       |
-[mysql-default_max_join_size](#mysql-default_max_join_size)| 18446744073709551615 |
-[mysql-default_max_latency_ms](#mysql-default_max_latency_ms)| 1000                 |
-[mysql-default_net_write_timeout](#mysql-default_net_write_timeout)| 60                   |
-[mysql-default_query_delay](#mysql-default_query_delay)| 0                    |
-[mysql-default_query_timeout](#mysql-default_query_timeout)| 36000000             |
-[mysql-default_reconnect](#mysql-default_reconnect)| true                 |
-[mysql-default_schema](#mysql-default_schema)| information_schema   |
-[mysql-default_session_track_gtids](#mysql-default_session_track_gtids)| OFF                  |
-[mysql-default_sql_auto_is_null](#mysql-default_sql_auto_is_null)| OFF                  |
-[mysql-default_sql_mode](#mysql-default_sql_mode)|                      |
-[mysql-default_sql_safe_updates](#mysql-default_sql_safe_updates)| OFF                  |
-[mysql-default_sql_select_limit](#mysql-default_sql_select_limit)| DEFAULT              |
-[mysql-default_time_zone](#mysql-default_time_zone)| SYSTEM               |
-[mysql-default_transaction_read](#mysql-default_transaction_read)| WRITE                |
-[mysql-default_tx_isolation](#mysql-default_tx_isolation)| READ-COMMITTED       |
-[mysql-enforce_autocommit_on_reads](#mysql-enforce_autocommit_on_reads)| false                |
-[mysql-eventslog_default_log](#mysql-eventslog_default_log)| 0                    |
-[mysql-eventslog_filename](#mysql-eventslog_filename)|                      |
-[mysql-eventslog_filesize](#mysql-eventslog_filesize)| 104857600            |
-[mysql-eventslog_format](#mysql-eventslog_format)| 1                    |
-[mysql-forward_autocommit](#mysql-forward_autocommit)| false                |
-[mysql-free_connections_pct](#mysql-free_connections_pct)| 10                   |
-[mysql-have_compress](#mysql-have_compress)| true                 |
-[mysql-have_ssl](#mysql-have_ssl)| false                |
-[mysql-hostgroup_manager_verbose](#mysql-hostgroup_manager_verbose)| 1                    |
-[mysql-init_connect](#mysql-init_connect)|                      |
-[mysql-interfaces](#mysql-interfaces)| 0.0.0.0:6033         |
-[mysql-keep_multiplexing_variables](#mysql-keep_multiplexing_variables)| tx_isolation,version |
-[mysql-kill_backend_connection_when_disconnect](#mysql-kill_backend_connection_when_disconnect)| true                 |
-[mysql-ldap_user_variable](#mysql-ldap_user_variable)|                      |
-[mysql-long_query_time](#mysql-long_query_time)| 1000                 |
-[mysql-max_allowed_packet](#mysql-max_allowed_packet)| 4194304              |
-[mysql-max_connections](#mysql-max_connections)| 2048                 |
-[mysql-max_stmts_cache](#mysql-max_stmts_cache)| 10000                |
-[mysql-max_stmts_per_connection](#mysql-max_stmts_per_connection)| 20                   |
-[mysql-max_transaction_time](#mysql-max_transaction_time)| 14400000             |
-[mysql-min_num_servers_lantency_awareness](#mysql-min_num_servers_lantency_awareness)| 1000                 |
-[mysql-mirror_max_concurrency](#mysql-mirror_max_concurrency)| 16                   |
-[mysql-mirror_max_queue_length](#mysql-mirror_max_queue_length)| 32000                |
-[mysql-monitor_connect_interval](#mysql-monitor_connect_interval)| 60000                |
-[mysql-monitor_connect_timeout](#mysql-monitor_connect_timeout)| 600                  |
-[mysql-monitor_enabled](#mysql-monitor_enabled)| true                 |
-[mysql-monitor_galera_healthcheck_interval](#mysql-monitor_galera_healthcheck_interval)| 5000                 |
-[mysql-monitor_galera_healthcheck_max_timeout_count](#mysql-monitor_galera_healthcheck_max_timeout_count)| 3                    |
-[mysql-monitor_galera_healthcheck_timeout](#mysql-monitor_galera_healthcheck_timeout)| 800                  |
-[mysql-monitor_groupreplication_healthcheck_interval](#mysql-monitor_groupreplication_healthcheck_interval)| 5000                 |
-[mysql-monitor_groupreplication_healthcheck_max_timeout_count](#mysql-monitor_groupreplication_healthcheck_max_timeout_count)| 3                    |
-[mysql-monitor_groupreplication_healthcheck_timeout](#mysql-monitor_groupreplication_healthcheck_timeout)| 800                  |
-[mysql-monitor_history](#mysql-monitor_history)| 600000               |
-[mysql-monitor_password](#mysql-monitor_password)| monitor              |
-[mysql-monitor_ping_interval](#mysql-monitor_ping_interval)| 10000                |
-[mysql-monitor_ping_max_failures](#mysql-monitor_ping_max_failures)| 3                    |
-[mysql-monitor_ping_timeout](#mysql-monitor_ping_timeout)| 1000                 |
-[mysql-monitor_query_interval](#mysql-monitor_query_interval)| 60000                |
-[mysql-monitor_query_timeout](#mysql-monitor_query_timeout)| 100                  |
-[mysql-monitor_read_only_interval](#mysql-monitor_read_only_interval)| 1500                 |
-[mysql-monitor_read_only_max_timeout_count](#mysql-monitor_read_only_max_timeout_count)| 3                    |
-[mysql-monitor_read_only_timeout](#mysql-monitor_read_only_timeout)| 500                  |
-[mysql-monitor_replication_lag_interval](#mysql-monitor_replication_lag_interval)| 10000                |
-[mysql-monitor_replication_lag_timeout](#mysql-monitor_replication_lag_timeout)| 1000                 |
-[mysql-monitor_replication_lag_use_percona_heartbeat](#mysql-monitor_replication_lag_use_percona_heartbeat)|                      |
-[mysql-monitor_slave_lag_when_null](#mysql-monitor_slave_lag_when_null)| 60                   |
-[mysql-monitor_threads_max](#mysql-monitor_threads_max)| 128                  |
-[mysql-monitor_threads_min](#mysql-monitor_threads_min)| 8                    |
-[mysql-monitor_threads_queue_maxsize](#mysql-monitor_threads_queue_maxsize)| 128                  |
-[mysql-monitor_username](#mysql-monitor_username)| monitor              |
-[mysql-monitor_wait_timeout](#mysql-monitor_wait_timeout)| true                 |
-[mysql-monitor_writer_is_also_reader](#mysql-monitor_writer_is_also_reader)| true                 |
-[mysql-multiplexing](#mysql-multiplexing)| true                 |
-[mysql-ping_interval_server_msec](#mysql-ping_interval_server_msec)| 120000               |
-[mysql-ping_timeout_server](#mysql-ping_timeout_server)| 500                  |
-[mysql-poll_timeout](#mysql-poll_timeout)| 2000                 |
-[mysql-poll_timeout_on_failure](#mysql-poll_timeout_on_failure)| 100                  |
-[mysql-query_cache_size_MB](#mysql-query_cache_size_MB)| 256                  |
-[mysql-query_cache_stores_empty_result](#mysql-query_cache_stores_empty_result)| true                 |
-[mysql-query_digests](#mysql-query_digests)| true                 |
-[mysql-query_digests_lowercase](#mysql-query_digests_lowercase)| false                |
-[mysql-query_digests_max_digest_length](#mysql-query_digests_max_digest_length)| 2048                 |
-[mysql-query_digests_max_query_length](#mysql-query_digests_max_query_length)| 65000                |
-[mysql-query_digests_no_digits](#mysql-query_digests_no_digits)| false                |
-[mysql-query_digests_normalize_digest_text](#mysql-query_digests_normalize_digest_text)| false                |
-[mysql-query_digests_replace_null](#mysql-query_digests_replace_null)| false                |
-[mysql-query_digests_track_hostname](#mysql-query_digests_track_hostname)| false                |
-[mysql-query_processor_iterations](#mysql-query_processor_iterations)| 0                    |
-[mysql-query_processor_regex](#mysql-query_processor_regex)| 1                    |
-[mysql-query_retries_on_failure](#mysql-query_retries_on_failure)| 1                    |
-[mysql-reset_connection_algorithm](#mysql-reset_connection_algorithm)| 2                    |
-[mysql-server_capabilities](#mysql-server_capabilities)| 569867               |
-[mysql-server_version](#mysql-server_version)| 5.5.30               |
-[mysql-servers_stats](#mysql-servers_stats)| true                 |
-[mysql-session_idle_ms](#mysql-session_idle_ms)| 1000                 |
-[mysql-session_idle_show_processlist](#mysql-session_idle_show_processlist)| true                 |
-[mysql-sessions_sort](#mysql-sessions_sort)| true                 |
-[mysql-set_query_lock_on_hostgroup](#mysql-set_query_lock_on_hostgroup)| 1                    |
-[mysql-show_processlist_extended](#mysql-show_processlist_extended)| 0                    |
-[mysql-shun_on_failures](#mysql-shun_on_failures)| 5                    |
-[mysql-shun_recovery_time_sec](#mysql-shun_recovery_time_sec)| 10                   |
-[mysql-ssl_p2s_ca](#mysql-ssl_p2s_ca)|                      |
-[mysql-ssl_p2s_cert](#mysql-ssl_p2s_cert)|                      |
-[mysql-ssl_p2s_cipher](#mysql-ssl_p2s_cipher)|                      |
-[mysql-ssl_p2s_key](#mysql-ssl_p2s_key)|                      |
-[mysql-stacksize](#mysql-stacksize)| 1048576              |
-[mysql-stats_time_backend_query](#mysql-stats_time_backend_query)| false                |
-[mysql-stats_time_query_processor](#mysql-stats_time_query_processor)| false                |
-[mysql-tcp_keepalive_time](#mysql-tcp_keepalive_time)| 0                    |
-[mysql-threads](#mysql-threads)| 4                    |
-[mysql-threshold_query_length](#mysql-threshold_query_length)| 524288               |
-[mysql-threshold_resultset_size](#mysql-threshold_resultset_size)| 4194304              |
-[mysql-throttle_connections_per_sec_to_hostgroup](#mysql-throttle_connections_per_sec_to_hostgroup)| 1000000              |
-[mysql-throttle_max_bytes_per_second_to_client](#mysql-throttle_max_bytes_per_second_to_client)| 0                    |
-[mysql-throttle_ratio_server_to_client](#mysql-throttle_ratio_server_to_client)| 0                    |
-[mysql-use_tcp_keepalive](#mysql-use_tcp_keepalive)| 0                    |
-[mysql-verbose_query_error](#mysql-verbose_query_error)| false                |
-[mysql-wait_timeout](#mysql-wait_timeout)| 28800000             |
+[admin-version](#admin-version)| 2.0.7-80-g4dd4ef5f   
+[admin-web_enabled](#admin-web_enabled)| false                
+[admin-web_port](#admin-web_port)| 6080                 
+[mysql-add_ldap_user_comment](#mysql-add_ldap_user_comment)|                      
+[mysql-auditlog_filename](#mysql-auditlog_filename)|                      
+[mysql-auditlog_filesize](#mysql-auditlog_filename)| 100MB            
+[mysql-auto_increment_delay_multiplex](#mysql-auto_increment_delay_multiplex)| 5                    
+[mysql-autocommit_false_is_transaction](#mysql-autocommit_false_is_transaction)| false                
+[mysql-autocommit_false_not_reusable](#mysql-autocommit_false_not_reusable)| false                
+[mysql-binlog_reader_connect_retry_msec](#mysql-binlog_reader_connect_retry_msec)| 3000                 
+[mysql-client_found_rows](#mysql-client_found_rows)                                      | true                 
+[mysql-client_multi_statements](#mysql-client_multi_statements)| true                 
+[mysql-client_session_track_gtid](#mysql-client_session_track_gtid)| true                 
+[mysql-commands_stats](#mysql-commands_stats)| true                 
+[mysql-connect_retries_delay](#mysql-connect_retries_delay)| 1                    
+[mysql-connect_retries_on_failure](#mysql-connect_retries_on_failure)| 10                   
+[mysql-connect_timeout_server](#mysql-connect_timeout_server)| 3000                 
+[mysql-connect_timeout_server_max](#mysql-connect_timeout_server_max)| 10000                
+[mysql-connection_delay_multiplex_ms](#mysql-connection_delay_multiplex_ms)| 0                    
+[mysql-connection_max_age_ms](#mysql-connection_max_age_ms)| 0                    
+[mysql-connpoll_reset_queue_length](#mysql-connpoll_reset_queue_length)| 50                   
+[mysql-default_character_set_results](#mysql-default_character_set_results)| NULL                 
+[mysql-default_charset](#mysql-default_charset)| utf8                 
+[mysql-default_collation_connection](#mysql-default_collation_connection)|                      
+[mysql-default_isolation_level](#mysql-default_isolation_level)| READ COMMITTED       
+[mysql-default_max_join_size](#mysql-default_max_join_size)| 18446744073709551615 
+[mysql-default_max_latency_ms](#mysql-default_max_latency_ms)| 1000                 
+[mysql-default_net_write_timeout](#mysql-default_net_write_timeout)| 60                   
+[mysql-default_query_delay](#mysql-default_query_delay)| 0                    
+[mysql-default_query_timeout](#mysql-default_query_timeout)| 36000000             
+[mysql-default_reconnect](#mysql-default_reconnect)| true                 
+[mysql-default_schema](#mysql-default_schema)| information_schema   
+[mysql-default_session_track_gtids](#mysql-default_session_track_gtids)| OFF                  
+[mysql-default_sql_auto_is_null](#mysql-default_sql_auto_is_null)| OFF                  
+[mysql-default_sql_mode](#mysql-default_sql_mode)|                      
+[mysql-default_sql_safe_updates](#mysql-default_sql_safe_updates)| OFF                  
+[mysql-default_sql_select_limit](#mysql-default_sql_select_limit)| DEFAULT              
+[mysql-default_time_zone](#mysql-default_time_zone)| SYSTEM               
+[mysql-default_transaction_read](#mysql-default_transaction_read)| WRITE                
+[mysql-default_tx_isolation](#mysql-default_tx_isolation)| READ-COMMITTED       
+[mysql-enforce_autocommit_on_reads](#mysql-enforce_autocommit_on_reads)| false                
+[mysql-eventslog_default_log](#mysql-eventslog_default_log)| 0                    
+[mysql-eventslog_filename](#mysql-eventslog_filename)|                      
+[mysql-eventslog_filesize](#mysql-eventslog_filesize)| 104857600            
+[mysql-eventslog_format](#mysql-eventslog_format)| 1                    
+[mysql-forward_autocommit](#mysql-forward_autocommit)| false                
+[mysql-free_connections_pct](#mysql-free_connections_pct)| 10                   
+[mysql-have_compress](#mysql-have_compress)| true                 
+[mysql-have_ssl](#mysql-have_ssl)| false                
+[mysql-hostgroup_manager_verbose](#mysql-hostgroup_manager_verbose)| 1                    
+[mysql-init_connect](#mysql-init_connect)|                      
+[mysql-interfaces](#mysql-interfaces)| 0.0.0.0:6033         
+[mysql-keep_multiplexing_variables](#mysql-keep_multiplexing_variables)| tx_isolation,version 
+[mysql-kill_backend_connection_when_disconnect](#mysql-kill_backend_connection_when_disconnect)| true                 
+[mysql-ldap_user_variable](#mysql-ldap_user_variable)|                      
+[mysql-long_query_time](#mysql-long_query_time)| 1000                 
+[mysql-max_allowed_packet](#mysql-max_allowed_packet)| 4194304              
+[mysql-max_connections](#mysql-max_connections)| 2048                 
+[mysql-max_stmts_cache](#mysql-max_stmts_cache)| 10000                
+[mysql-max_stmts_per_connection](#mysql-max_stmts_per_connection)| 20                   
+[mysql-max_transaction_time](#mysql-max_transaction_time)| 14400000             
+[mysql-min_num_servers_lantency_awareness](#mysql-min_num_servers_lantency_awareness)| 1000                 
+[mysql-mirror_max_concurrency](#mysql-mirror_max_concurrency)| 16                   
+[mysql-mirror_max_queue_length](#mysql-mirror_max_queue_length)| 32000                
+[mysql-monitor_connect_interval](#mysql-monitor_connect_interval)| 60000                
+[mysql-monitor_connect_timeout](#mysql-monitor_connect_timeout)| 600                  
+[mysql-monitor_enabled](#mysql-monitor_enabled)| true                 
+[mysql-monitor_galera_healthcheck_interval](#mysql-monitor_galera_healthcheck_interval)| 5000                 
+[mysql-monitor_galera_healthcheck_max_timeout_count](#mysql-monitor_galera_healthcheck_max_timeout_count)| 3                    
+[mysql-monitor_galera_healthcheck_timeout](#mysql-monitor_galera_healthcheck_timeout)| 800                  
+[mysql-monitor_groupreplication_healthcheck_interval](#mysql-monitor_groupreplication_healthcheck_interval)| 5000                 
+[mysql-monitor_groupreplication_healthcheck_max_timeout_count](#mysql-monitor_groupreplication_healthcheck_max_timeout_count)| 3                    
+[mysql-monitor_groupreplication_healthcheck_timeout](#mysql-monitor_groupreplication_healthcheck_timeout)| 800                  
+[mysql-monitor_history](#mysql-monitor_history)| 600000               
+[mysql-monitor_password](#mysql-monitor_password)| monitor              
+[mysql-monitor_ping_interval](#mysql-monitor_ping_interval)| 10000                
+[mysql-monitor_ping_max_failures](#mysql-monitor_ping_max_failures)| 3                    
+[mysql-monitor_ping_timeout](#mysql-monitor_ping_timeout)| 1000                 
+[mysql-monitor_query_interval](#mysql-monitor_query_interval)| 60000                
+[mysql-monitor_query_timeout](#mysql-monitor_query_timeout)| 100                  
+[mysql-monitor_read_only_interval](#mysql-monitor_read_only_interval)| 1500                 
+[mysql-monitor_read_only_max_timeout_count](#mysql-monitor_read_only_max_timeout_count)| 3                    
+[mysql-monitor_read_only_timeout](#mysql-monitor_read_only_timeout)| 500                  
+[mysql-monitor_replication_lag_interval](#mysql-monitor_replication_lag_interval)| 10000                
+[mysql-monitor_replication_lag_timeout](#mysql-monitor_replication_lag_timeout)| 1000                 
+[mysql-monitor_replication_lag_use_percona_heartbeat](#mysql-monitor_replication_lag_use_percona_heartbeat)|                      
+[mysql-monitor_slave_lag_when_null](#mysql-monitor_slave_lag_when_null)| 60                   
+[mysql-monitor_threads_max](#mysql-monitor_threads_max)| 128                  
+[mysql-monitor_threads_min](#mysql-monitor_threads_min)| 8                    
+[mysql-monitor_threads_queue_maxsize](#mysql-monitor_threads_queue_maxsize)| 128                  
+[mysql-monitor_username](#mysql-monitor_username)| monitor              
+[mysql-monitor_wait_timeout](#mysql-monitor_wait_timeout)| true                 
+[mysql-monitor_writer_is_also_reader](#mysql-monitor_writer_is_also_reader)| true                 
+[mysql-multiplexing](#mysql-multiplexing)| true                 
+[mysql-ping_interval_server_msec](#mysql-ping_interval_server_msec)| 120000               
+[mysql-ping_timeout_server](#mysql-ping_timeout_server)| 500                  
+[mysql-poll_timeout](#mysql-poll_timeout)| 2000                 
+[mysql-poll_timeout_on_failure](#mysql-poll_timeout_on_failure)| 100                  
+[mysql-query_cache_size_MB](#mysql-query_cache_size_MB)| 256                  
+[mysql-query_cache_stores_empty_result](#mysql-query_cache_stores_empty_result)| true                 
+[mysql-query_digests](#mysql-query_digests)| true                 
+[mysql-query_digests_lowercase](#mysql-query_digests_lowercase)| false                
+[mysql-query_digests_max_digest_length](#mysql-query_digests_max_digest_length)| 2048                 
+[mysql-query_digests_max_query_length](#mysql-query_digests_max_query_length)| 65000                
+[mysql-query_digests_no_digits](#mysql-query_digests_no_digits)| false                
+[mysql-query_digests_normalize_digest_text](#mysql-query_digests_normalize_digest_text)| false                
+[mysql-query_digests_replace_null](#mysql-query_digests_replace_null)| false                
+[mysql-query_digests_track_hostname](#mysql-query_digests_track_hostname)| false                
+[mysql-query_processor_iterations](#mysql-query_processor_iterations)| 0                    
+[mysql-query_processor_regex](#mysql-query_processor_regex)| 1                    
+[mysql-query_retries_on_failure](#mysql-query_retries_on_failure)| 1                    
+[mysql-reset_connection_algorithm](#mysql-reset_connection_algorithm)| 2                    
+[mysql-server_capabilities](#mysql-server_capabilities)| 569867               
+[mysql-server_version](#mysql-server_version)| 5.5.30               
+[mysql-servers_stats](#mysql-servers_stats)| true                 
+[mysql-session_idle_ms](#mysql-session_idle_ms)| 1000                 
+[mysql-session_idle_show_processlist](#mysql-session_idle_show_processlist)| true                 
+[mysql-sessions_sort](#mysql-sessions_sort)| true                 
+[mysql-set_query_lock_on_hostgroup](#mysql-set_query_lock_on_hostgroup)| 1                    
+[mysql-show_processlist_extended](#mysql-show_processlist_extended)| 0                    
+[mysql-shun_on_failures](#mysql-shun_on_failures)| 5                    
+[mysql-shun_recovery_time_sec](#mysql-shun_recovery_time_sec)| 10                   
+[mysql-ssl_p2s_ca](#mysql-ssl_p2s_ca)|                      
+[mysql-ssl_p2s_cert](#mysql-ssl_p2s_cert)|                      
+[mysql-ssl_p2s_cipher](#mysql-ssl_p2s_cipher)|                      
+[mysql-ssl_p2s_key](#mysql-ssl_p2s_key)|                      
+[mysql-stacksize](#mysql-stacksize)| 1048576              
+[mysql-stats_time_backend_query](#mysql-stats_time_backend_query)| false                
+[mysql-stats_time_query_processor](#mysql-stats_time_query_processor)| false                
+[mysql-tcp_keepalive_time](#mysql-tcp_keepalive_time)| 0                    
+[mysql-threads](#mysql-threads)| 4                    
+[mysql-threshold_query_length](#mysql-threshold_query_length)| 524288               
+[mysql-threshold_resultset_size](#mysql-threshold_resultset_size)| 4194304              
+[mysql-throttle_connections_per_sec_to_hostgroup](#mysql-throttle_connections_per_sec_to_hostgroup)| 1000000              
+[mysql-throttle_max_bytes_per_second_to_client](#mysql-throttle_max_bytes_per_second_to_client)| 0                    
+[mysql-throttle_ratio_server_to_client](#mysql-throttle_ratio_server_to_client)| 0                    
+[mysql-use_tcp_keepalive](#mysql-use_tcp_keepalive)| 0                    
+[mysql-verbose_query_error](#mysql-verbose_query_error)| false                
+[mysql-wait_timeout](#mysql-wait_timeout)| 28800000             
+
 
 
 ## Admin Variables
