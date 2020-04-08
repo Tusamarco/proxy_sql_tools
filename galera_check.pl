@@ -1696,6 +1696,7 @@ sub get_proxy($$$$){
                 && $nodes->{$key}->{_wsrep_status} == 4
                 && $nodes->{$key}->{_wsrep_rejectqueries} eq "NONE"
                 && $nodes->{$key}->{_wsrep_donorrejectqueries} eq "OFF"
+                && $nodes->{$key}->{_pxc_maint_mode} eq "DISABLED"
                 ){
               
               #IN case failover option is 1 we need to have:
