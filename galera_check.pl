@@ -2126,6 +2126,7 @@ LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
 Rules:
 
 =over
+=back
 
 =item 1
 
@@ -2152,8 +2153,8 @@ Node comes back from offline_soft when (all of them):
      3) wsrep_reject_queries = none
      4) Primary state
 
-=item 4
 
+=item 4
  Node comes back from maintenance HG when (all of them):
 
      1) node state is 4
