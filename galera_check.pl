@@ -2125,9 +2125,6 @@ LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
 
 Rules:
 
-=over
-=back
-
 =item 1
 
 Set to offline_soft :
