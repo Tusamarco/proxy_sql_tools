@@ -2121,9 +2121,9 @@ LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
 
 
 
-=head1
+=head1 Rules:
 
-Rules:
+=over
 
 =item 1
 
@@ -2152,6 +2152,7 @@ Node comes back from offline_soft when (all of them):
 
 
 =item 4
+
  Node comes back from maintenance HG when (all of them):
 
      1) node state is 4
@@ -2160,6 +2161,7 @@ Node comes back from offline_soft when (all of them):
 
 
 =item 5
+
  active_failover
       Valid values are:
           0 [default] do not make failover
@@ -2167,6 +2169,6 @@ Node comes back from offline_soft when (all of them):
           2 use PXC_CLUSTER_VIEW to identify a server in the same segment
           3 do whatever to keep service up also failover to another segment (use PXC_CLUSTER_VIEW) 
 
-
+=back
 =cut	
 
