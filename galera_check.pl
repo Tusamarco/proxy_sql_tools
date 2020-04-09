@@ -2182,7 +2182,10 @@ sample [options] [file ...]
                           0 [default] do not make failover
                           1 make failover only if HG 8000 is specified in ProxySQL mysl_servers
                           2 use PXC_CLUSTER_VIEW to identify a server in the same segment
-                          3 do whatever to keep service up also failover to another segment (use PXC_CLUSTER_VIEW) 
+                          3 do whatever to keep service up also failover to another segment (use PXC_CLUSTER_VIEW)
+   --single_writer    Active by default [single_writer = 1 ] if disable will allow to have multiple writers
+   
+   
    Performance parameters 
    --check_timeout    This parameter set in ms then time the script can alow a thread connecting to a MySQL node to wait, before forcing a returnn.
                       In short if a node will take longer then check_timeout its entry will be not filled and it will eventually ignored in the evaluation.
