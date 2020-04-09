@@ -112,6 +112,7 @@ sub get_proxy($$$$){
     $Param->{print_execution} = 1;
     $Param->{development} = 0;
     $Param->{active_failover} = 0;
+    $Param->{single_writer} = 1;
     $Param->{check_timeout} = 800;
     
     my $run_pid_dir = "/tmp" ;
@@ -130,6 +131,7 @@ sub get_proxy($$$$){
         'retry_down:i' =>	\$Param->{retry_down},
         'execution_time:i' => \$Param->{print_execution},
         'development:i' => \$Param->{development},
+        'single_writer:i' => \$Param->{single_writer},
         'active_failover:i' => \$Param->{active_failover},
         'check_timeout:i' => \$Param->{check_timeout},
         
@@ -300,6 +302,7 @@ sub get_proxy($$$$){
         # Cluster->{size}     cluster status [Primary|not Primary]
         # Cluster->{singlenode}=0;  0 if false 1 if true meaning only one ACTIVE node in the cluster 
         # Cluster->{haswriter}=0;  0 if false 1 if true at least a node is fully active as writer
+        # Cluster->{singlewriter}=1;  0 if false 1 if true this cluster can have ONLY one writer a time [true default]
         
         my $self = {
             _name      => undef,
@@ -308,6 +311,7 @@ sub get_proxy($$$$){
             _size  => {},
             _singlenode  => 0,
             _haswriter => 0,
+            _singlewriter => 1,
             _main_segment => 0,
             _SQL_get_mysql_servers => $SQL_get_mysql_servers,
             _hostgroups => undef,
@@ -316,6 +320,7 @@ sub get_proxy($$$$){
             _monitor_user => undef,
             _monitor_password => undef,
             _nodes => {},
+            _nodes_maint => {},
             _check_timeout => 100, #timeout in ms
             _cluster_identifier => undef,
             _hg_writer_id => 0,
@@ -375,6 +380,13 @@ sub get_proxy($$$$){
         $self->{_nodes} = $nodes if defined($nodes);
         return $self->{_nodes};
     }
+
+    sub nodes_maint {
+        my ( $self, $nodes ) = @_;
+        $self->{_nodes_maint} = $nodes if defined($nodes);
+        return $self->{_nodes_maint};
+    }
+
     sub status {
         my ( $self, $status ) = @_;
         $self->{_status} = $status if defined($status);
@@ -399,6 +411,12 @@ sub get_proxy($$$$){
         return $self->{_haswriter};
     }
     
+    sub singlewriter {
+        my ( $self, $singlewriter ) = @_;
+        $self->{_singlewriter} = $singlewriter if defined($singlewriter);
+        return $self->{_singlewriter};
+    }
+
     sub hostgroups {
         my ( $self, $hostgroups ) = @_;
         $self->{_hostgroups} = $hostgroups if defined($hostgroups);
@@ -485,10 +503,34 @@ sub get_proxy($$$$){
                       $self->{_nodes}->{$key}->port.":HG".$self->{_nodes}->{$key}->hostgroups."\n" ) }
                     $new_nodes->{$key} =  $self->{_nodes}->{$key};
                     $new_nodes->{$key}->{_process_status} = -1;
-                    #  debug senza threads
+                    #  debug senza threads comment next line
                     $Threads{$key}=threads->create(sub  {return get_node_info($self,$key)});
-                    #next unless  $new_nodes->{$key} = get_node_info($self,$key);
-
+                    #DEBUG Without threads uncomment from here
+            #        next unless  $new_nodes->{$key} = get_node_info($self,$key);
+            ##        #assign size to HG
+            #          if($new_nodes->{$key}->{_proxy_status} ne "OFFLINE_SOFT"
+            #             && defined $new_nodes->{$key}->{_wsrep_segment} 
+            #             ){
+            #              $self->{_hostgroups}->{$new_nodes->{$key}->{_hostgroups}}->{_size} = ($self->{_hostgroups}->{$new_nodes->{$key}->{_hostgroups}}->{_size}) + 1;
+            #          }
+            ##          
+            ##       #checks for ONLINE writer(s)
+            ##
+            #   		    if(defined $new_nodes->{$key}->{_read_only}
+            #            && $new_nodes->{$key}->{_read_only} eq "OFF"
+            #            && $new_nodes->{$key}->{_proxy_status} eq "ONLINE"
+            #            && $new_nodes->{$key}->{_hostgroups} == $self->hg_writer_id){
+            #               $self->{_haswriter} = 1 ;
+            #          }
+            #        # check if under maintenance
+            #   		    if($new_nodes->{$key}->{_proxy_status} eq "OFFLINE_SOFT"
+            #            && $new_nodes->{$key}->{_pxc_maint_mode} eq "MAINTENANCE"){
+            #               $self->{_nodes_maint}->{$key} =  $new_nodes->{$key};
+            #          }
+            #
+            #
+                    # to here
+                    
              		#    if(!exists $processed_nodes->{$new_nodes->{$key}->{_ip}} ){
              		#	$self->{_size}->{$new_nodes->{$key}->{_wsrep_segment}} = (($self->{_size}->{$new_nodes->{$key}->{_wsrep_segment}}|| 0) +1);
              		#	$processed_nodes->{$new_nodes->{$key}->{_ip}}=$self->{_size}->{$new_nodes->{$key}->{_wsrep_segment}};
@@ -553,6 +595,12 @@ sub get_proxy($$$$){
                                  print Utils->print_log(3," Not a writer :" .$new_nodes->{$thr}->{_ip} . " HG: $new_nodes->{$thr}->{_hostgroups}  \n" )
                            }	
                      }
+                    # check if under maintenance
+               		    if($new_nodes->{$thr}->{_proxy_status} eq "OFFLINE_SOFT"
+                        && $new_nodes->{$thr}->{_pxc_maint_mode} eq "MAINTENANCE"){
+                           $self->{_nodes_maint}->{$thr} =  $new_nodes->{$thr};
+                      }
+               
                      
                      if($self->debug){print Utils->print_log(3," Thread joined :   " . $tid."\n" ) }	
                         #print "  - Results for thread $tid:\n";
@@ -655,7 +703,10 @@ sub get_proxy($$$$){
             _MOVE_UP_OFFLINE => 1000, #move a node from OFFLINE_SOFT 
             _MOVE_UP_HG_CHANGE => 1010, #move a node from HG 9000 (plus hg id) to reader HG 
             _MOVE_DOWN_HG_CHANGE => 3001, #move a node from original HG to maintenance HG (HG 9000 (plus hg id) ) kill all existing connections
-            _MOVE_DOWN_OFFLINE => 3010 , # move node to OFFLINE_soft keep existign connections, no new connections.
+            _MOVE_DOWN_OFFLINE => 3010 , # move node to OFFLINE_soft keep existing connections, no new connections.
+            _MOVE_TO_MAINTENANCE => 3020 , # move node to OFFLINE_soft keep existing connections, no new connections because maintenance.
+            _MOVE_OUT_MAINTENANCE => 3030 , # move node to OFFLINE_soft keep existing connections, no new connections because maintenance.            
+            _DELETE_NODE => 5000, # this remove the node from the hostgroup
             _SAVE_RETRY => 9999, # this reset the retry counter in the comment 
             #_MOVE_SWAP_READER_TO_WRITER => 5001, #Future use
             #_MOVE_SWAP_WRITER_TO_READER => 5010, #Future use
@@ -737,10 +788,25 @@ sub get_proxy($$$$){
         my ( $self) = @_;
         return $self->{_MOVE_DOWN_OFFLINE};
     }
+    
+    
+    sub MOVE_TO_MAINTENANCE {
+        my ( $self) = @_;
+        return $self->{_MOVE_TO_MAINTENANCE};
+    }
+    
+    sub MOVE_OUT_MAINTENANCE {
+        my ( $self) = @_;
+        return $self->{_MOVE_OUT_MAINTENANCE};
+    }
 
     sub MOVE_DOWN_HG_CHANGE {
         my ( $self) = @_;
         return $self->{_MOVE_DOWN_HG_CHANGE};
+    }
+    sub DELETE_NODE {
+        my ( $self) = @_;
+        return $self->{_DELETE_NODE};
     }
 
     sub cluster_status {
@@ -1010,7 +1076,7 @@ sub get_proxy($$$$){
     }
     
     sub promote_writer(){
-      my ( $self,$proxynode ) = @_;
+      my ( $self,$proxynode,$Galera_cluster,$exclude_delete ) = @_;
       if($self->{_hostgroups} > 8000){
          print Utils->print_log(3,"Special Backup - Group found! I am electing a node to writer following the indications\n This Node Try to become the new"
                                   ." WRITER for HG $proxynode->{_hg_writer_id} Server details: " 
@@ -1033,7 +1099,14 @@ sub get_proxy($$$$){
       #(9000 + $proxynode->{_hg_writer_id})
       
       my $proxy_sql_command= "INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('$self->{_ip}',$proxynode->{_hg_writer_id},$self->{_port},$self->{_weight},$self->{_connections});";
-      $proxynode->{_dbh_proxy}->do("DELETE from mysql_servers where hostgroup_id in ($proxynode->{_hg_writer_id},".(9000 + $proxynode->{_hg_writer_id}).")") or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
+      if($Galera_cluster->{_singlewriter} > 0){
+         my $delete = "DELETE from mysql_servers where hostgroup_id in ($proxynode->{_hg_writer_id},".(9000 + $proxynode->{_hg_writer_id}).") ".$exclude_delete;
+        print Utils->print_log(2," DELETE from writer group as: " 
+            ." SQL:" .$delete
+            ."\n" );			    
+         
+         $proxynode->{_dbh_proxy}->do($delete) or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
+      }
       $proxynode->{_dbh_proxy}->do($proxy_sql_command) or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
       $proxynode->{_dbh_proxy}->do("LOAD MYSQL SERVERS TO RUNTIME") or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
       $proxynode->{_dbh_proxy}->do("SAVE MYSQL SERVERS TO DISK") or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
@@ -1306,6 +1379,7 @@ sub get_proxy($$$$){
         $galera_cluster->monitor_password($self->monitor_password);
         $galera_cluster->debug($self->debug);
         $galera_cluster->hg_writer_id($self->hg_writer_id);
+        $galera_cluster->singlewriter($Param->{single_writer});
         $self->get_galera_cluster($galera_cluster);
        if($self->debug >=1){print Utils->print_log(3," Galera cluster object created  " . caller(3). "\n" ); }
     }
@@ -1324,7 +1398,7 @@ sub get_proxy($$$$){
        foreach my $key (sort keys %{$nodes}){
          if(defined $nodes->{$key} ){
 	
-            #only if node has HG that is not maintennce it can evaluate to be put down in some way
+            #only if node has HG that is not maintenance it can evaluate to be put down in some way
             if($nodes->{$key}->{_hostgroups} < 8000
                && $nodes->{$key}->{_process_status} > 0){
                 #Check major exclusions
@@ -1451,7 +1525,7 @@ sub get_proxy($$$$){
                if( defined $nodes->{$key}->pxc_maint_mode 
                 && $nodes->{$key}->pxc_maint_mode ne "DISABLED"
                 && $nodes->{$key}->proxy_status ne "OFFLINE_SOFT"){
-                     $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_OFFLINE}}= $nodes->{$key};
+                     $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_TO_MAINTENANCE}}= $nodes->{$key};
              
                      #if retry is > 0 then it's managed
                      if($proxynode->retry_down > 0){
@@ -1459,7 +1533,7 @@ sub get_proxy($$$$){
                      }
              
                     if($proxynode->debug >=1){print Utils->print_log(3," Evaluate nodes state "
-                        .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_OFFLINE}
+                        .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_TO_MAINTENANCE}
                         ." Retry #".$nodes->{$key}->get_retry_down."\n" )   }	
              
                    next;
@@ -1477,18 +1551,35 @@ sub get_proxy($$$$){
                && $nodes->{$key}->wsrep_rejectqueries eq "NONE"
                &&$nodes->{$key}->cluster_status eq "Primary"
                &&(!defined $nodes->{$key}->pxc_maint_mode || $nodes->{$key}->pxc_maint_mode eq "DISABLED") 
-               && $nodes->{$key}->hostgroups < 9000
+               && $nodes->{$key}->hostgroups < 8000
                ){
-                 $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_UP_OFFLINE}}= $nodes->{$key};
-                 #if retry is > 0 then it's managed
-                 if($proxynode->retry_up > 0){
-                     $nodes->{$key}->get_retry_up($nodes->{$key}->get_retry_up +1);
+                  if($GGalera_cluster->haswriter > 0
+                     && $GGalera_cluster->singlewriter > 0
+                     && $nodes->{$key}->hostgroups == $GGalera_cluster->hg_writer_id
+                     ){
+                     $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_DELETE_NODE}}= $nodes->{$key};
+                     #if retry is > 0 then it's managed
+                     if($proxynode->retry_up > 0){
+                         $nodes->{$key}->get_retry_up($nodes->{$key}->get_retry_up +1);
+                     }
+                     if($proxynode->debug <=1){
+                        print Utils->print_log(3, " Evaluate nodes state "
+                            .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_DELETE_NODE}
+                            ." Retry #".$nodes->{$key}->get_retry_down."\n" ) }			    
+                     next;
+                  }
+                 else{
+                     $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_UP_OFFLINE}}= $nodes->{$key};
+                     #if retry is > 0 then it's managed
+                     if($proxynode->retry_up > 0){
+                         $nodes->{$key}->get_retry_up($nodes->{$key}->get_retry_up +1);
+                     }
+                     if($proxynode->debug <=1){
+                        print Utils->print_log(3, " Evaluate nodes state "
+                            .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_UP_OFFLINE}
+                            ." Retry #".$nodes->{$key}->get_retry_down."\n" ) }			    
+                     next;
                  }
-                 if($proxynode->debug <=1){
-                    print Utils->print_log(3, " Evaluate nodes state "
-                        .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_UP_OFFLINE}
-                        ." Retry #".$nodes->{$key}->get_retry_down."\n" ) }			    
-                 next;
             }
             
             # Node comes back from maintenance HG when (all of them):
@@ -1576,10 +1667,12 @@ sub get_proxy($$$$){
             my ($host,  $port, $hg, $action) = split /s*;\s*/, $key;
            
             SWITCH: {
-                     if ($action == $node->MOVE_DOWN_OFFLINE) { if($proxynode->{_action_nodes}->{$key}->get_retry_down >= $proxynode->retry_down){ $proxynode->move_node_offline($key,$proxynode->{_action_nodes}->{$key})}; last SWITCH; }
+                     if ($action == $node->MOVE_DOWN_OFFLINE) { if($proxynode->{_action_nodes}->{$key}->get_retry_down >= $proxynode->retry_down){$proxynode->move_node_offline($key,$proxynode->{_action_nodes}->{$key})}; last SWITCH; }
                      if ($action == $node->MOVE_DOWN_HG_CHANGE) { if($proxynode->{_action_nodes}->{$key}->get_retry_down >= $proxynode->retry_down){ $proxynode->move_node_down_hg_changey($key,$proxynode->{_action_nodes}->{$key})}; last SWITCH; }
                      if ($action == $node->MOVE_UP_OFFLINE) { if($proxynode->{_action_nodes}->{$key}->get_retry_up >= $proxynode->retry_up){ $proxynode->move_node_up_from_offline($key,$proxynode->{_action_nodes}->{$key})}; last SWITCH; }
                      if ($action == $node->MOVE_UP_HG_CHANGE) { if($proxynode->{_action_nodes}->{$key}->get_retry_up >= $proxynode->retry_up){$proxynode->move_node_up_from_hg_change($key,$proxynode->{_action_nodes}->{$key})}; last SWITCH; }
+                     if ($action == $node->MOVE_TO_MAINTENANCE) { if($proxynode->{_action_nodes}->{$key}->get_retry_down >= $proxynode->retry_down){$proxynode->move_node_to_maintenance($key,$proxynode->{_action_nodes}->{$key})}; last SWITCH; }
+                     if ($action == $node->DELETE_NODE) { if($proxynode->{_action_nodes}->{$key}->get_retry_down >= $proxynode->retry_down){$proxynode->delete_node_from_hostgroup($key,$proxynode->{_action_nodes}->{$key})}; last SWITCH; }
             }
             if($proxynode->retry_up > 0 || $proxynode->retry_down > 0){
                save_retry($proxynode,$key,$proxynode->{_action_nodes}->{$key});
@@ -1623,6 +1716,37 @@ sub get_proxy($$$$){
               ." SQL:" .$proxy_sql_command
               ."\n")  ;			    
     }
+    sub move_node_to_maintenance{
+        #this action involve only the proxy so we will 
+        my ($proxynode, $key,$node) = @_;
+        
+        my ($host,  $port, $hg,$action) = split /s*;\s*/, $key;
+        my $proxy_sql_command= " UPDATE mysql_servers SET status='OFFLINE_SOFT' WHERE hostgroup_id=$hg AND hostname='$host' AND port='$port'";
+        $proxynode->{_dbh_proxy}->do($proxy_sql_command) or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
+        $proxynode->{_dbh_proxy}->do("LOAD MYSQL SERVERS TO RUNTIME") or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
+        
+        print Utils->print_log(2," Move node:" .$key
+              ." SQL:" .$proxy_sql_command
+              ."\n")  ;			    
+    }
+
+    #remove a node from an hostgroup
+    sub delete_node_from_hostgroup{
+        #this action involve only the proxy so we will 
+        my ($proxynode, $key,$node) = @_;
+        
+        my ($host,  $port, $hg,$action) = split /s*;\s*/, $key;
+        my $proxy_sql_command= " DELETE from mysql_servers WHERE hostgroup_id=$hg AND hostname='$host' AND port='$port'";
+        $proxynode->{_dbh_proxy}->do($proxy_sql_command) or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
+        $proxynode->{_dbh_proxy}->do("LOAD MYSQL SERVERS TO RUNTIME") or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
+        
+        print Utils->print_log(2," DELETE node:" .$key
+              ." SQL:" .$proxy_sql_command
+              ."\n")  ;			    
+    }
+
+
+
 
     #move a node to a maintenance HG ((9000 + HG id))
     sub move_node_down_hg_changey{
@@ -1669,6 +1793,7 @@ sub get_proxy($$$$){
     sub initiate_failover{
         my ($proxynode,$Galera_cluster)  = @_ ;
         my ( $nodes ) = $Galera_cluster->{_nodes};
+        my ( $nodes_maint ) = $Galera_cluster->{_nodes_maint};
         my $failover_node;
         my $candidate_failover_node;
         my $min_index = 100;
@@ -1678,6 +1803,7 @@ sub get_proxy($$$$){
 
         my $local_node;
         my $hg_writer_id=0;
+        my $exclude_delete="";
         
         #Valid values are:
         #    0 [default] do not make failover
@@ -1760,12 +1886,31 @@ sub get_proxy($$$$){
              }
           }
         }
+        if(defined $nodes_maint ){
+           my $exclude_id = "";
+           my $exclude_port = "";
+           foreach my $key (sort keys %{$nodes_maint}){
+             if(defined $nodes_maint->{$key}){ 
+                if(length($exclude_id) > 1){
+                   $exclude_id = $exclude_id . ",";
+                   $exclude_port = $exclude_port . ",";
+                }
+                   
+                $exclude_id = $exclude_id ."'". $nodes_maint->{$key}->{_ip} ."'";
+                $exclude_port = $exclude_port.$nodes_maint->{$key}->{_port} ;
+             }
+           }
+           if(length($exclude_id) > 1){
+              $exclude_delete = $exclude_delete . " AND (hostname not in (".$exclude_id.") AND port not in (".$exclude_port."))" ;
+           }
+        }
+        
         #if a node was found, try to do the failover removing the READ_ONLY
         if(defined $candidate_failover_node && $failover_node){
-            return $failover_node->promote_writer($proxynode);
+            return $failover_node->promote_writer($proxynode,$Galera_cluster,$exclude_delete);
         }
         elsif(defined $candidate_failover_node && !defined $failover_node){
-            return $candidate_failover_node->promote_writer($proxynode);
+            return $candidate_failover_node->promote_writer($proxynode,$Galera_cluster,$exclude_delete);
         }
         else{
             if(!defined $failover_node){
@@ -1776,7 +1921,7 @@ sub get_proxy($$$$){
                 }
             }
          
-            return $failover_node->promote_writer($proxynode);
+            return $failover_node->promote_writer($proxynode,$Galera_cluster,$exclude_delete);
         }
        
         
@@ -2016,6 +2161,7 @@ sub get_proxy($$$$){
 galera_check.pl
 
 =head1 OPTIONS
+
 galera_check.pl -u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --main_segment=1 --debug=0  --log <full_path_to_file> --help
 sample [options] [file ...]
  Options:
