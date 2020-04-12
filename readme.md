@@ -255,7 +255,7 @@ Remove a rule from scheduler:
 delete from scheduler where id=10;
 LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
 ```
-## Logic Rules use in the check:
+## Logic Rules used in the check:
 
 * Set to offline_soft :
     
