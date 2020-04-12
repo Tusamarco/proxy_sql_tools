@@ -6,7 +6,7 @@
 # ProxySQL galera check v1 
 #
 # Author Marco Tusa 
-# Copyright (C) (2016 - 2017)
+# Copyright (C) (2016 - 2020)
 # 
 #
 #THIS PROGRAM IS PROVIDED "AS IS" AND WITHOUT ANY EXPRESS OR IMPLIED
