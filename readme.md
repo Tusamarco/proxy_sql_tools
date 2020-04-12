@@ -90,9 +90,9 @@ For example:
 ```SQL
 INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.205',50,3306,1000000,2000);
 
-INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.205',8050,3306,1000000,2000);
-INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.231',8050,3306,100000,2000);
-INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.22',8050,3306,100000,2000);
+INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.205',8050,3306,1000,2000);
+INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.231',8050,3306,999,2000);
+INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.22',8050,3306,998,2000);
 
 
 INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.205',52,3306,1,2000);
@@ -112,7 +112,8 @@ Will create entries in ProxySQL for 2 main HG (50 for write and 52 for read)
 But it will also create 3 entries for the SPECIAL group 8050. This group will be used by the script to manage the fail-over of HG 50.
 
 In the above example, what will happen is that in case of you have set `*active_failover*=1`, the script will check the nodes, if node `192.168.1.205',50` is not up,
-the script will try to identify another node within the same segment that has the higest weight IN THE 8050 HG. In this case it will elect as new writer the node`'192.168.1.231',8050`.
+the script will try to identify another node within the same segment that has the **higest weight** IN THE 8050 HG. In this case it will elect as new writer the node`'192.168.1.231',8050`.
+So in this case you must set the nodes with different weight for HG 8050.
 
 If instead the `*active_failover*`=2, the script will use the pxc_cluster_view:
 ```SQL
