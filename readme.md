@@ -281,14 +281,17 @@ Logic Rules use in the check:
      2. wsrep_reject_queries = none
      3. Primary state
      
-* PXC (pxc_maint_mode)
+* PXC (pxc_maint_mode).
+
  PXC_MAIN_MODE is fully supported.
  Any node in a state different from pxc_maint_mode=disabled will be set in OFFLINE_SOFT for all the HostGroup.
  
 * internally shunning node.
- While I am trying to rely as much as possible on ProxySQL, given few inefficiencies there are cases when I have to set a node to SHUNNED because ProxySQL doesn't recognize it correctly.
+
+While I am trying to rely as much as possible on ProxySQL, given few inefficiencies there are cases when I have to set a node to SHUNNED because ProxySQL doesn't recognize it correctly.
 Mainly what the script does, it will identify the nodes not up (but still not SHUNNED) and will internally set them as SHUNNED. NO CHANGE TO ProxySQL is done, so you may not see it there, but an ERROR entry will be push to the log.
 
-* Single Writer 
+* Single Writer.
+
 You can define IF you want to have multiple writers. Default is 1 writer only (**I strongly recommend you to do not use multiple writers unless you know very well what are you doing**), but you can now have multiple writers at the same time.
 
