@@ -115,6 +115,9 @@ In the above example, what will happen is that in case of you have set `*active_
 the script will try to identify another node within the same segment that has the **higest weight** IN THE 8050 HG. In this case it will elect as new writer the node`'192.168.1.231',8050`.
 So in this case you must set the nodes with different weight for HG 8050.
 
+**Please note** that active_failover=1, is the only deterministic method to failover, based on what **YOU** define.
+If set correctly across a ProxySQL cluster, all nodes will act the same. Yes a possible delay given the check interval may exists, but that cannot be avoided. 
+
 If instead the `*active_failover*`=2, the script will use the pxc_cluster_view:
 ```SQL
 pxc_test@192.168.1.205) [performance_schema]>select * from pxc_cluster_view order by SEGMENT,LOCAL_INDEX;
@@ -286,4 +289,6 @@ Logic Rules use in the check:
  While I am trying to rely as much as possible on ProxySQL, given few inefficiencies there are cases when I have to set a node to SHUNNED because ProxySQL doesn't recognize it correctly.
 Mainly what the script does, it will identify the nodes not up (but still not SHUNNED) and will internally set them as SHUNNED. NO CHANGE TO ProxySQL is done, so you may not see it there, but an ERROR entry will be push to the log.
 
+* Single Writer 
+You can define IF you want to have multiple writers. Default is 1 writer only (**I strongly recommend you to do not use multiple writers unless you know very well what are you doing**), but you can now have multiple writers at the same time.
 
