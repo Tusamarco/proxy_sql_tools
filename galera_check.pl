@@ -327,6 +327,7 @@ sub get_proxy($$$$){
             _cluster_identifier => undef,
             _hg_writer_id => 0,
             _has_failover_node =>0,
+            _writers =>0,
             #_hg => undef,
         };
         bless $self, $class;
@@ -417,6 +418,12 @@ sub get_proxy($$$$){
         my ( $self, $singlewriter ) = @_;
         $self->{_singlewriter} = $singlewriter if defined($singlewriter);
         return $self->{_singlewriter};
+    }
+
+    sub writers {
+        my ( $self, $in ) = @_;
+        $self->{_writers} = $in if defined($in);
+        return $self->{_writers};
     }
 
     sub hostgroups {
@@ -524,7 +531,8 @@ sub get_proxy($$$$){
             #            && $new_nodes->{$key}->{_read_only} eq "OFF"
             #            && $new_nodes->{$key}->{_proxy_status} eq "ONLINE"
             #            && $new_nodes->{$key}->{_hostgroups} == $self->hg_writer_id){
-            #               $self->{_haswriter} = 1 ;
+            #               $self->{_haswriter} = 1 
+            #               $self->{_writers} = $self->{_writers} +1; 
             #          }
             #        # check if under maintenance
             #   		    if($new_nodes->{$key}->{_proxy_status} eq "OFFLINE_SOFT"
@@ -592,6 +600,7 @@ sub get_proxy($$$$){
                         && $new_nodes->{$thr}->{_proxy_status} eq "ONLINE"
                         && $new_nodes->{$thr}->{_hostgroups} == $self->hg_writer_id){
                            $self->{_haswriter} = 1 ;
+                           $self->{_writers} = $self->{_writers} +1; 
                       }else{
                       
                            if($self->debug
@@ -1651,10 +1660,20 @@ sub get_proxy($$$$){
        
       #failover has higher priority BUT if it happens before other action will interfere with recovery and move nodes that may prevent the failover to happen
       # and it will ends the script work (if successful)
+      #if($GGalera_cluster->{_writers} > 1
+      #   && $GGalera_cluster->{_singlewriter} > 0)
+      #{
+      #  $proxynode->{_require_failover} = 1;
+      #}
+      
+      
+      
       if($proxynode->require_failover > 0
          && !defined $action_nodes
          ){
-        if($GGalera_cluster->haswriter < 1){
+        if($GGalera_cluster->haswriter < 1
+           || ( $GGalera_cluster->{_writers} > 1 && $GGalera_cluster->{_singlewriter} > 0)
+           ){
           print Utils->print_log(2,"Fail-over in action Using Method = $proxynode->{_require_failover}\n" );
           if($proxynode->initiate_failover($GGalera_cluster) >0){
              if($proxynode->debug >=1){
@@ -2188,7 +2207,6 @@ sample [options] [file ...]
    --main_segment     If segments are in use which one is the leading at the moment
    --retry_up         The number of loop/test the check has to do before moving a node up (default 0)
    --retry_down       The number of loop/test the check has to do before moving a node Down (default 0)
-   --debug
    --log	      Full path to the log file ie (/var/log/proxysql/galera_check_) the check will add
 		      the identifier for the specific HG.
    --active_failover  A value from 0 to 3, indicating what level/kind of fail-over the script must perform.
@@ -2350,7 +2368,7 @@ Node comes back from offline_soft when (all of them):
  Any node in a state different from pxc_maint_mode=disabled will be set in OFFLINE_SOFT for all the HostGroup.
  
 =item 7
- internally shunninga node.
+ internally shunning node.
  While I am trying to rely as much as possible on ProxySQL, given few inefficiencies there are cases when I have to set a node to SHUNNED because ProxySQL doesn't recognize it correctly.  
           
 =back
