@@ -106,11 +106,12 @@ sub get_proxy($$$$){
     $Param->{debug}      = 0; 
     $Param->{processlist} = 0;
     $Param->{OS} = $^O;
-    $Param->{main_segment} = 0;
+    $Param->{main_segment} = 1;
     $Param->{retry_up} = 0;
     $Param->{retry_down} = 0;
     $Param->{print_execution} = 1;
     $Param->{development} = 0;
+    $Param->{development_time} = 2;
     $Param->{active_failover} = 0;
     $Param->{single_writer} = 1;
     $Param->{check_timeout} = 800;
@@ -131,6 +132,7 @@ sub get_proxy($$$$){
         'retry_down:i' =>	\$Param->{retry_down},
         'execution_time:i' => \$Param->{print_execution},
         'development:i' => \$Param->{development},
+        'development_time:i' => \$Param->{development_time},
         'single_writer:i' => \$Param->{single_writer},
         'active_failover:i' => \$Param->{active_failover},
         'check_timeout:i' => \$Param->{check_timeout},
@@ -260,7 +262,7 @@ sub get_proxy($$$$){
        $proxy_sql_node->disconnect();
     
        #debug braket 	
-        sleep 2 if($Param->{development} > 0);
+        sleep $Param->{development_time} if($Param->{development} > 0);
 
     }
     
@@ -508,7 +510,9 @@ sub get_proxy($$$$){
                     #DEBUG Without threads uncomment from here
             #        next unless  $new_nodes->{$key} = get_node_info($self,$key);
             ##        #assign size to HG
-            #          if($new_nodes->{$key}->{_proxy_status} ne "OFFLINE_SOFT"
+            #          if(($new_nodes->{$key}->{_proxy_status} ne "OFFLINE_SOFT"
+            #              && $new_nodes->{$key}->{_proxy_status} ne "SHUNNED"
+            #              )
             #             && defined $new_nodes->{$key}->{_wsrep_segment} 
             #             ){
             #              $self->{_hostgroups}->{$new_nodes->{$key}->{_hostgroups}}->{_size} = ($self->{_hostgroups}->{$new_nodes->{$key}->{_hostgroups}}->{_size}) + 1;
@@ -972,7 +976,13 @@ sub get_proxy($$$$){
         }	
         my $dbh = Utils::get_connection($self->{_dns},$self->{_user},$self->{_password},' ');
         if(!defined $dbh){
-            return undef;
+           print Utils->print_log(1," Node is not responding setting it as SHUNNED (ProxySQL bug - #2658)"
+             .$self->{_ip}
+            .":".$self->{_port}
+            .":HG".$self->{_hostgroups}." \n"  );
+           $self->{_proxy_status} = "SHUNNED";
+           return $self ; 
+           
         }
 	       if($self->debug >=1){
            print Utils->print_log(4," Getting connection END "
@@ -1565,7 +1575,7 @@ sub get_proxy($$$$){
                      if($proxynode->debug <=1){
                         print Utils->print_log(3, " Evaluate nodes state "
                             .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_DELETE_NODE}
-                            ." Retry #".$nodes->{$key}->get_retry_down."\n" ) }			    
+                            ." Retry #".$nodes->{$key}->get_retry_up."\n" ) }			    
                      next;
                   }
                  else{
@@ -1577,7 +1587,7 @@ sub get_proxy($$$$){
                      if($proxynode->debug <=1){
                         print Utils->print_log(3, " Evaluate nodes state "
                             .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_UP_OFFLINE}
-                            ." Retry #".$nodes->{$key}->get_retry_down."\n" ) }			    
+                            ." Retry #".$nodes->{$key}->get_retry_up."\n" ) }			    
                      next;
                  }
             }
@@ -1599,7 +1609,7 @@ sub get_proxy($$$$){
                  if($proxynode->debug >=1){
                     print Utils->print_log(3," Evaluate nodes state "
                        .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_UP_HG_CHANGE}
-                       ." Retry #".$nodes->{$key}->get_retry_down."\n" ) }			    
+                       ." Retry #".$nodes->{$key}->get_retry_up."\n" ) }			    
                  next;
             }
    
@@ -1617,7 +1627,7 @@ sub get_proxy($$$$){
                  if($proxynode->debug >=1){
                     print Utils->print_log(3," Evaluate nodes state "
                        .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_UP_HG_CHANGE}
-                       ." Retry #".$nodes->{$key}->get_retry_down."\n" ) }			    
+                       ." Retry #".$nodes->{$key}->get_retry_up."\n" ) }			    
                  next;
            }
            
@@ -1672,7 +1682,9 @@ sub get_proxy($$$$){
                      if ($action == $node->MOVE_UP_OFFLINE) { if($proxynode->{_action_nodes}->{$key}->get_retry_up >= $proxynode->retry_up){ $proxynode->move_node_up_from_offline($key,$proxynode->{_action_nodes}->{$key})}; last SWITCH; }
                      if ($action == $node->MOVE_UP_HG_CHANGE) { if($proxynode->{_action_nodes}->{$key}->get_retry_up >= $proxynode->retry_up){$proxynode->move_node_up_from_hg_change($key,$proxynode->{_action_nodes}->{$key})}; last SWITCH; }
                      if ($action == $node->MOVE_TO_MAINTENANCE) { if($proxynode->{_action_nodes}->{$key}->get_retry_down >= $proxynode->retry_down){$proxynode->move_node_to_maintenance($key,$proxynode->{_action_nodes}->{$key})}; last SWITCH; }
-                     if ($action == $node->DELETE_NODE) { if($proxynode->{_action_nodes}->{$key}->get_retry_down >= $proxynode->retry_down){$proxynode->delete_node_from_hostgroup($key,$proxynode->{_action_nodes}->{$key})}; last SWITCH; }
+                     if ($action == $node->DELETE_NODE) {
+                      if($proxynode->{_action_nodes}->{$key}->get_retry_up >= $proxynode->retry_up){
+                       $proxynode->delete_node_from_hostgroup($key,$proxynode->{_action_nodes}->{$key})}; last SWITCH; }
             }
             if($proxynode->retry_up > 0 || $proxynode->retry_down > 0){
                save_retry($proxynode,$key,$proxynode->{_action_nodes}->{$key});
@@ -1985,7 +1997,8 @@ sub get_proxy($$$$){
       if (!defined($dbh)) {
         #die
         print Utils->print_log(1, "Cannot connect to $dsn as $user\n");
-        die();
+        # Should not die and instead return undef so we can handle this shit 
+        #die();
         return undef;
       }
       
@@ -2162,6 +2175,8 @@ galera_check.pl
 
 =head1 OPTIONS
 
+=over
+
 galera_check.pl -u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --main_segment=1 --debug=0  --log <full_path_to_file> --help
 sample [options] [file ...]
  Options:
@@ -2183,17 +2198,24 @@ sample [options] [file ...]
                           1 make failover only if HG 8000 is specified in ProxySQL mysl_servers
                           2 use PXC_CLUSTER_VIEW to identify a server in the same segment
                           3 do whatever to keep service up also failover to another segment (use PXC_CLUSTER_VIEW)
-   --single_writer    Active by default [single_writer = 1 ] if disable will allow to have multiple writers
+   --single_writer    Active by default [single_writer = 1 ] if disable will allow to have multiple writers       
    
    
    Performance parameters 
    --check_timeout    This parameter set in ms then time the script can alow a thread connecting to a MySQL node to wait, before forcing a returnn.
                       In short if a node will take longer then check_timeout its entry will be not filled and it will eventually ignored in the evaluation.
                       Setting the debug option  =1 and look for [WARN] Check timeout Node ip : Information will tell you how much your nodes are exceeding the allowed limit.
-                      You can use the difference ot correctly set the check_timeout 
-                      Default is 300 ms
+                      You can use the difference to correctly set the check_timeout 
+                      Default is 800 ms
    
-   -help              help message
+   --help              help message
+   --debug             When active the log will have a lot of information about the execution. Parse it for ERRORS if you have problems
+   --print_execution   Active by default, it will print the execution time the check is taking in the log. This can be used to tune properly the scheduler time, and also the --check_timeout
+   
+   --development      When set to 1 you can run the script in a loop from bash directly and test what is going to happen
+   --development_time Time in seconds that the loop wait to execute when in development mode (default 2 seconds)
+
+=back    
    
 =head1 DESCRIPTION
 
@@ -2258,10 +2280,15 @@ Note that galera_check is also Segment aware, as such the checks on the presence
 =head1 Configure in ProxySQL
 
 
-INSERT  INTO scheduler (id,interval_ms,filename,arg1) values (10,2000,"/var/lib/proxysql/galera_check.pl","-u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --retry_down=2 --retry_up=1 --main_segment=1 --debug=0  --log=/var/lib/proxysql/galeraLog");
+INSERT  INTO scheduler (id,active,interval_ms,filename,arg1) values (10,0,2000,"/var/lib/proxysql/galera_check.pl","-u=remoteUser -p=remotePW -h=192.168.1.50 -H=500:W,501:R -P=6032 --retry_down=2 --retry_up=1 --main_segment=1 --debug=0 --active_failover=1 --single_writer=1 --log=/var/lib/proxysql/galeraLog");
 LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
-  
-update scheduler set arg1="-u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --main_segment=1 --debug=1  --log=/var/lib/proxysql/galeraLog" where id =10;  
+
+To activate it
+update scheduler set active=1 where id=10;
+LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
+
+To update the parameters you must pass all of them not only the ones you want to change(IE enabling debug)
+update scheduler set arg1="-u=remoteUser -p=remotePW -h=192.168.1.50 -H=500:W,501:R -P=6032 --retry_down=2 --retry_up=1 --main_segment=1 --debug=1 --active_failover=1 --single_writer=1 --log=/var/lib/proxysql/galeraLog" where id =10;  
 LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
 
 
@@ -2318,6 +2345,14 @@ Node comes back from offline_soft when (all of them):
           2 use PXC_CLUSTER_VIEW to identify a server in the same segment
           3 do whatever to keep service up also failover to another segment (use PXC_CLUSTER_VIEW) 
 
+=item 6
+ PXC_MAIN_MODE is fully supported.
+ Any node in a state different from pxc_maint_mode=disabled will be set in OFFLINE_SOFT for all the HostGroup.
+ 
+=item 7
+ internally shunninga node.
+ While I am trying to rely as much as possible on ProxySQL, given few inefficiencies there are cases when I have to set a node to SHUNNED because ProxySQL doesn't recognize it correctly.  
+          
 =back
 =cut	
 
