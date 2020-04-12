@@ -35,6 +35,7 @@ It will then check in *parallel* each node and will retrieve the status and conf
 At the moment galera_check analyze and manage the following:
 
 Node states: 
+ * pxc_main_mode
  * read_only 
  * wsrep_status 
  * wsrep_rejectqueries 
@@ -76,6 +77,7 @@ Multi PXC node and Single writer.
 ProxySQL can easily move traffic read or write from a node to another in case of a node failure. Normally playing with the weight will allow us to have a (stable enough) scenario.
 But this will not guarantee the FULL 100% isolation in case of the need to have single writer.
 When  there is that need, using only the weight will not be enough given ProxySQL will direct some writes also to the other nodes, few indeed, but still some of them, as such no 100% isolated.
+Unless you use single_writer option (ON by default), in that case your PXC setup will rely on one Writer a time.
 
 To manage that and also to provide a good way to set/define what and how to fail-over in case of need, I had implement a new feature:
 *active_failover*
@@ -155,9 +157,9 @@ it will check and eventually elect as writer a node in the remote segment. This 
 In this case `node6` will become the new WRITER.
 
 
-More details
+##More details
 
-How to use it
+###How to use it
 ```
 galera_check.pl -u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --main_segment=1 --debug=0  --log <full_path_to_file> --help
 sample [options] [file ...]
@@ -201,7 +203,7 @@ sample [options] [file ...]
 Note that galera_check is also Segment aware, as such the checks on the presence of Writer /reader is done by segment, respecting the MainSegment as primary.
 
 
-Examples of configurations in ProxySQL
+###Examples of configurations in ProxySQL
 
 Simple check without retry no failover mode
 ```
@@ -253,7 +255,7 @@ Remove a rule from scheduler:
 delete from scheduler where id=10;
 LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
 ```
-Logic Rules use in the check:
+##Logic Rules use in the check:
 
 * Set to offline_soft :
     
