@@ -157,9 +157,9 @@ it will check and eventually elect as writer a node in the remote segment. This 
 In this case `node6` will become the new WRITER.
 
 
-##More details
+## More details
 
-###How to use it
+### How to use it
 ```
 galera_check.pl -u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --main_segment=1 --debug=0  --log <full_path_to_file> --help
 sample [options] [file ...]
@@ -203,7 +203,7 @@ sample [options] [file ...]
 Note that galera_check is also Segment aware, as such the checks on the presence of Writer /reader is done by segment, respecting the MainSegment as primary.
 
 
-###Examples of configurations in ProxySQL
+### Examples of configurations in ProxySQL
 
 Simple check without retry no failover mode
 ```
@@ -255,7 +255,7 @@ Remove a rule from scheduler:
 delete from scheduler where id=10;
 LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
 ```
-##Logic Rules use in the check:
+## Logic Rules use in the check:
 
 * Set to offline_soft :
     
