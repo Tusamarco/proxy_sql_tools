@@ -35,6 +35,7 @@ It will then check in *parallel* each node and will retrieve the status and conf
 At the moment galera_check analyze and manage the following:
 
 Node states: 
+ * pxc_main_mode
  * read_only 
  * wsrep_status 
  * wsrep_rejectqueries 
@@ -76,6 +77,7 @@ Multi PXC node and Single writer.
 ProxySQL can easily move traffic read or write from a node to another in case of a node failure. Normally playing with the weight will allow us to have a (stable enough) scenario.
 But this will not guarantee the FULL 100% isolation in case of the need to have single writer.
 When  there is that need, using only the weight will not be enough given ProxySQL will direct some writes also to the other nodes, few indeed, but still some of them, as such no 100% isolated.
+Unless you use single_writer option (ON by default), in that case your PXC setup will rely on one Writer a time.
 
 To manage that and also to provide a good way to set/define what and how to fail-over in case of need, I had implement a new feature:
 *active_failover*
@@ -90,9 +92,9 @@ For example:
 ```SQL
 INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.205',50,3306,1000000,2000);
 
-INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.205',8050,3306,1000000,2000);
-INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.231',8050,3306,100000,2000);
-INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.22',8050,3306,100000,2000);
+INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.205',8050,3306,1000,2000);
+INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.231',8050,3306,999,2000);
+INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.22',8050,3306,998,2000);
 
 
 INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.205',52,3306,1,2000);
@@ -112,7 +114,11 @@ Will create entries in ProxySQL for 2 main HG (50 for write and 52 for read)
 But it will also create 3 entries for the SPECIAL group 8050. This group will be used by the script to manage the fail-over of HG 50.
 
 In the above example, what will happen is that in case of you have set `*active_failover*=1`, the script will check the nodes, if node `192.168.1.205',50` is not up,
-the script will try to identify another node within the same segment that has the higest weight IN THE 8050 HG. In this case it will elect as new writer the node`'192.168.1.231',8050`.
+the script will try to identify another node within the same segment that has the **higest weight** IN THE 8050 HG. In this case it will elect as new writer the node`'192.168.1.231',8050`.
+So in this case you must set the nodes with different weight for HG 8050.
+
+**Please note** that active_failover=1, is the only deterministic method to failover, based on what **YOU** define.
+If set correctly across a ProxySQL cluster, all nodes will act the same. Yes a possible delay given the check interval may exists, but that cannot be avoided. 
 
 If instead the `*active_failover*`=2, the script will use the pxc_cluster_view:
 ```SQL
@@ -151,13 +157,12 @@ it will check and eventually elect as writer a node in the remote segment. This 
 In this case `node6` will become the new WRITER.
 
 
-More details
+## More details
 
-How to use it
+### How to use it
 ```
 galera_check.pl -u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --main_segment=1 --debug=0  --log <full_path_to_file> --help
 sample [options] [file ...]
- Options:
  Options:
    -u|user            user to connect to the proxy
    -p|password        Password for the proxy
@@ -167,7 +172,6 @@ sample [options] [file ...]
    --main_segment     If segments are in use which one is the leading at the moment
    --retry_up         The number of loop/test the check has to do before moving a node up (default 0)
    --retry_down       The number of loop/test the check has to do before moving a node Down (default 0)
-   --debug
    --log	      Full path to the log file ie (/var/log/proxysql/galera_check_) the check will add
 		      the identifier for the specific HG.
    --active_failover  A value from 0 to 3, indicating what level/kind of fail-over the script must perform.
@@ -177,29 +181,36 @@ sample [options] [file ...]
                           1 make failover only if HG 8000 is specified in ProxySQL mysl_servers
                           2 use PXC_CLUSTER_VIEW to identify a server in the same segment
                           3 do whatever to keep service up also failover to another segment (use PXC_CLUSTER_VIEW)
-			  
-   --single_writer    Active by default [single_writer = 1 ] if disable will allow to have multiple writers       			  
+   --single_writer    Active by default [single_writer = 1 ] if disable will allow to have multiple writers       
+   
+   
    Performance parameters 
-    --check_timeout    This parameter set in ms then time the script can alow a thread connecting to a MySQL node to wait, before forcing a returnn.
+   --check_timeout    This parameter set in ms then time the script can alow a thread connecting to a MySQL node to wait, before forcing a returnn.
                       In short if a node will take longer then check_timeout its entry will be not filled and it will eventually ignored in the evaluation.
                       Setting the debug option  =1 and look for [WARN] Check timeout Node ip : Information will tell you how much your nodes are exceeding the allowed limit.
-                      You can use the difference ot correctly set the check_timeout 
-                      Default is 300 ms
+                      You can use the difference to correctly set the check_timeout 
+                      Default is 800 ms
    
-   -help              help message
+   --help              help message
+   --debug             When active the log will have a lot of information about the execution. Parse it for ERRORS if you have problems
+   --print_execution   Active by default, it will print the execution time the check is taking in the log. This can be used to tune properly the scheduler time, and also the --check_timeout
+   
+   --development      When set to 1 you can run the script in a loop from bash directly and test what is going to happen
+   --development_time Time in seconds that the loop wait to execute when in development mode (default 2 seconds)
+
 ```   
 
 Note that galera_check is also Segment aware, as such the checks on the presence of Writer /reader is done by segment, respecting the MainSegment as primary.
 
 
-Examples of configurations in ProxySQL
+### Examples of configurations in ProxySQL
 
-Simple check without retry
+Simple check without retry no failover mode
 ```
 INSERT  INTO scheduler (id,active,interval_ms,filename,arg1) values (10,0,2000,"/var/lib/proxysql/galera_check.pl","-u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --main_segment=1 --debug=0  --log=/var/lib/proxysql/galeraLog");
 ```
 
-Simple check with retry options
+Simple check with retry options no failover mode
 ```
 INSERT  INTO scheduler (id,active,interval_ms,filename,arg1) values (10,0,2000,"/var/lib/proxysql/galera_check.pl","-u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --retry_down=2 --retry_up=1 --main_segment=1 --debug=0  --log=/var/lib/proxysql/galeraLog");
 LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
@@ -209,23 +220,42 @@ Script with supporting SINGLE writer HG and Backup nodes
 ```
 INSERT  INTO scheduler (id,active,interval_ms,filename,arg1) values (10,0,2000,"/var/lib/proxysql/galera_check.pl","-u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --main_segment=1 --debug=0 --active_failover=1 --log=/var/lib/proxysql/galeraLog");
 ```
+Full mode with active_failover single writer and retry
+```
+INSERT  INTO scheduler (id,active,interval_ms,filename,arg1) values (10,0,2000,"/var/lib/proxysql/galera_check.pl","-u=remoteUser -p=remotePW -h=192.168.1.50 -H=500:W,501:R -P=6032 --retry_down=2 --retry_up=1 --main_segment=1 --debug=0 --active_failover=1 --single_writer=1 --log=/var/lib/proxysql/galeraLog");
+LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
+```
+
+To activate it
+```update scheduler set active=1 where id=10;
+LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
+```
+
+To update the parameters you must pass all of them not only the ones you want to change(IE enabling debug)
+```
+update scheduler set arg1="-u=remoteUser -p=remotePW -h=192.168.1.50 -H=500:W,501:R -P=6032 --retry_down=2 --retry_up=1 --main_segment=1 --debug=1 --active_failover=1 --single_writer=1 --log=/var/lib/proxysql/galeraLog" where id =10;  
+
+LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
+```
+
+delete from scheduler where id=10;
+```
+LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
+```
+
 
 For all to update the scheduler and make the script active:
 ```
 update scheduler set active=1 where id=10;
 LOAD SCHEDULER TO RUNTIME;
 ```
-or to update/change the arguments:
-```
-update scheduler set arg1="-u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --main_segment=1 --debug=1  --log=/var/lib/proxysql/galeraLog" where id =10;  
-LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
-```
+
 Remove a rule from scheduler:
 ```
 delete from scheduler where id=10;
 LOAD SCHEDULER TO RUNTIME;SAVE SCHEDULER TO DISK;
 ```
-Logic Rules use in the check:
+## Logic Rules used in the check:
 
 * Set to offline_soft :
     
@@ -252,4 +282,18 @@ Logic Rules use in the check:
      1. node state is 4
      2. wsrep_reject_queries = none
      3. Primary state
+     
+* PXC (pxc_maint_mode).
+
+ PXC_MAIN_MODE is fully supported.
+ Any node in a state different from pxc_maint_mode=disabled will be set in OFFLINE_SOFT for all the HostGroup.
+ 
+* internally shunning node.
+
+While I am trying to rely as much as possible on ProxySQL, given few inefficiencies there are cases when I have to set a node to SHUNNED because ProxySQL doesn't recognize it correctly.
+Mainly what the script does, it will identify the nodes not up (but still not SHUNNED) and will internally set them as SHUNNED. NO CHANGE TO ProxySQL is done, so you may not see it there, but an ERROR entry will be push to the log.
+
+* Single Writer.
+
+You can define IF you want to have multiple writers. Default is 1 writer only (**I strongly recommend you to do not use multiple writers unless you know very well what are you doing**), but you can now have multiple writers at the same time.
 
