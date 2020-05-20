@@ -1,15 +1,4 @@
      
-WHY I add addition_to_sys_v2.sql
-=============================
-Adding addition_to_sys_v2.sql
-
-This file is the updated and correct version of the file create by LeFred https://gist.github.com/lefred/77ddbde301c72535381ae7af9f968322 which is not working correctly.
-Also I have tested this solution and compared it with https://gist.github.com/lefred/6f79fd02d333851b8d18f52716f04d91#file-addition_to_sys_gr-sql
- and the output cost MORE in the file-addition_to_sys_gr-sql
- version than this one.
-
-All the credit goes to @lefred who did the first version 
-
 Galera Check tool
 ====================
 
@@ -73,6 +62,7 @@ So if a node belong to HG 10 and the check needs to put it in maintenance mode, 
 Once all is normal again, the Node will be put back on his original HG.
 
 The special group of 8000 is instead used for __configuration__, this is it you will need to insert the 8XXXX referring to your WRITER HG and READER HG as the configuration the script needs to refer to.
+To be clear 8XXX  where X are the digit of your Hostgroup id ie 20 -> 8020, 1 -> 8001 etc .
 
 This check does NOT modify any state of the Nodes. 
 Meaning It will NOT modify any variables or settings in the original node. It will ONLY change states in ProxySQL. 
@@ -87,7 +77,7 @@ To manage that and also to provide a good way to set/define what and how to fail
 *active_failover*
     Valid values are:
           0 [default] do not make fail-over
-          1 make fail-over only if HG 8000 is specified in ProxySQL mysl_servers
+          1 make fail-over only if HG 8000 is specified in ProxySQL mysl_servers 
           2 use PXC_CLUSTER_VIEW to identify a server in the same segment
           3 do whatever to keep service up also fail-over to another segment (use PXC_CLUSTER_VIEW) 
 
@@ -173,14 +163,15 @@ In this case `node6` will become the new WRITER.
 
 ### How to use it
 ```
-galera_check.pl -u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --main_segment=1 --debug=0  --log <full_path_to_file> --help
+galera_check.pl -u=admin -p=admin -h=127.0.0.1 -H=500:W,501:R -P=6032 --main_segment=1 --debug=0  --log <full_path_to_file> --help
+galera_check.pl -u=cluster1 -p=clusterpass -h=192.168.4.191 -H=200:W,201:R -P=6032 --main_segment=1 --debug=1 --log /tmp/test --active_failover=1 --retry_down=2 --retry_up=1 --single_writer=0 --writer_is_also_reader=1"
 sample [options] [file ...]
  Options:
    -u|user            user to connect to the proxy
    -p|password        Password for the proxy
    -h|host            Proxy host
    -H                 Hostgroups with role definition. List comma separated.
-		      Definition R = reader; W = writer [500:W,501:R]
+		                    Definition R = reader; W = writer [500:W,501:R]
    --main_segment     If segments are in use which one is the leading at the moment
    --retry_up         The number of loop/test the check has to do before moving a node up (default 0)
    --retry_down       The number of loop/test the check has to do before moving a node Down (default 0)
@@ -310,3 +301,15 @@ Mainly what the script does, it will identify the nodes not up (but still not SH
 
 You can define IF you want to have multiple writers. Default is 1 writer only (**I strongly recommend you to do not use multiple writers unless you know very well what are you doing**), but you can now have multiple writers at the same time.
 
+
+
+WHY I add addition_to_sys_v2.sql
+=============================
+Adding addition_to_sys_v2.sql
+
+This file is the updated and correct version of the file create by LeFred https://gist.github.com/lefred/77ddbde301c72535381ae7af9f968322 which is not working correctly.
+Also I have tested this solution and compared it with https://gist.github.com/lefred/6f79fd02d333851b8d18f52716f04d91#file-addition_to_sys_gr-sql
+ and the output cost MORE in the file-addition_to_sys_gr-sql
+ version than this one.
+
+All the credit goes to @lefred who did the first version 
