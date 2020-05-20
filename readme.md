@@ -54,6 +54,8 @@ PXC cluster state:
 Fail-over options:
  * Presence of active node in the special backup Hostgroup (8000 + original HG id).
 
+Special HostGoup 8000 is now used also for READERS, to define which should be checked and eventually add to the pool if missed
+
 If a node is the only one in a segment, the check will behave accordingly. 
 IE if a node is the only one in the MAIN segment, it will not put the node in OFFLINE_SOFT when the node become donor to prevent the cluster to become unavailable for the applications. 
 As mention is possible to declare a segment as MAIN, quite useful when managing prod and DR site.
@@ -69,6 +71,8 @@ A check not taking this into account will cause a node to be set OFFLINE and bac
 Another important differentiation for this check is that it use special HGs for maintenance, all in range of 9000. 
 So if a node belong to HG 10 and the check needs to put it in maintenance mode, the node will be moved to HG 9010. 
 Once all is normal again, the Node will be put back on his original HG.
+
+The special group of 8000 is instead used for __configuration__, this is it you will need to insert the 8XXXX referring to your WRITER HG and READER HG as the configuration the script needs to refer to.
 
 This check does NOT modify any state of the Nodes. 
 Meaning It will NOT modify any variables or settings in the original node. It will ONLY change states in ProxySQL. 
@@ -87,7 +91,8 @@ To manage that and also to provide a good way to set/define what and how to fail
           2 use PXC_CLUSTER_VIEW to identify a server in the same segment
           3 do whatever to keep service up also fail-over to another segment (use PXC_CLUSTER_VIEW) 
 
-Active fail-over works using two main features, the Backup Host Group and the information present in the new table performance_schema.pxc_cluster_view (PXC 5.7.19 and later).
+Active fail-over works using three main features, the Backup Host Group and the information present  in wsrep_provider_options and in the table performance_schema.pxc_cluster_view (PXC 5.7.19 and later).
+Because this you need to have the monitor ProxySQL user able to select from performance_schema table if you want to use pxc_cluster_view. 
 For example:
 ```SQL
 INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.205',50,3306,1000000,2000);
@@ -95,6 +100,12 @@ INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VA
 INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.205',8050,3306,1000,2000);
 INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.231',8050,3306,999,2000);
 INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.22',8050,3306,998,2000);
+
+
+INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.205',8051,3306,10000,2000);
+INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.231',8051,3306,10000,2000);
+INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.22',8051,3306,10000,2000);
+
 
 
 INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.205',52,3306,1,2000);
@@ -111,7 +122,8 @@ INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VA
 
 ```
 Will create entries in ProxySQL for 2 main HG (50 for write and 52 for read)
-But it will also create 3 entries for the SPECIAL group 8050. This group will be used by the script to manage the fail-over of HG 50.
+It will also create 3 entries for the SPECIAL group 8050. This group will be used by the script to manage the fail-over of HG 50.
+It will also create 3 entries for the SPECIAL group 8051. This group will be used by the script to manage the read nodes in HG 51.
 
 In the above example, what will happen is that in case of you have set `*active_failover*=1`, the script will check the nodes, if node `192.168.1.205',50` is not up,
 the script will try to identify another node within the same segment that has the **higest weight** IN THE 8050 HG. In this case it will elect as new writer the node`'192.168.1.231',8050`.
@@ -181,7 +193,8 @@ sample [options] [file ...]
                           1 make failover only if HG 8000 is specified in ProxySQL mysl_servers
                           2 use PXC_CLUSTER_VIEW to identify a server in the same segment
                           3 do whatever to keep service up also failover to another segment (use PXC_CLUSTER_VIEW)
-   --single_writer    Active by default [single_writer = 1 ] if disable will allow to have multiple writers       
+   --single_writer    Active by default [single_writer = 1 ] if disable will allow to have multiple writers
+   --writer_is_also_reader Active by default [writer_is_also_reader =1]. If disable the writer will be removed by the Reader Host group and will serve only reads inside the same transaction of the writes. 
    
    
    Performance parameters 

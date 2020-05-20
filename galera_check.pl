@@ -600,7 +600,7 @@ sub get_proxy($$$$){
             #               push (@{$self->{_writer_nodes}}, "$new_nodes->{$key}->{_ip}:$new_nodes->{$key}->{_port}");  
             #          }
             #         elsif($new_nodes->{$key}->{_proxy_status} eq "ONLINE"
-            #            && $new_nodes->{$key}->{_hostgroups} == $self->hg_reader_id
+            #            &&  ($new_nodes->{$key}->{_hostgroups} == $self->hg_reader_id || $new_nodes->{$key}->{_hostgroups} == ($self->hg_reader_id +9000))
             #         ){
             #              push (@{$self->{_reader_nodes}}, "$new_nodes->{$key}->{_ip}:$new_nodes->{$key}->{_port}");  
             #         }
@@ -616,7 +616,7 @@ sub get_proxy($$$$){
             #               $self->{_nodes_maint}->{$key} =  $new_nodes->{$key};
             #          }
             # 
-                
+            #    
              # to here
 		    
                 }
@@ -670,13 +670,18 @@ sub get_proxy($$$$){
                		    if(defined $new_nodes->{$thr}->{_read_only}
                         && $new_nodes->{$thr}->{_read_only} eq "OFF"
                         && ($new_nodes->{$thr}->{_proxy_status} eq "ONLINE" || $new_nodes->{$thr}->{_proxy_status} eq "OFFLINE_SOFT")
-                        && $new_nodes->{$thr}->{_hostgroups} == $self->hg_writer_id){
-                           $self->{_haswriter} = 1 ;
-                           $self->{_writers} = $self->{_writers} +1;
+                        && ($new_nodes->{$thr}->{_hostgroups} == $self->hg_writer_id || $new_nodes->{$thr}->{_hostgroups} == ($self->hg_writer_id +9000))
+                       ){
+                         if($new_nodes->{$thr}->{_hostgroups} == $self->hg_writer_id
+                            && $new_nodes->{$thr}->{_proxy_status} eq "ONLINE"
+                           ){
+                            $self->{_haswriter} = 1 ;
+                            $self->{_writers} = $self->{_writers} +1;
+                         }
                            push (@{$self->{_writer_nodes}}, "$new_nodes->{$thr}->{_ip}:$new_nodes->{$thr}->{_port}");  
                       }
                      elsif(($new_nodes->{$thr}->{_proxy_status} eq "ONLINE" || $new_nodes->{$thr}->{_proxy_status} eq "OFFLINE_SOFT")
-                        && $new_nodes->{$thr}->{_hostgroups} == $self->hg_reader_id
+                        && ($new_nodes->{$thr}->{_hostgroups} == $self->hg_reader_id || $new_nodes->{$thr}->{_hostgroups} == ($self->hg_reader_id +9000))
                      ){
                           push (@{$self->{_reader_nodes}}, "$new_nodes->{$thr}->{_ip}:$new_nodes->{$thr}->{_port}");  
                      }
@@ -1147,6 +1152,7 @@ sub get_proxy($$$$){
         $self->{_clustername} = $variables->{wsrep_cluster_name};
         $self->{_read_only} = $variables->{read_only};
         $self->{_wsrep_rejectqueries} = $variables->{wsrep_reject_queries};
+        #print "AAAAAAAAAAAAAAAAAAAAA  $self->{_ip}  $self->{_wsrep_rejectqueries} \n";
         $self->{_wsrep_donorrejectqueries} = $variables->{wsrep_sst_donor_rejects_queries};
         my ( @provider ) =  split('\;', $variables->{wsrep_provider_options});
         $self->{_pxc_maint_mode} = $variables->{pxc_maint_mode};
@@ -1823,6 +1829,39 @@ sub get_proxy($$$$){
                  next;
             }
 
+           #Check if any node that is in the write backup host group is not present in the WRITE hostgroup while it should WHEN MULTIPLE WRITERS.
+           #If identify it will add to the read HG
+           
+           if($nodes->{$key}->wsrep_status eq 4
+               && $nodes->{$key}->wsrep_rejectqueries eq "NONE"
+               && $nodes->{$key}->cluster_status eq "Primary"
+               && $nodes->{$key}->hostgroups == (8000 + $proxynode->{_hg_writer_id})
+               && $GGalera_cluster->{_singlewriter} < 1
+               ){
+                 #my $nodes_read_ips = join(',', @{$GGalera_cluster->{_reader_nodes}});
+                 my $nodes_write_ips = join(',', @{$GGalera_cluster->{_writer_nodes}});
+                 
+                 my $ip = "$nodes->{$key}->{_ip}:$nodes->{$key}->{_port}";
+                 
+                 if($nodes_write_ips =~ m/$ip/ 
+                     && $GGalera_cluster->{_single_writer} < 1){
+                  if($proxynode->debug >=1){
+                    print Utils->print_log(3," Node already ONLINE in write hg "
+                       .$nodes->{$key}->ip.";".$nodes->{$key}->port.";\n" ) }			 
+                 }else{
+                    $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_INSERT_WRITE}}= $nodes->{$key}; 
+                    #if retry is > 0 then it's managed
+                    if($proxynode->retry_up > 0){
+                        $nodes->{$key}->get_retry_up($nodes->{$key}->get_retry_up +1);
+                    }
+                    if($proxynode->debug >=1){
+                       print Utils->print_log(3," Evaluate nodes state "
+                          .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_INSERT_WRITE}
+                          ." Retry #".$nodes->{$key}->get_retry_up."\n" )
+                    }
+                 }
+                 next;
+            }
            
            
            # in the case node is not in one of the declared state
@@ -1882,7 +1921,7 @@ sub get_proxy($$$$){
            
             SWITCH: {
                      if ($action == $node->MOVE_DOWN_OFFLINE) { if($proxynode->{_action_nodes}->{$key}->get_retry_down >= $proxynode->retry_down){$proxynode->move_node_offline($key,$proxynode->{_action_nodes}->{$key})}; last SWITCH; }
-                     if ($action == $node->MOVE_DOWN_HG_CHANGE) { if($proxynode->{_action_nodes}->{$key}->get_retry_down >= $proxynode->retry_down){ $proxynode->move_node_down_hg_changey($key,$proxynode->{_action_nodes}->{$key})}; last SWITCH; }
+                     if ($action == $node->MOVE_DOWN_HG_CHANGE) { if($proxynode->{_action_nodes}->{$key}->get_retry_down >= $proxynode->retry_down){ $proxynode->move_node_down_hg_change($key,$proxynode->{_action_nodes}->{$key})}; last SWITCH; }
                      if ($action == $node->MOVE_UP_OFFLINE) { if($proxynode->{_action_nodes}->{$key}->get_retry_up >= $proxynode->retry_up){ $proxynode->move_node_up_from_offline($key,$proxynode->{_action_nodes}->{$key})}; last SWITCH; }
                      if ($action == $node->MOVE_UP_HG_CHANGE) { if($proxynode->{_action_nodes}->{$key}->get_retry_up >= $proxynode->retry_up){$proxynode->move_node_up_from_hg_change($key,$proxynode->{_action_nodes}->{$key})}; last SWITCH; }
                      if ($action == $node->MOVE_TO_MAINTENANCE) { if($proxynode->{_action_nodes}->{$key}->get_retry_down >= $proxynode->retry_down){$proxynode->move_node_to_maintenance($key,$proxynode->{_action_nodes}->{$key})}; last SWITCH; }
@@ -1893,6 +1932,12 @@ sub get_proxy($$$$){
                           $proxynode->insert_reader($key,$proxynode->{_action_nodes}->{$key})
                           }; last SWITCH;                      
                      }
+                                          
+                     if($action == $node->INSERT_WRITE){if($proxynode->{_action_nodes}->{$key}->get_retry_up >= $proxynode->retry_up){
+                          $proxynode->insert_writer($key,$proxynode->{_action_nodes}->{$key})
+                          }; last SWITCH;                      
+                     }
+
             }
             if($proxynode->retry_up > 0 || $proxynode->retry_down > 0){
                save_retry($proxynode,$key,$proxynode->{_action_nodes}->{$key});
@@ -1969,7 +2014,7 @@ sub get_proxy($$$$){
 
 
     #move a node to a maintenance HG ((9000 + HG id))
-    sub move_node_down_hg_changey{
+    sub move_node_down_hg_change{
         my ($proxynode, $key,$node) = @_;
         
         my ($host,  $port, $hg,$action) = split /s*;\s*/, $key;
@@ -1990,6 +2035,7 @@ sub get_proxy($$$$){
         my ($host,  $port, $hg,$action) = split /s*;\s*/, $key;
         my $proxy_sql_command= " UPDATE mysql_servers SET status='ONLINE' WHERE hostgroup_id=$hg AND hostname='$host' AND port='$port'";
         $proxynode->{_dbh_proxy}->do($proxy_sql_command) or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
+        my $error_code = $proxynode->{_dbh_proxy}->err();
         $proxynode->{_dbh_proxy}->do("LOAD MYSQL SERVERS TO RUNTIME") or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
         print Utils->print_log(2," Move node:" .$key
             ." SQL:" .$proxy_sql_command
@@ -2004,6 +2050,7 @@ sub get_proxy($$$$){
         #my $node_sql_command = "SET GLOBAL READ_ONLY=1;";
         my $proxy_sql_command =" UPDATE mysql_servers SET hostgroup_id=".($hg - 9000)." WHERE hostgroup_id=$hg AND hostname='$host' AND port='$port'";
         $proxynode->{_dbh_proxy}->do($proxy_sql_command) or warn "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
+        my $error_code = $proxynode->{_dbh_proxy}->err();
         $proxynode->{_dbh_proxy}->do("LOAD MYSQL SERVERS TO RUNTIME") or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
         print Utils->print_log(2," Move node:" .$key
             ." SQL:" .$proxy_sql_command
@@ -2018,6 +2065,7 @@ sub get_proxy($$$$){
         my $node_sql_command = "SET GLOBAL READ_ONLY=1;";
         my $proxy_sql_command =" UPDATE mysql_servers SET hostgroup_id=".($hg - 9000)." WHERE hostgroup_id=$hg AND hostname='$host' AND port='$port'";
         $proxynode->{_dbh_proxy}->do($proxy_sql_command) or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
+        my $error_code = $proxynode->{_dbh_proxy}->err();
         $proxynode->{_dbh_proxy}->do("LOAD MYSQL SERVERS TO RUNTIME") or die "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
         print Utils->print_log(2," Move node:" .$key
             ." SQL:" .$proxy_sql_command
@@ -2043,6 +2091,33 @@ sub get_proxy($$$$){
             
          #my $proxy_sql_command =" UPDATE mysql_servers SET hostgroup_id=".($hg - 9000)." WHERE hostgroup_id=$hg AND hostname='$host' AND port='$port'";
          $proxynode->{_dbh_proxy}->do($proxy_sql_command) or warn "Couldn't execute statement: $proxy_sql_command" .  $proxynode->{_dbh_proxy}->errstr;
+         my $error_code = $proxynode->{_dbh_proxy}->err();
+         $proxynode->{_dbh_proxy}->do("LOAD MYSQL SERVERS TO RUNTIME") or warn "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
+         print Utils->print_log(2," Move node:" .$key
+             ." SQL:" .$proxy_sql_command
+             ."\n" ) ;			    
+    }
+   
+     sub insert_writer{
+         my ($proxynode, $key,$node) = @_;
+         my ($host,  $port, $hg,$action) = split /s*;\s*/, $key;
+         my $proxy_sql_command ="INSERT INTO mysql_servers (hostgroup_id, hostname,port,gtid_port,status,weight,compression,max_connections,max_replication_lag,use_ssl,max_latency_ms,comment) ".
+            " VALUES($proxynode->{_hg_writer_id}" .
+            ",'$node->{_ip}'" .
+            ",$node->{_port} " .
+            ",$node->{_gtid_port} " .
+            ",'$node->{_proxy_status}' " .
+            ",$node->{_weight}" .
+            ",$node->{_compression}" .
+            ",$node->{_connections}" .
+            ",$node->{_max_replication_lag}" .
+            ",$node->{_use_ssl}" .
+            ",$node->{_max_latency}" .
+            ",'$node->{_comments}')" ;
+            
+         #my $proxy_sql_command =" UPDATE mysql_servers SET hostgroup_id=".($hg - 9000)." WHERE hostgroup_id=$hg AND hostname='$host' AND port='$port'";
+         $proxynode->{_dbh_proxy}->do($proxy_sql_command) or warn "Couldn't execute statement: $proxy_sql_command" .  $proxynode->{_dbh_proxy}->errstr;
+         my $error_code = $proxynode->{_dbh_proxy}->err();
          $proxynode->{_dbh_proxy}->do("LOAD MYSQL SERVERS TO RUNTIME") or warn "Couldn't execute statement: " .  $proxynode->{_dbh_proxy}->errstr;
          print Utils->print_log(2," Move node:" .$key
              ." SQL:" .$proxy_sql_command
@@ -2266,7 +2341,7 @@ sub get_proxy($$$$){
       my $cmd = "show /*!50000 global */ status";
     
       my $sth = $dbh->prepare($cmd);
-      $sth->execute() or die "Can't execute SQL statement: $DBI::errstr\n";;
+      $sth->execute() or warn "Couldn't execute statement: $cmd" .  $dbh->errstr ." \n";
       while (my $ref = $sth->fetchrow_hashref()) {
         my $n = $ref->{'Variable_name'};
         $v{"\L$n\E"} = $ref->{'Value'};
@@ -2312,7 +2387,7 @@ sub get_proxy($$$$){
       $dbh->{LongTruncOk} = 0;
       
       my $sth = $dbh->prepare($cmd);
-      $sth->execute() or die "Can't execute SQL statement: $DBI::errstr\n";
+      $sth->execute() or warn "Couldn't execute statement: $cmd" .  $dbh->errstr ." \n";
       while (my $ref = $sth->fetchrow_hashref()) {
         my $n = $ref->{'VARIABLE_NAME'};
         $v{"\L$n\E"} = $ref->{'VARIABLE_VALUE'};
@@ -2335,7 +2410,7 @@ sub get_proxy($$$$){
         my $cmd = "show variables like '$variableName'";
       
         my $sth = $dbh->prepare($cmd);
-        $sth->execute();
+        $sth->execute() or warn "Couldn't execute statement: $cmd" .  $dbh->errstr ." \n";
         while (my $ref = $sth->fetchrow_hashref()) {
           my $n = $ref->{'Variable_name'};
           $v{"\L$n\E"} = $ref->{'Value'};
@@ -2356,7 +2431,7 @@ sub get_proxy($$$$){
         my $cmd = "select * from performance_schema.pxc_cluster_view where UUID = '$variableName'";
       
         my $sth = $dbh->prepare($cmd);
-        $sth->execute() or die "Can't execute SQL statement: $DBI::errstr\n";;
+        $sth->execute() or warn "Couldn't execute statement: $cmd" .  $dbh->errstr ." \n";
       my $ref;  
       while ( $ref = $sth->fetchrow_hashref()) {
           foreach my $name ('HOST_NAME', 'UUID','STATUS','LOCAL_INDEX','SEGMENT'){  
