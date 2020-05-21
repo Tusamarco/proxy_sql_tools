@@ -562,61 +562,8 @@ sub get_proxy($$$$){
             #          #    $self->{_hostgroups}->{$new_nodes->{$key}->{_hostgroups}}->{_size} = ($self->{_hostgroups}->{$new_nodes->{$key}->{_hostgroups}}->{_size}) + 1;
             #          #}
             #
-            #        # check if under maintenance
-            #   		    if($new_nodes->{$key}->{_proxy_status} eq "OFFLINE_SOFT"
-            #            && $new_nodes->{$key}->{_pxc_maint_mode} eq "MAINTENANCE"){
-            #               $self->{_nodes_maint}->{$key} =  $new_nodes->{$key};
-            #          }
-            #
-            #
-            #          #count the number of nodes by segment
-            #           if($new_nodes->{$key}->{_proxy_status} ne "OFFLINE_SOFT"
-            #              && $new_nodes->{$key}->{_proxy_status} ne "SHUNNED"
-            #              && ($new_nodes->{$key}->{_process_status} < 0 ||
-            #               !exists $processed_nodes->{$new_nodes->{$key}->{_ip}})
-            #               && defined $new_nodes->{$key}->{_wsrep_segment} 
-            #             ){
-            #                  $self->{_size}->{$new_nodes->{$key}->{_wsrep_segment}} = (($self->{_size}->{$new_nodes->{$key}->{_wsrep_segment}}||0) +1);
-            #                  $processed_nodes->{$new_nodes->{$key}->{_ip}}=$self->{_size}->{$new_nodes->{$key}->{_wsrep_segment}};
-            #           }
-            #        
-            #
-            #       #assign size to HG
-            #       if($new_nodes->{$key}->{_proxy_status} ne "OFFLINE_SOFT"
-            #           && $new_nodes->{$key}->{_proxy_status} ne "SHUNNED"
-            #             && defined $new_nodes->{$key}->{_wsrep_segment} 
-            #             ){
-            #              $self->{_hostgroups}->{$new_nodes->{$key}->{_hostgroups}}->{_size} = ($self->{_hostgroups}->{$new_nodes->{$key}->{_hostgroups}}->{_size}) + 1;
-            #          }
-            #          
-            #       #checks for ONLINE writer(s)
-            #
-            #   		    if(defined $new_nodes->{$key}->{_read_only}
-            #            && $new_nodes->{$key}->{_read_only} eq "OFF"
-            #            && ($new_nodes->{$key}->{_proxy_status} eq "ONLINE" || $new_nodes->{$key}->{_proxy_status} eq "OFFLINE_SOFT")
-            #            && $new_nodes->{$key}->{_hostgroups} == $self->hg_writer_id){
-            #               $self->{_haswriter} = 1 ;
-            #               $self->{_writers} = $self->{_writers} +1;
-            #               push (@{$self->{_writer_nodes}}, "$new_nodes->{$key}->{_ip}:$new_nodes->{$key}->{_port}");  
-            #          }
-            #         elsif($new_nodes->{$key}->{_proxy_status} eq "ONLINE"
-            #            &&  ($new_nodes->{$key}->{_hostgroups} == $self->hg_reader_id || $new_nodes->{$key}->{_hostgroups} == ($self->hg_reader_id +9000))
-            #         ){
-            #              push (@{$self->{_reader_nodes}}, "$new_nodes->{$key}->{_ip}:$new_nodes->{$key}->{_port}");  
-            #         }
-            #         else{
-            #               if($self->debug
-            #                  && $new_nodes->{$key}->{_hostgroups} == $self->hg_writer_id){
-            #                     print Utils->print_log(3," Not a writer :" .$new_nodes->{$key}->{_ip} . " HG: $new_nodes->{$key}->{_hostgroups}  \n" )
-            #               }	
-            #         }
-            #        # check if under maintenance
-            #   		    if($new_nodes->{$key}->{_proxy_status} eq "OFFLINE_SOFT"
-            #            && $new_nodes->{$key}->{_pxc_maint_mode} eq "MAINTENANCE"){
-            #               $self->{_nodes_maint}->{$key} =  $new_nodes->{$key};
-            #          }
-            # 
-            #    
+            #          evaluate_joined_node($self, $key, $new_nodes, $processed_nodes) ;
+    
              # to here
 		    
                 }
@@ -646,57 +593,8 @@ sub get_proxy($$$$){
                  
                        my $tid = $Threads{$thr}->tid;
                        ( $new_nodes->{$thr} ) = $Threads{$thr}->join;
-            
-                     #count the number of nodes by segment
-                       if($new_nodes->{$thr}->{_proxy_status} ne "OFFLINE_SOFT"
-                          && $new_nodes->{$thr}->{_proxy_status} ne "SHUNNED"
-                          && ($new_nodes->{$thr}->{_process_status} < 0 ||
-                           !exists $processed_nodes->{$new_nodes->{$thr}->{_ip}})
-                           && defined $new_nodes->{$thr}->{_wsrep_segment} 
-                         ){
-                              $self->{_size}->{$new_nodes->{$thr}->{_wsrep_segment}} = (($self->{_size}->{$new_nodes->{$thr}->{_wsrep_segment}}|| 0) +1);
-                              $processed_nodes->{$new_nodes->{$thr}->{_ip}}=$self->{_size}->{$new_nodes->{$thr}->{_wsrep_segment}};
-                       }
-                    
-                    #assign size to HG
-                      if($new_nodes->{$thr}->{_proxy_status} ne "OFFLINE_SOFT"
-                         && defined $new_nodes->{$thr}->{_wsrep_segment} 
-                         ){
-                          $self->{_hostgroups}->{$new_nodes->{$thr}->{_hostgroups}}->{_size} = ($self->{_hostgroups}->{$new_nodes->{$thr}->{_hostgroups}}->{_size}) + 1;
-                      }
-                      
-                   #checks for ONLINE writer(s)
-            
-               		    if(defined $new_nodes->{$thr}->{_read_only}
-                        && $new_nodes->{$thr}->{_read_only} eq "OFF"
-                        && ($new_nodes->{$thr}->{_proxy_status} eq "ONLINE" || $new_nodes->{$thr}->{_proxy_status} eq "OFFLINE_SOFT")
-                        && ($new_nodes->{$thr}->{_hostgroups} == $self->hg_writer_id || $new_nodes->{$thr}->{_hostgroups} == ($self->hg_writer_id +9000))
-                       ){
-                         if($new_nodes->{$thr}->{_hostgroups} == $self->hg_writer_id
-                            && $new_nodes->{$thr}->{_proxy_status} eq "ONLINE"
-                           ){
-                            $self->{_haswriter} = 1 ;
-                            $self->{_writers} = $self->{_writers} +1;
-                         }
-                           push (@{$self->{_writer_nodes}}, "$new_nodes->{$thr}->{_ip}:$new_nodes->{$thr}->{_port}");  
-                      }
-                     elsif(($new_nodes->{$thr}->{_proxy_status} eq "ONLINE" || $new_nodes->{$thr}->{_proxy_status} eq "OFFLINE_SOFT")
-                        && ($new_nodes->{$thr}->{_hostgroups} == $self->hg_reader_id || $new_nodes->{$thr}->{_hostgroups} == ($self->hg_reader_id +9000))
-                     ){
-                          push (@{$self->{_reader_nodes}}, "$new_nodes->{$thr}->{_ip}:$new_nodes->{$thr}->{_port}");  
-                     }
-                     else{
-                           if($self->debug
-                              && $new_nodes->{$thr}->{_hostgroups} == $self->hg_writer_id){
-                                 print Utils->print_log(3," Not a writer :" .$new_nodes->{$thr}->{_ip} . " HG: $new_nodes->{$thr}->{_hostgroups}  \n" )
-                           }	
-                     }
-                    # check if under maintenance
-               		    if($new_nodes->{$thr}->{_proxy_status} eq "OFFLINE_SOFT"
-                        && $new_nodes->{$thr}->{_pxc_maint_mode} eq "MAINTENANCE"){
-                           $self->{_nodes_maint}->{$thr} =  $new_nodes->{$thr};
-                      }
-               
+                       #$processed_nodes =
+                       evaluate_joined_node($self, $thr, $new_nodes, $processed_nodes) ;
                      
                      if($self->debug){print Utils->print_log(3," Thread joined :   " . $tid."\n" ) }	
                         #print "  - Results for thread $tid:\n";
@@ -725,6 +623,65 @@ sub get_proxy($$$$){
         }
        	if($self->debug){print Utils->print_log(3," Multi Thread execution done in :   " . $run_milliseconds. "(ms) \n"  )}	
     
+    }
+    
+    sub evaluate_joined_node($$$$){
+        my $self = shift;
+        my $thr = shift;
+        my $new_nodes = shift;
+        my $processed_nodes = shift;
+        
+            #count the number of nodes by segment
+         if($new_nodes->{$thr}->{_proxy_status} ne "OFFLINE_SOFT"
+            && $new_nodes->{$thr}->{_proxy_status} ne "SHUNNED"
+            && ($new_nodes->{$thr}->{_process_status} < 0 ||
+             !exists $processed_nodes->{$new_nodes->{$thr}->{_ip}})
+             && defined $new_nodes->{$thr}->{_wsrep_segment} 
+           ){
+                $self->{_size}->{$new_nodes->{$thr}->{_wsrep_segment}} = (($self->{_size}->{$new_nodes->{$thr}->{_wsrep_segment}}|| 0) +1);
+                $processed_nodes->{$new_nodes->{$thr}->{_ip}}=$self->{_size}->{$new_nodes->{$thr}->{_wsrep_segment}};
+         }
+      
+      #assign size to HG
+        if($new_nodes->{$thr}->{_proxy_status} ne "OFFLINE_SOFT"
+           && defined $new_nodes->{$thr}->{_wsrep_segment} 
+           ){
+            $self->{_hostgroups}->{$new_nodes->{$thr}->{_hostgroups}}->{_size} = ($self->{_hostgroups}->{$new_nodes->{$thr}->{_hostgroups}}->{_size}) + 1;
+        }
+        
+     #checks for ONLINE writer(s)
+
+       if(defined $new_nodes->{$thr}->{_read_only}
+          && $new_nodes->{$thr}->{_read_only} eq "OFF"
+          && ($new_nodes->{$thr}->{_proxy_status} eq "ONLINE" || $new_nodes->{$thr}->{_proxy_status} eq "OFFLINE_SOFT")
+          && ($new_nodes->{$thr}->{_hostgroups} == $self->hg_writer_id || $new_nodes->{$thr}->{_hostgroups} == ($self->hg_writer_id +9000))
+         ){
+           if($new_nodes->{$thr}->{_hostgroups} == $self->hg_writer_id
+              && $new_nodes->{$thr}->{_proxy_status} eq "ONLINE"
+             ){
+              $self->{_haswriter} = 1 ;
+              $self->{_writers} = $self->{_writers} +1;
+           }
+             push (@{$self->{_writer_nodes}}, "$new_nodes->{$thr}->{_ip}:$new_nodes->{$thr}->{_port}");  
+        }
+       elsif(($new_nodes->{$thr}->{_proxy_status} eq "ONLINE" || $new_nodes->{$thr}->{_proxy_status} eq "OFFLINE_SOFT")
+          && ($new_nodes->{$thr}->{_hostgroups} == $self->hg_reader_id || $new_nodes->{$thr}->{_hostgroups} == ($self->hg_reader_id +9000))
+       ){
+            push (@{$self->{_reader_nodes}}, "$new_nodes->{$thr}->{_ip}:$new_nodes->{$thr}->{_port}");  
+       }
+       else{
+             if($self->debug
+                && $new_nodes->{$thr}->{_hostgroups} == $self->hg_writer_id){
+                   print Utils->print_log(3," Not a writer :" .$new_nodes->{$thr}->{_ip} . " HG: $new_nodes->{$thr}->{_hostgroups}  \n" )
+             }	
+       }
+      # check if under maintenance
+       if($new_nodes->{$thr}->{_proxy_status} eq "OFFLINE_SOFT"
+          && $new_nodes->{$thr}->{_pxc_maint_mode} eq "MAINTENANCE"){
+             $self->{_nodes_maint}->{$thr} =  $new_nodes->{$thr};
+        }
+       #return $processed_nodes;
+     
     }
     
     sub get_node_info($$){
@@ -1577,11 +1534,11 @@ sub get_proxy($$$$){
                && $nodes->{$key}->{_process_status} > 0){
                 #Check major exclusions
                 # 1) wsrep state
-                # 2) Node is read only
+                # 2) Node is not read only
                 # 3) at least another node in the HG 
           
                 if( $nodes->{$key}->wsrep_status == 2
-                  && $nodes->{$key}->read_only eq "ON"
+                  && $nodes->{$key}->read_only eq "OFF"
                   && ($GGalera_cluster->{_hostgroups}->{$nodes->{$key}->{_hostgroups}}->{_size} > 1
                       || $GGalera_cluster->{_main_segment} != {$nodes->{$key}->{_wsrep_segment}}
                       )
@@ -1675,13 +1632,16 @@ sub get_proxy($$$$){
                #4) Node had pxc_maint_mode set to anything except DISABLED, not matter what it will go in OFFLINE_SOFT
                
                if(
-                  $nodes->{$key}->wsrep_status eq 2
-                  && $nodes->{$key}->read_only eq "OFF"
+                  $nodes->{$key}->read_only eq "ON"
+                  && $nodes->{$key}->{_hostgroups} ==  $GGalera_cluster->{_hg_writer_id}
                   && $nodes->{$key}->wsrep_donorrejectqueries eq "OFF"
-                  && $GGalera_cluster->{_size}->{$nodes->{$key}->{_wsrep_segment}} >= 2
-                  && $GGalera_cluster->{_hostgroups}->{$nodes->{$key}->{_hostgroups}}->{_size} > 1
                   && $nodes->{$key}->proxy_status ne "OFFLINE_SOFT"
                   ){
+                    ## In case READ_ONLY is OFF and we have only a node left but desync do not put it down
+                    #if( $GGalera_cluster->{_size}->{$nodes->{$key}->{_wsrep_segment}} == 1
+                    #    &&$nodes->{$key}->read_only eq "OFF"){
+                    #    next; 
+                    #}
                     $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_OFFLINE}}= $nodes->{$key};
                     #if retry is > 0 then it's managed
                     if($proxynode->retry_down > 0){
@@ -1712,6 +1672,8 @@ sub get_proxy($$$$){
              
                    next;
                }
+
+
                
             }    
             #Node comes back from offline_soft when (all of them):
@@ -1723,6 +1685,7 @@ sub get_proxy($$$$){
             if($nodes->{$key}->wsrep_status eq 4
                && $nodes->{$key}->proxy_status eq "OFFLINE_SOFT"
                && $nodes->{$key}->wsrep_rejectqueries eq "NONE"
+               && $nodes->{$key}->read_only eq "OFF"
                &&$nodes->{$key}->cluster_status eq "Primary"
                &&(!defined $nodes->{$key}->pxc_maint_mode || $nodes->{$key}->pxc_maint_mode eq "DISABLED") 
                && $nodes->{$key}->hostgroups < 8000
@@ -1834,6 +1797,7 @@ sub get_proxy($$$$){
            
            if($nodes->{$key}->wsrep_status eq 4
                && $nodes->{$key}->wsrep_rejectqueries eq "NONE"
+               && $nodes->{$key}->read_only eq "OFF"
                && $nodes->{$key}->cluster_status eq "Primary"
                && $nodes->{$key}->hostgroups == (8000 + $proxynode->{_hg_writer_id})
                && $GGalera_cluster->{_singlewriter} < 1
@@ -2156,6 +2120,7 @@ sub get_proxy($$$$){
                 && $nodes->{$key}->{_wsrep_rejectqueries} eq "NONE"
                 && $nodes->{$key}->{_wsrep_donorrejectqueries} eq "OFF"
                 && $nodes->{$key}->{_pxc_maint_mode} eq "DISABLED"
+                && $nodes->{$key}->{_read_only} eq "OFF" 
                 ){
               
               #IN case failover option is 1 we need to have:
@@ -2166,7 +2131,7 @@ sub get_proxy($$$$){
                     $proxynode->{_require_failover} == 1
                    # && $nodes->{$key}->{_wsrep_segment} == $Galera_cluster->{_main_segment}
                     && $Galera_cluster->{_has_failover_node} >0
-                    && $nodes->{$key}->{_hostgroups} > 8000
+                    && $nodes->{$key}->{_hostgroups} == (8000 + $Galera_cluster->{_hg_writer_id})
                     ){
 
                        if($nodes->{$key}->{_weight} > $max_weight
@@ -2248,13 +2213,15 @@ sub get_proxy($$$$){
         else{
             if(!defined $failover_node){
                 SWITCH: {
-                  if ($proxynode->{_require_failover} == 1) { print Utils->print_log(2,"No node for failover found , try to use active_failover=2 OR add a valid node to the 8000 HG pool \n" ) ;exit(1); last SWITCH; }
-                  if ($proxynode->{_require_failover} == 2) { print Utils->print_log(2,"No node for failover found , try to use active_failover=3 But that may move production to the other segment.\n" );exit(1); last SWITCH; }
-                  if ($proxynode->{_require_failover} == 3) { print Utils->print_log(2,"No node for failover found also in the other segments, I cannot continue you need to act manually \n" ); exit(1);last SWITCH; }
+                  if ($proxynode->{_require_failover} == 1) { print Utils->print_log(1,"!!!! No node for failover found , try to use active_failover=2 OR add a valid node to the 8000 HG pool \n" ) ; last SWITCH; }
+                  if ($proxynode->{_require_failover} == 2) { print Utils->print_log(1,"!!!! No node for failover found , try to use active_failover=3 But that may move production to the other segment.\n" ); last SWITCH; }
+                  if ($proxynode->{_require_failover} == 3) { print Utils->print_log(1,"!!!! No node for failover found also in the other segments, I cannot continue you need to act manually \n" ); last SWITCH; }
                 }
             }
          
-            return $failover_node->promote_writer($proxynode,$Galera_cluster,$exclude_delete);
+            if(defined $failover_node){
+               return $failover_node->promote_writer($proxynode,$Galera_cluster,$exclude_delete);
+            }
         }
        
         
