@@ -1539,11 +1539,14 @@ sub get_proxy($$$$){
           
                 if( $nodes->{$key}->wsrep_status == 2
                   && $nodes->{$key}->read_only eq "OFF"
-                  && ($GGalera_cluster->{_hostgroups}->{$nodes->{$key}->{_hostgroups}}->{_size} > 1
-                      || $GGalera_cluster->{_main_segment} != {$nodes->{$key}->{_wsrep_segment}}
-                      )
+                  #&& $GGalera_cluster->{_main_segment} != $nodes->{$key}->wsrep_segment
                   && $nodes->{$key}->proxy_status ne "OFFLINE_SOFT"
                   ){
+                     if($GGalera_cluster->{_hostgroups}->{$nodes->{$key}->{_hostgroups}}->{_size} <= 1){
+                        print Utils->print_log(3," Node ".$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups."; Is in state ".$nodes->{$key}->wsrep_status
+                                               .". But I will not move to OFFLINE_SOFT given last node left in the Host group \n");
+                        next;
+                     }
                      $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_DOWN_OFFLINE}}= $nodes->{$key};
                      #if retry is > 0 then it's managed
                      if($proxynode->retry_down > 0){
@@ -1672,8 +1675,34 @@ sub get_proxy($$$$){
              
                    next;
                }
-
-
+       
+               # Node must be removed if writer is reader is disable and node is in writer group
+               if($nodes->{$key}->wsrep_status eq 4
+                    && $nodes->{$key}->wsrep_rejectqueries eq "NONE"
+                    && $nodes->{$key}->read_only eq "OFF"
+                    && $nodes->{$key}->cluster_status eq "Primary"
+                    && $nodes->{$key}->hostgroups == $proxynode->{_hg_reader_id}
+                    && $GGalera_cluster->{_writer_is_reader} < 1
+                    ){
+                      #my $nodes_read_ips = join(',', @{$GGalera_cluster->{_reader_nodes}});
+                      my $nodes_write_ips = join(',', @{$GGalera_cluster->{_writer_nodes}});
+                      
+                      my $ip = "$nodes->{$key}->{_ip}:$nodes->{$key}->{_port}";
+                      
+                      if($nodes_write_ips =~ m/$ip/ ){
+                        $action_nodes->{$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_DELETE_NODE}}= $nodes->{$key}; 
+                         #if retry is > 0 then it's managed
+                         if($proxynode->retry_up > 0){
+                             $nodes->{$key}->get_retry_up($nodes->{$key}->get_retry_up +1);
+                         }
+                         print Utils->print_log(3," Writer is also reader disabled removing node from reader Hostgroup "
+                               .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_DELETE_NODE}
+                               ." Retry #".$nodes->{$key}->get_retry_up."\n" )
+                         
+                      }
+                      next;
+                 }
+      
                
             }    
             #Node comes back from offline_soft when (all of them):
@@ -1864,10 +1893,10 @@ sub get_proxy($$$$){
            ){
           print Utils->print_log(2,"Fail-over in action Using Method = $proxynode->{_require_failover}\n" );
           if($proxynode->initiate_failover($GGalera_cluster) >0){
-             if($proxynode->debug >=1){
+             #if($proxynode->debug >=1){
                print Utils->print_log(2,"!!!! FAILOVER !!!!! \n Cluster was without WRITER I have try to restore service promoting a node\n" );
                #exit 0;
-             }
+             #}
           }
         }
       }
