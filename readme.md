@@ -1,15 +1,4 @@
      
-WHY I add addition_to_sys_v2.sql
-=============================
-Adding addition_to_sys_v2.sql
-
-This file is the updated and correct version of the file create by LeFred https://gist.github.com/lefred/77ddbde301c72535381ae7af9f968322 which is not working correctly.
-Also I have tested this solution and compared it with https://gist.github.com/lefred/6f79fd02d333851b8d18f52716f04d91#file-addition_to_sys_gr-sql
- and the output cost MORE in the file-addition_to_sys_gr-sql
- version than this one.
-
-All the credit goes to @lefred who did the first version 
-
 Galera Check tool
 ====================
 
@@ -54,6 +43,8 @@ PXC cluster state:
 Fail-over options:
  * Presence of active node in the special backup Hostgroup (8000 + original HG id).
 
+Special HostGoup 8000 is now used also for READERS, to define which should be checked and eventually add to the pool if missed
+
 If a node is the only one in a segment, the check will behave accordingly. 
 IE if a node is the only one in the MAIN segment, it will not put the node in OFFLINE_SOFT when the node become donor to prevent the cluster to become unavailable for the applications. 
 As mention is possible to declare a segment as MAIN, quite useful when managing prod and DR site.
@@ -70,6 +61,9 @@ Another important differentiation for this check is that it use special HGs for 
 So if a node belong to HG 10 and the check needs to put it in maintenance mode, the node will be moved to HG 9010. 
 Once all is normal again, the Node will be put back on his original HG.
 
+The special group of 8000 is instead used for __configuration__, this is it you will need to insert the 8XXXX referring to your WRITER HG and READER HG as the configuration the script needs to refer to.
+To be clear 8XXX  where X are the digit of your Hostgroup id ie 20 -> 8020, 1 -> 8001 etc .
+
 This check does NOT modify any state of the Nodes. 
 Meaning It will NOT modify any variables or settings in the original node. It will ONLY change states in ProxySQL. 
 
@@ -83,11 +77,12 @@ To manage that and also to provide a good way to set/define what and how to fail
 *active_failover*
     Valid values are:
           0 [default] do not make fail-over
-          1 make fail-over only if HG 8000 is specified in ProxySQL mysl_servers
+          1 make fail-over only if HG 8000 is specified in ProxySQL mysl_servers 
           2 use PXC_CLUSTER_VIEW to identify a server in the same segment
           3 do whatever to keep service up also fail-over to another segment (use PXC_CLUSTER_VIEW) 
 
-Active fail-over works using two main features, the Backup Host Group and the information present in the new table performance_schema.pxc_cluster_view (PXC 5.7.19 and later).
+Active fail-over works using three main features, the Backup Host Group and the information present  in wsrep_provider_options and in the table performance_schema.pxc_cluster_view (PXC 5.7.19 and later).
+Because this you need to have the monitor ProxySQL user able to select from performance_schema table if you want to use pxc_cluster_view. 
 For example:
 ```SQL
 INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.205',50,3306,1000000,2000);
@@ -95,6 +90,12 @@ INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VA
 INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.205',8050,3306,1000,2000);
 INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.231',8050,3306,999,2000);
 INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.22',8050,3306,998,2000);
+
+
+INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.205',8052,3306,10000,2000);
+INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.231',8052,3306,10000,2000);
+INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.22',8052,3306,10000,2000);
+
 
 
 INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('192.168.1.205',52,3306,1,2000);
@@ -111,7 +112,8 @@ INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VA
 
 ```
 Will create entries in ProxySQL for 2 main HG (50 for write and 52 for read)
-But it will also create 3 entries for the SPECIAL group 8050. This group will be used by the script to manage the fail-over of HG 50.
+It will also create 3 entries for the SPECIAL group 8050. This group will be used by the script to manage the fail-over of HG 50.
+It will also create 3 entries for the SPECIAL group 8051. This group will be used by the script to manage the read nodes in HG 51.
 
 In the above example, what will happen is that in case of you have set `*active_failover*=1`, the script will check the nodes, if node `192.168.1.205',50` is not up,
 the script will try to identify another node within the same segment that has the **higest weight** IN THE 8050 HG. In this case it will elect as new writer the node`'192.168.1.231',8050`.
@@ -161,14 +163,15 @@ In this case `node6` will become the new WRITER.
 
 ### How to use it
 ```
-galera_check.pl -u=admin -p=admin -h=192.168.1.50 -H=500:W,501:R -P=3310 --main_segment=1 --debug=0  --log <full_path_to_file> --help
+galera_check.pl -u=admin -p=admin -h=127.0.0.1 -H=500:W,501:R -P=6032 --main_segment=1 --debug=0  --log <full_path_to_file> --help
+galera_check.pl -u=cluster1 -p=clusterpass -h=192.168.4.191 -H=200:W,201:R -P=6032 --main_segment=1 --debug=1 --log /tmp/test --active_failover=1 --retry_down=2 --retry_up=1 --single_writer=0 --writer_is_also_reader=1"
 sample [options] [file ...]
  Options:
    -u|user            user to connect to the proxy
    -p|password        Password for the proxy
    -h|host            Proxy host
    -H                 Hostgroups with role definition. List comma separated.
-		      Definition R = reader; W = writer [500:W,501:R]
+		                    Definition R = reader; W = writer [500:W,501:R]
    --main_segment     If segments are in use which one is the leading at the moment
    --retry_up         The number of loop/test the check has to do before moving a node up (default 0)
    --retry_down       The number of loop/test the check has to do before moving a node Down (default 0)
@@ -181,7 +184,8 @@ sample [options] [file ...]
                           1 make failover only if HG 8000 is specified in ProxySQL mysl_servers
                           2 use PXC_CLUSTER_VIEW to identify a server in the same segment
                           3 do whatever to keep service up also failover to another segment (use PXC_CLUSTER_VIEW)
-   --single_writer    Active by default [single_writer = 1 ] if disable will allow to have multiple writers       
+   --single_writer    Active by default [single_writer = 1 ] if disable will allow to have multiple writers
+   --writer_is_also_reader Active by default [writer_is_also_reader =1]. If disable the writer will be removed by the Reader Host group and will serve only reads inside the same transaction of the writes. 
    
    
    Performance parameters 
@@ -297,3 +301,15 @@ Mainly what the script does, it will identify the nodes not up (but still not SH
 
 You can define IF you want to have multiple writers. Default is 1 writer only (**I strongly recommend you to do not use multiple writers unless you know very well what are you doing**), but you can now have multiple writers at the same time.
 
+
+
+WHY I add addition_to_sys_v2.sql
+=============================
+Adding addition_to_sys_v2.sql
+
+This file is the updated and correct version of the file create by LeFred https://gist.github.com/lefred/77ddbde301c72535381ae7af9f968322 which is not working correctly.
+Also I have tested this solution and compared it with https://gist.github.com/lefred/6f79fd02d333851b8d18f52716f04d91#file-addition_to_sys_gr-sql
+ and the output cost MORE in the file-addition_to_sys_gr-sql
+ version than this one.
+
+All the credit goes to @lefred who did the first version 
