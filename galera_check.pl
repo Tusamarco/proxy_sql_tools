@@ -553,16 +553,7 @@ sub get_proxy($$$$){
                     
                     #DEBUG Without threads uncomment from here
             #        next unless  $new_nodes->{$key} = get_node_info($self,$key);
-            ##        #assign size to HG
-            #          #if(($new_nodes->{$key}->{_proxy_status} ne "OFFLINE_SOFT"
-            #          #    && $new_nodes->{$key}->{_proxy_status} ne "SHUNNED"
-            #          #    )
-            #          #   && defined $new_nodes->{$key}->{_wsrep_segment} 
-            #          #   ){
-            #          #    $self->{_hostgroups}->{$new_nodes->{$key}->{_hostgroups}}->{_size} = ($self->{_hostgroups}->{$new_nodes->{$key}->{_hostgroups}}->{_size}) + 1;
-            #          #}
-            #
-            #          evaluate_joined_node($self, $key, $new_nodes, $processed_nodes) ;
+            #        evaluate_joined_node($self, $key, $new_nodes, $processed_nodes) ;
     
              # to here
 		    
@@ -1683,6 +1674,7 @@ sub get_proxy($$$$){
                     && $nodes->{$key}->cluster_status eq "Primary"
                     && $nodes->{$key}->hostgroups == $proxynode->{_hg_reader_id}
                     && $GGalera_cluster->{_writer_is_reader} < 1
+                    && $nodes->{$key}->proxy_status eq "ONLINE"
                     ){
                       #my $nodes_read_ips = join(',', @{$GGalera_cluster->{_reader_nodes}});
                       my $nodes_write_ips = join(',', @{$GGalera_cluster->{_writer_nodes}});
@@ -1697,10 +1689,11 @@ sub get_proxy($$$$){
                          }
                          print Utils->print_log(3," Writer is also reader disabled removing node from reader Hostgroup "
                                .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_DELETE_NODE}
-                               ." Retry #".$nodes->{$key}->get_retry_up."\n" )
+                               ." Retry #".$nodes->{$key}->get_retry_up."\n" );
                          
+                        next;
                       }
-                      next;
+
                  }
       
                
