@@ -1197,7 +1197,7 @@ sub get_proxy($$$$){
       
       my $proxy_sql_command= "INSERT INTO mysql_servers (hostname,hostgroup_id,port,weight,max_connections) VALUES ('$self->{_ip}',$proxynode->{_hg_writer_id},$self->{_port},$self->{_weight},$self->{_connections});";
       if($Galera_cluster->{_singlewriter} > 0){
-         my $delete = "DELETE from mysql_servers where hostgroup_id in ($proxynode->{_hg_writer_id},".(9000 + $proxynode->{_hg_writer_id}).") ".$exclude_delete;
+         my $delete = "DELETE from mysql_servers where hostgroup_id in ($proxynode->{_hg_writer_id},".(9000 + $proxynode->{_hg_writer_id}).") AND STATUS = 'ONLINE'".$exclude_delete;
         print Utils->print_log(2," DELETE from writer group as: " 
             ." SQL:" .$delete
             ."\n" );			    
