@@ -1657,9 +1657,17 @@ sub get_proxy($$$$){
              
                      #if retry is > 0 then it's managed
                      if($proxynode->retry_down > 0){
-                         $nodes->{$key}->get_retry_down($nodes->{$key}->get_retry_down + 1);
+                         $nodes->{$key}->get_retry_down($proxynode->retry_down ); # this is a known state and we do not want any delay set the retry to his max
                      }
-             
+                    
+                    if(
+                      $nodes->{$key}->{_hostgroups} ==  $GGalera_cluster->{_hg_writer_id}
+                      && $GGalera_cluster->{_singlewriter} > 0
+                      ){
+                       $proxynode->{_require_failover}=1;
+                    }
+                    
+                    
                     if($proxynode->debug >=1){print Utils->print_log(3," Evaluate nodes state "
                         .$nodes->{$key}->ip.";".$nodes->{$key}->port.";".$nodes->{$key}->hostgroups.";".$nodes->{$key}->{_MOVE_TO_MAINTENANCE}
                         ." Retry #".$nodes->{$key}->get_retry_down."\n" )   }	
