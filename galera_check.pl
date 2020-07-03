@@ -1664,7 +1664,7 @@ sub get_proxy($$$$){
                       $nodes->{$key}->{_hostgroups} ==  $GGalera_cluster->{_hg_writer_id}
                       && $GGalera_cluster->{_singlewriter} > 0
                       ){
-                       $proxynode->{_require_failover}=1;
+                       $proxynode->{_require_failover}=2;
                     }
                     
                     
@@ -1886,7 +1886,7 @@ sub get_proxy($$$$){
       
       
       
-      if($proxynode->require_failover > 0
+      if($proxynode->require_failover == 1
          && !defined $action_nodes
          ){
         if($GGalera_cluster->haswriter < 1
@@ -1899,6 +1899,16 @@ sub get_proxy($$$$){
                #exit 0;
              #}
           }
+        }
+      }
+      elsif($proxynode->require_failover == 2){
+       print Utils->print_log(2,"PXC maintenance on single writer, is asking for failover. Fail-over in action Using Method = $proxynode->{_require_failover}\n" );
+       $proxynode->push_changes;
+       if($proxynode->initiate_failover($GGalera_cluster) >0){
+             #if($proxynode->debug >=1){
+               print Utils->print_log(2,"!!!! FAILOVER !!!!! \n Cluster was without WRITER I have try to restore service promoting a node\n" );
+               #exit 0;
+             #}
         }
       }
 
