@@ -41,6 +41,7 @@ my $help = '';
 my $host = '' ;
 my $debug = 0 ;
 my %hostgroups;
+my $mysql_connect_timeout=6;
 
 my %processState;
 my %processCommand;
@@ -492,7 +493,7 @@ sub get_proxy($$$$){
        while (my $ref = $sth->fetchrow_hashref()) {
             my $node = GaleraNode->new();
             $node->debug($self->debug);
-            $node->dns("DBI:mysql:host=".$ref->{hostname}.";port=".$ref->{port});
+            $node->dns("DBI:mysql:host=".$ref->{hostname}.";port=".$ref->{port}.";mysql_connect_timeout=$mysql_connect_timeout");
             $node->hostgroups($ref->{hostgroup_id});
             if($node->{_hostgroups} > 8000
                && exists $locHg->{$node->{_hostgroups}}){
@@ -1062,7 +1063,7 @@ sub get_proxy($$$$){
         }	
         my $dbh = Utils::get_connection($self->{_dns},$self->{_user},$self->{_password},' ');
         if(!defined $dbh){
-           print Utils->print_log(1," Node is not responding setting it as SHUNNED (ProxySQL bug - #2658)"
+           print Utils->print_log(1," Node is not responding setting it as SHUNNED (internally) (ProxySQL bug - #2658)"
              .$self->{_ip}
             .":".$self->{_port}
             .":HG".$self->{_hostgroups}." \n"  );
