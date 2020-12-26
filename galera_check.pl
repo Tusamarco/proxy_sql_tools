@@ -140,6 +140,7 @@ sub get_proxy($$$$){
         'writer_is_also_reader:i' => \$Param->{writer_is_reader},        
         'active_failover:i' => \$Param->{active_failover},
         'check_timeout:i' => \$Param->{check_timeout},
+        'ssl_cert_paths:s' => \$Param->{ssl_cert_paths},
         
         'help|?'       => \$Param->{help}
        
@@ -185,6 +186,28 @@ sub get_proxy($$$$){
        open(FH, '>>', $Param->{log}."_".$hg.".log") or die Utils->print_log(1,"cannot open file");
        FH->autoflush if $Param->{development} < 2;
        select FH;
+    }
+    #checks for ssl cert path and identify if accessible.
+    #If defined and not accessible exit with an error     
+    if(defined $Param->{ssl_cert_paths}){
+       my $ssl_path = $Param->{ssl_cert_paths};
+       if (-d $ssl_path) {
+          # directory called cgi-bin exists
+          if(-e $ssl_path."/client-key.pem"
+             && -e $ssl_path."/client-cert.pem"
+             && -e $ssl_path."/ca.pem"){
+              print Utils->print_log(4," SSL Directory exists and all the files are there $ssl_path")
+          }
+          else{
+              print Utils->print_log(1,"SSL Path (ssl_cert_paths) declared and accessible [$ssl_path]. But certification files must have specific names:\n \t\t client-key.pem \n \t\t client-cert.pem \n \t\t ca.pem \n");
+              exit 1
+          }
+       } 
+       else{
+          # ssl path declared but not exists, exit with error
+          print Utils->print_log(1,"SSL Path (ssl_cert_paths) declared but not existing \n \t\t $ssl_path \n \t\t Please create directory and assign the right to access it to the ProxySQL user \n");
+          exit 1;
+       }
     }
     
     if($Param->{development} < 2){
@@ -497,11 +520,27 @@ sub get_proxy($$$$){
         $sth->execute();
         my $i = 1;
         my $locHg = $self->{_hostgroups};
+        my $ssl_certificates = "";
+        #if a ssl certificate path is defined, will create the path for each certificate and add to the dns string
+        if(defined $self->{_ssl_certificates_path}){
+           $ssl_certificates = ";mysql_ssl_client_key=".$self->{_ssl_certificates_path}."/client-key.pem"
+           .";mysql_ssl_client_cert=".$self->{_ssl_certificates_path}."/client-cert.pem"
+           .";mysql_ssl_ca_file=".$self->{_ssl_certificates_path}."/ca.pem"
+        }
         
        while (my $ref = $sth->fetchrow_hashref()) {
+            my $ssl_options="" ;
             my $node = GaleraNode->new();
             $node->debug($self->debug);
-            $node->dns("DBI:mysql:host=".$ref->{hostname}.";port=".$ref->{port}.";mysql_connect_timeout=$mysql_connect_timeout");
+            $node->use_ssl($ref->{use_ssl});
+            if($node->use_ssl gt 0 ){
+               $ssl_options = ";mysql_ssl=1";
+               if(defined $self->{_ssl_certificates_path}){
+                 $ssl_options = $ssl_options . $ssl_certificates;
+               }
+            }
+            
+            $node->dns("DBI:mysql:host=".$ref->{hostname}.";port=".$ref->{port}.";mysql_connect_timeout=$mysql_connect_timeout".$ssl_options);
             $node->hostgroups($ref->{hostgroup_id});
             if($node->{_hostgroups} > 8000
                && exists $locHg->{$node->{_hostgroups}}){
@@ -520,7 +559,6 @@ sub get_proxy($$$$){
             
             $node->gtid_port($ref->{gtid_port});
             $node->compression($ref->{compression});
-            $node->use_ssl($ref->{use_ssl});
             $node->max_latency($ref->{max_latency_ms});
             $node->max_replication_lag($ref->{max_replication_lag});
 	    
@@ -563,8 +601,8 @@ sub get_proxy($$$$){
                     $Threads{$key}=threads->create(sub  {return get_node_info($self,$key)});
                     
                     #DEBUG Without threads uncomment from here
-            #        next unless  $new_nodes->{$key} = get_node_info($self,$key);
-            #        evaluate_joined_node($self, $key, $new_nodes, $processed_nodes) ;
+                    #next unless  $new_nodes->{$key} = get_node_info($self,$key);
+                    #evaluate_joined_node($self, $key, $new_nodes, $processed_nodes) ;
     
              # to here
 		    
@@ -604,7 +642,7 @@ sub get_proxy($$$$){
                 }
                 #print ".";
             }
-            # a qui
+            ## a qui
             if($self->debug){$run_milliseconds = (gettimeofday() -$start ) *1000};
             #sleep for a time equal to the half of the timeout to save cpu cicle
             #usleep(($self->{_check_timeout} * 1000)/2);
@@ -1519,6 +1557,7 @@ sub get_proxy($$$$){
         $galera_cluster->hg_reader_id($self->hg_reader_id);
         $galera_cluster->singlewriter($Param->{single_writer});
         $galera_cluster->writer_is_reader($Param->{writer_is_reader});
+        $galera_cluster->ssl_certificates_path($Param->{ssl_cert_paths});
         
         $self->get_galera_cluster($galera_cluster);
        if($self->debug >=1){print Utils->print_log(3," Galera cluster object created  " . caller(3). "\n" ); }
@@ -2563,6 +2602,20 @@ sample [options] [file ...]
    
    --development      When set to 1 you can run the script in a loop from bash directly and test what is going to happen
    --development_time Time in seconds that the loop wait to execute when in development mode (default 2 seconds)
+   
+   SSL support
+   Now the script identify if the node in the ProxySQL table mysql_servers has use_ssl = 1 and will set SSL to be used for that specific entry.
+   This means that SSL connection is by ProxySQL mysql_server entry NOT by IP:port combination.
+   
+   --ssl_cert_paths This parameter allow you to specify a DIRECTORY to use to assign specific certificates.
+                    At the moment is NOT possible to change the files names and ALL these 3 files must be there and named as follow:
+                     -  client-key.pem
+                     -  client-cert.pem
+                     -  ca.pem
+                     Script will exit with an error if ssl_cert_pathsis declared but not filled properly
+                     OR if the user running the script doesn't have acces.
+   !!NOTE!! SSL connection requires more time to be established. This script is a check that needs to run very fast and constantly.
+            force it to use ssl WILL impact in the performance of the check. Tune properly the check_timeout parameter.
 
 =back    
    
