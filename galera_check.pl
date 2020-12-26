@@ -117,6 +117,7 @@ sub get_proxy($$$$){
     $Param->{single_writer} = 1;
     $Param->{writer_is_reader} = 1;
     $Param->{check_timeout} = 800;
+    $Param->{ssl_cert_paths} = undef;
     
     my $run_pid_dir = "/tmp" ;
     
@@ -330,6 +331,7 @@ sub get_proxy($$$$){
             _cluster_identifier => undef,
             _hg_writer_id => 0,
             _hg_reader_id => 0,
+            _ssl_certificates_path => undef,
             _writer_is_reader => 0,
             _reader_nodes => [] ,
             _writer_nodes => [] ,
@@ -342,6 +344,12 @@ sub get_proxy($$$$){
         
     }
 
+    sub ssl_certificates_path{
+        my ( $self, $in ) = @_;
+        $self->{_ssl_certificates_path} = $in if defined($in);
+        return $self->{_ssl_certificates_path};
+    }
+    
    sub has_failover_node{
         my ( $self, $in ) = @_;
         $self->{_has_failover_node} = $in if defined($in);
@@ -549,6 +557,8 @@ sub get_proxy($$$$){
                       $self->{_nodes}->{$key}->port.":HG".$self->{_nodes}->{$key}->hostgroups."\n" ) }
                     $new_nodes->{$key} =  $self->{_nodes}->{$key};
                     $new_nodes->{$key}->{_process_status} = -1;
+                    $new_nodes->{$key}->{_ssl_certificates_path} = $self->ssl_certificates_path;
+
                     #  debug senza threads comment next line
                     $Threads{$key}=threads->create(sub  {return get_node_info($self,$key)});
                     
@@ -763,6 +773,7 @@ sub get_proxy($$$$){
             _gtid_port => 0,
             _compression => 0,
             _use_ssl => 0,
+            _ssl_certificates_path => undef,
             _max_latency => 0,
             _max_replication_lag => 0,
             _wsrep_gcomm_uuid => undef,
@@ -775,6 +786,12 @@ sub get_proxy($$$$){
         
     }
 
+    sub ssl_certificates_path{
+        my ( $self, $in ) = @_;
+        $self->{_ssl_certificates_path} = $in if defined($in);
+        return $self->{_ssl_certificates_path};
+    }
+ 
     sub max_replication_lag{
         my ( $self, $in ) = @_;
         $self->{_max_replication_lag} = $in if defined($in);
