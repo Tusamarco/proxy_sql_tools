@@ -117,7 +117,7 @@ sub get_proxy($$$$){
     $Param->{single_writer} = 1;
     $Param->{writer_is_reader} = 1;
     $Param->{check_timeout} = 800;
-    $Param->{ssl_cert_paths} = undef;
+    $Param->{ssl_certs_path} = undef;
     
     my $run_pid_dir = "/tmp" ;
     
@@ -140,7 +140,7 @@ sub get_proxy($$$$){
         'writer_is_also_reader:i' => \$Param->{writer_is_reader},        
         'active_failover:i' => \$Param->{active_failover},
         'check_timeout:i' => \$Param->{check_timeout},
-        'ssl_cert_paths:s' => \$Param->{ssl_cert_paths},
+        'ssl_certs_path:s' => \$Param->{ssl_certs_path},
         
         'help|?'       => \$Param->{help}
        
@@ -189,8 +189,8 @@ sub get_proxy($$$$){
     }
     #checks for ssl cert path and identify if accessible.
     #If defined and not accessible exit with an error     
-    if(defined $Param->{ssl_cert_paths}){
-       my $ssl_path = $Param->{ssl_cert_paths};
+    if(defined $Param->{ssl_certs_path}){
+       my $ssl_path = $Param->{ssl_certs_path};
        if (-d $ssl_path) {
           # directory called cgi-bin exists
           if(-e $ssl_path."/client-key.pem"
@@ -199,13 +199,13 @@ sub get_proxy($$$$){
               print Utils->print_log(4," SSL Directory exists and all the files are there $ssl_path")
           }
           else{
-              print Utils->print_log(1,"SSL Path (ssl_cert_paths) declared and accessible [$ssl_path]. But certification files must have specific names:\n \t\t client-key.pem \n \t\t client-cert.pem \n \t\t ca.pem \n");
+              print Utils->print_log(1,"SSL Path (ssl_certs_path) declared and accessible [$ssl_path]. But certification files must have specific names:\n \t\t client-key.pem \n \t\t client-cert.pem \n \t\t ca.pem \n");
               exit 1
           }
        } 
        else{
           # ssl path declared but not exists, exit with error
-          print Utils->print_log(1,"SSL Path (ssl_cert_paths) declared but not existing \n \t\t $ssl_path \n \t\t Please create directory and assign the right to access it to the ProxySQL user \n");
+          print Utils->print_log(1,"SSL Path (ssl_certs_path) declared but not existing \n \t\t $ssl_path \n \t\t Please create directory and assign the right to access it to the ProxySQL user \n");
           exit 1;
        }
     }
@@ -533,14 +533,6 @@ sub get_proxy($$$$){
             my $node = GaleraNode->new();
             $node->debug($self->debug);
             $node->use_ssl($ref->{use_ssl});
-            if($node->use_ssl gt 0 ){
-               $ssl_options = ";mysql_ssl=1";
-               if(defined $self->{_ssl_certificates_path}){
-                 $ssl_options = $ssl_options . $ssl_certificates;
-               }
-            }
-            
-            $node->dns("DBI:mysql:host=".$ref->{hostname}.";port=".$ref->{port}.";mysql_connect_timeout=$mysql_connect_timeout".$ssl_options);
             $node->hostgroups($ref->{hostgroup_id});
             if($node->{_hostgroups} > 8000
                && exists $locHg->{$node->{_hostgroups}}){
@@ -549,6 +541,18 @@ sub get_proxy($$$$){
             }
             $node->ip($ref->{hostname});
             $node->port($ref->{port});
+
+            if($node->use_ssl gt 0 ){
+               $ssl_options = ";mysql_ssl=1";
+               if($self->debug){print Utils->print_log(4," Galera cluster node   " . $node->ip.":". $node->port.":HG=".$node->hostgroups." Using SSL ($ssl_options)\n" ) }
+               if(defined $self->{_ssl_certificates_path}){
+                 $ssl_options = $ssl_options . $ssl_certificates;
+                 if($self->debug){print Utils->print_log(4," Certificates also in use ($self->{_ssl_certificates_path})\n")}
+               }
+            }
+            
+            $node->dns("DBI:mysql:host=".$node->ip.";port=".$node->port.";mysql_connect_timeout=$mysql_connect_timeout".$ssl_options);
+            
             $node->weight($ref->{weight});
             $node->connections($ref->{max_connections});
             $node->user($self->{_monitor_user});
@@ -1557,7 +1561,7 @@ sub get_proxy($$$$){
         $galera_cluster->hg_reader_id($self->hg_reader_id);
         $galera_cluster->singlewriter($Param->{single_writer});
         $galera_cluster->writer_is_reader($Param->{writer_is_reader});
-        $galera_cluster->ssl_certificates_path($Param->{ssl_cert_paths});
+        $galera_cluster->ssl_certificates_path($Param->{ssl_certs_path});
         
         $self->get_galera_cluster($galera_cluster);
        if($self->debug >=1){print Utils->print_log(3," Galera cluster object created  " . caller(3). "\n" ); }
@@ -2607,12 +2611,12 @@ sample [options] [file ...]
    Now the script identify if the node in the ProxySQL table mysql_servers has use_ssl = 1 and will set SSL to be used for that specific entry.
    This means that SSL connection is by ProxySQL mysql_server entry NOT by IP:port combination.
    
-   --ssl_cert_paths This parameter allow you to specify a DIRECTORY to use to assign specific certificates.
+   --ssl_certs_path This parameter allow you to specify a DIRECTORY to use to assign specific certificates.
                     At the moment is NOT possible to change the files names and ALL these 3 files must be there and named as follow:
                      -  client-key.pem
                      -  client-cert.pem
                      -  ca.pem
-                     Script will exit with an error if ssl_cert_pathsis declared but not filled properly
+                     Script will exit with an error if ssl_certs_pathis declared but not filled properly
                      OR if the user running the script doesn't have acces.
    !!NOTE!! SSL connection requires more time to be established. This script is a check that needs to run very fast and constantly.
             force it to use ssl WILL impact in the performance of the check. Tune properly the check_timeout parameter.
