@@ -202,6 +202,20 @@ sample [options] [file ...]
    --development      When set to 1 you can run the script in a loop from bash directly and test what is going to happen
    --development_time Time in seconds that the loop wait to execute when in development mode (default 2 seconds)
 
+   SSL support
+   Now the script identify if the node in the ProxySQL table mysql_servers has use_ssl = 1 and will set SSL to be used for that specific entry.
+   This means that SSL connection is by ProxySQL mysql_server entry NOT by IP:port combination.
+   
+   --ssl_cert_paths This parameter allow you to specify a DIRECTORY to use to assign specific certificates.
+                    At the moment is NOT possible to change the files names and ALL these 3 files must be there and named as follow:
+                     -  client-key.pem
+                     -  client-cert.pem
+                     -  ca.pem
+                     Script will exit with an error if ssl_cert_pathsis declared but not filled properly
+                     OR if the user running the script doesn't have acces.
+   !!NOTE!! SSL connection requires more time to be established. This script is a check that needs to run very fast and constantly.
+            force it to use ssl WILL impact in the performance of the check. Tune properly the check_timeout parameter.
+
 ```   
 
 Note that galera_check is also Segment aware, as such the checks on the presence of Writer /reader is done by segment, respecting the MainSegment as primary.
