@@ -67,14 +67,30 @@ WHERE Channel_name = 'group_replication_applier' ), (SELECT
 END$$
 
 CREATE FUNCTION gr_member_in_primary_partition()
-RETURNS VARCHAR(3)
-DETERMINISTIC
+ RETURNS varchar(20) CHARSET utf8mb4
+    READS SQL DATA
+    DETERMINISTIC
 BEGIN
-  RETURN (SELECT IF( MEMBER_STATE='ONLINE' AND ((SELECT COUNT(*) FROM
+    DECLARE myReturn VARCHAR(20);
+		DECLARE myError INT DEFAULT 0;
+		
+    DECLARE CONTINUE HANDLER FOR 1242 SET myError = 1242;
+ 
+		  (SELECT IF( MEMBER_STATE='ONLINE' AND ((SELECT COUNT(*) FROM
 performance_schema.replication_group_members WHERE MEMBER_STATE != 'ONLINE') >=
 ((SELECT COUNT(*) FROM performance_schema.replication_group_members)/2) = 0),
-'YES', 'NO' ) FROM performance_schema.replication_group_members JOIN
+'YES', 'NO' ) into myReturn FROM performance_schema.replication_group_members JOIN
 performance_schema.replication_group_member_stats rgms USING(member_id) WHERE rgms.MEMBER_ID=@@SERVER_UUID )  ;
+
+		IF myError > 0 THEN
+		    GET DIAGNOSTICS CONDITION 1
+       		@p1 = RETURNED_SQLSTATE, @p2 = MESSAGE_TEXT;
+        	select @p2 into myReturn;
+			RETURN myReturn;
+		END IF;
+		
+    RETURN myReturn;
+
 END$$
 
 CREATE FUNCTION gr_transactions_to_cert() RETURNS int(11)
