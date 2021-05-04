@@ -1,4 +1,10 @@
-     
+WARNING
+==========
+This project is deprecated a better tool to perform the same action is now available here 
+https://github.com/Tusamarco/proxysql_scheduler
+
+Pleas try it and open issues in that project if needed 
+
 Galera Check tool
 ====================
 
