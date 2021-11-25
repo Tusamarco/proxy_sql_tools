@@ -95,12 +95,22 @@ performance_schema.replication_group_member_stats rgms USING(member_id) WHERE rg
 
 END$$
 
-CREATE FUNCTION gr_transactions_to_cert() RETURNS int(11)
+CREATE FUNCTION `gr_transactions_to_cert`() RETURNS int
     DETERMINISTIC
 BEGIN
-  RETURN (select  performance_schema.replication_group_member_stats.COUNT_TRANSACTIONS_IN_QUEUE AS transactions_to_cert
+DECLARE transactions_to_cert INT DEFAULT 0;
+select  performance_schema.replication_group_member_stats.COUNT_TRANSACTIONS_IN_QUEUE into transactions_to_cert
+
     FROM
-        performance_schema.replication_group_member_stats where MEMBER_ID=@@SERVER_UUID )  ;
+        performance_schema.replication_group_member_stats where MEMBER_ID=@@SERVER_UUID; 
+
+    IF transactions_to_cert IS NULL THEN 
+	   RETURN 0;
+    END IF;
+
+RETURN transactions_to_cert;
+
+
 END$$
 
 CREATE VIEW gr_member_routing_candidate_status AS
