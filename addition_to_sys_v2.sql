@@ -82,13 +82,15 @@ performance_schema.replication_group_members WHERE MEMBER_STATE != 'ONLINE') >=
 'YES', 'NO' ) into myReturn FROM performance_schema.replication_group_members JOIN
 performance_schema.replication_group_member_stats rgms USING(member_id) WHERE rgms.MEMBER_ID=@@SERVER_UUID )  ;
 
-		IF myError > 0 THEN
-		    GET DIAGNOSTICS CONDITION 1
-       		@p1 = RETURNED_SQLSTATE, @p2 = MESSAGE_TEXT;
-        	select @p2 into myReturn;
-			RETURN myReturn;
-		END IF;
-		
+    IF myError > 0 THEN
+        GET DIAGNOSTICS CONDITION 1
+        @p1 = RETURNED_SQLSTATE, @p2 = MESSAGE_TEXT;
+        select @p2 into myReturn;
+        RETURN myReturn;
+    END IF;
+    IF myReturn IS NULL Then 
+	   RETURN 'NO';
+    END IF;		
     RETURN myReturn;
 
 END$$
